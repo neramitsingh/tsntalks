@@ -48,6 +48,9 @@ export const compact = (n) => {
   return String(n);
 };
 
+/* YouTube labels the oldest band "65-", meaning 65 and over. */
+export const ageBand = (d) => (d.endsWith('-') ? `${d.slice(0, -1)}+` : d);
+
 export const pct = (part, whole) => (whole ? Math.round((part / whole) * 100) : 0);
 
 export const bkk = (iso, opts = { day: 'numeric', month: 'short', year: 'numeric' }) =>

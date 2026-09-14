@@ -1,5 +1,5 @@
 import {
-  load, full, compact, pct, bkk, freshness, stillImage,
+  load, full, compact, pct, bkk, freshness, stillImage, ageBand,
   STACK, PLATFORM_NAME, PLATFORM_COLOR, COUNTRY,
 } from './live-data.js';
 
@@ -118,7 +118,7 @@ function renderAudience(d) {
     '<caption>YouTube viewers by age · last 90 days</caption>'
     + '<tr><th scope="col">Age</th><th scope="col"><span class="vh">Share, as a bar</span></th>'
     + '<th scope="col" class="r">Share of views</th></tr>'
-    + age.map((a) => `<tr><th scope="row">${a.dimension}</th>`
+    + age.map((a) => `<tr><th scope="row">${ageBand(a.dimension)}</th>`
       + `<td class="bar"><i style="width:${(a.value / amax) * 100}%"></i></td>`
       + `<td class="r">${a.value.toFixed(1)}%</td></tr>`).join('');
 

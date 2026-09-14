@@ -223,8 +223,8 @@ nav ul a.cta:hover { background: var(--saffron2); color: var(--bg); }
 .strap span:last-child { border-right: 0; padding-right: 0; margin-right: 0; }
 .strap b { color: var(--cream); font-weight: 700; font-variant-numeric: tabular-nums; }
 
-.strap .live { color: var(--saffron2); font-weight: 700; }
-.strap .live::before {
+.live { color: var(--saffron2); font-weight: 700; }
+.live::before {
   content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
   background: var(--saffron); margin-right: 8px; vertical-align: 1px;
   animation: pulse 2.4s ease-in-out infinite;
@@ -252,6 +252,28 @@ nav ul a.cta:hover { background: var(--saffron2); color: var(--bg); }
 }
 /* A small tile is mostly caption, so the same scrim would black it out. */
 .po.sm::after { background: linear-gradient(0deg, rgba(13,7,6,.88), rgba(13,7,6,.22) 78%); }
+/* A big tile shows enough of the still for its baked-in title text to collide
+   with the caption, so it gets the hero's treatment at half strength. */
+.po.big::after {
+  background:
+    linear-gradient(0deg, rgba(13,7,6,.95), rgba(13,7,6,.08) 62%),
+    linear-gradient(90deg, rgba(13,7,6,.45) 0%, rgba(13,7,6,.1) 45%, rgba(13,7,6,.55) 100%);
+}
+
+/* "Now playing": the latest episode as a banner, then one tile per platform.
+   The default six-column wall cannot tile 1 big + 3 mid without leaving holes. */
+.wall.now { grid-template-columns: repeat(3, 1fr); grid-auto-rows: 190px; }
+.wall.now .po.big { grid-column: 1 / -1; grid-row: span 2; }
+.wall.now .po.mid { grid-column: span 1; grid-row: span 1; }
+.wall.now .po.mid .g { font-size: 17px; }
+/* These tiles carry a caption over someone else's thumbnail, which is busy by
+   nature — a platform-coloured kicker needs a real ground under it. */
+.wall.now .po.mid::after { background: linear-gradient(0deg, rgba(13,7,6,.96) 0%, rgba(13,7,6,.72) 34%, rgba(13,7,6,.12) 72%); }
+.wall.now .po.big::after {
+  background:
+    linear-gradient(0deg, rgba(13,7,6,.96), rgba(13,7,6,.06) 58%),
+    linear-gradient(90deg, rgba(13,7,6,.35) 0%, rgba(13,7,6,.1) 35%, rgba(13,7,6,.82) 100%);
+}
 .po:hover { color: inherit; }
 
 .po .t { position: absolute; left: 14px; right: 14px; bottom: 12px; z-index: 2; }
@@ -467,7 +489,7 @@ footer > div { max-width: 62ch; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .guest { animation: none; }
-  .strap .live::before { animation: none; }
+  .live::before { animation: none; }
   .po img { transition: none; }
   .po:hover img { transform: none; }
   * { transition-duration: .01ms !important; }

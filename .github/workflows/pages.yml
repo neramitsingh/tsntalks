@@ -1,0 +1,55 @@
+name: pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "data/live.json"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # The collector commits data/live.json once a day, so this redeploys with
+      # fresh baked numbers daily; the hourly Storage copy keeps the page current
+      # between deploys.
+      - name: bake the daily live.json into the artifact
+        run: |
+          mkdir -p site/data
+          cp data/live.json site/data/live.json
+
+      # Dropping a still in site/img/episodes/ is the whole change: the manifest
+      # is generated here, never hand-edited.
+      - name: build the episode still manifest
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          d = pathlib.Path("site/img/episodes")
+          ids = sorted(p.stem for p in d.glob("*.jpg"))
+          (d / "index.json").write_text(json.dumps(ids))
+          print("overrides:", ids)
+          PY
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
