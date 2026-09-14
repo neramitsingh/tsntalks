@@ -538,7 +538,17 @@ footer > div { max-width: 62ch; }
 
 @media (max-width: 560px) {
   .mark { font-size: 21px; }
-  nav ul { font-size: 13px; }
+  nav ul { font-size: 13px; overflow: visible; }
+
+  /* On a phone the CTA must never scroll off the edge. The two dropped items are
+     anchors into the home page, which a phone reader reaches by scrolling anyway;
+     "Live numbers" stays because that is the page a sponsor is sent to check. */
+  nav ul li.anchor { display: none; }
+
+  /* Three tiles across a 390px screen leaves 120px each and six-line titles. */
+  .wall.now { grid-template-columns: 1fr; grid-auto-rows: 170px; }
+  .wall.now .po.big { grid-row: span 2; }
+
   .strap { font-size: 13px; }
   .strap span { padding-right: 14px; margin-right: 14px; }
   .cols { height: 220px; }
