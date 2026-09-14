@@ -36,7 +36,7 @@ flowchart LR
   S --> P[Partner  /partner]
   R -. fallback .-> H
   DB --> A[Analytics  /analytics<br/>magic-link login]
-  A --> X[Exports<br/>CSV · XLSX · JSON · PDF]
+  A --> X[Artifacts<br/>episode report · guest card · monthly review · posts table]
 ```
 
 ### 3.1 Home `/` (public, brand)
@@ -85,17 +85,23 @@ The existing sponsorship content (five options, five bundles) restyled in the D1
 | Overview | How are we doing? | Headline figures with deltas (views, followers, posts published, engagement), views over time by platform, follower growth by platform, top posts in the frame. |
 | Growth | Which channel is growing? | Follower count per platform as lines, followers gained and lost per period, YouTube subscribers gained and lost, watch time and average view duration per period. |
 | Posts | What performed? | Sortable, filterable table of every post: platform, published, title, views, likes, comments, shares, reach, engagement rate, views gained in the frame (from snapshots). Click a row for the post's own growth curve. |
-| Episodes | What did one episode deliver? | One row per episode: YouTube views, number of clips, clip views by platform, total reach for the episode across all cuts. Click an episode for its report. |
+| Episodes | What did one episode deliver? | One row per episode: YouTube views, number of clips, clip views by platform, total reach for the episode across all cuts. From a row: the episode report and the guest card. |
 | Audience | Who watches? | YouTube age, gender, country; Instagram age, city, country; each as bars with a table twin; change versus the previous window. |
 | Health | Is the pipeline alive? | Last collector run, per-account status from Zernio (token validity, reconnect needed), row counts, freshness. |
 
-**Episode report.** A print-ready page for one episode: still, guest, published date, YouTube lifetime views and 7 / 30 day views, every clip with its platform and views, audience of the episode where YouTube exposes it, and a one-line source note. This is the artifact Sunny sends a sponsor after their episode.
+**Exports with a purpose.** There is no generic "export this view". Each export is a named artifact with a recipient, designed as a page and produced from the dashboard in one click. Starting set, to be confirmed with Sunny (he may have needs we have not seen):
 
-**Exports.** Every table and chart has an export menu, and the controls row has "Export this view":
+| Artifact | Sent to | Contents | Format |
+|---|---|---|---|
+| **Episode report** | The episode's sponsor, after it airs | Still, guest, date; YouTube views lifetime and at 7 and 30 days; every clip with platform and views; total reach across all cuts; audience where YouTube exposes it; source note | PDF, A4 portrait |
+| **Guest card** | The guest, a week after their episode | One page: "your episode reached N people", top clip, platform split, a share link | PDF and a PNG sized for LINE and Instagram |
+| **Monthly review** | Sunny and Thai Sikh News | Month against previous month by platform: views, followers gained, posts published, top five posts, audience shift; one page of charts with their tables | PDF, plus XLSX with the underlying tables |
+| **Numbers as of today** | A sponsor who asks for a deck | The live page's figures frozen at a date, same layout as the site | PDF |
+| **Posts table** | Whoever wants a spreadsheet | The Posts tab's current rows and filters | CSV and XLSX |
 
-- CSV and JSON: generated in the browser from the exact rows on screen, with the applied frame and filters in the filename.
-- XLSX: SheetJS (UMD, pinned version, from cdnjs), one sheet per table in the view.
-- PDF: the view's print stylesheet plus the episode report. The browser's print-to-PDF is the mechanism; the layout is designed for A4 portrait.
+Mechanism: each artifact is its own print-designed page in the dashboard; PDF comes from the browser's print-to-PDF, PNG from a canvas render of the card, CSV and XLSX are built in the browser (SheetJS, UMD, pinned, from cdnjs). Filenames carry the artifact, subject and date.
+
+Everything else stays on screen with a table twin. If Sunny asks for something new, it becomes a sixth artifact with a named recipient, not a menu.
 
 **Charts** follow the dataviz rules already applied in the sketches: thin marks, 2px surface gaps, hairline solid gridlines, selective direct labels, legend for two or more series, tooltip plus a table twin for every chart, no dual axes, hero figures in the sans.
 
@@ -161,7 +167,7 @@ Accessibility: WCAG AA contrast checked on every text colour (`--muted` is `#A08
 - Collector: unit tests against recorded Zernio and YouTube responses (fixtures captured 2026-09-14); a `--dry-run` that prints the rows it would write; a test that a second identical run writes zero rows.
 - SQL: rollup functions tested against a seeded fixture with known totals per day, week, month and platform, including the Bangkok day boundary.
 - Pages: Playwright screenshots at 1440 and 390 widths for every page; no horizontal overflow; fonts loaded; every number on the home page reconciled against Zernio's dashboard before launch.
-- Analytics: login as an allowed user works, a non-allowed email gets no rows; each export downloads and re-opens (CSV in Python, XLSX via openpyxl, JSON parses); the PDF layout checked in print preview.
+- Analytics: login as an allowed user works, a non-allowed email gets no rows; each artifact is produced for a real episode and month and opened (CSV in Python, XLSX via openpyxl, PDF and PNG checked by eye against the on-screen numbers).
 - Ship bar per Ney: click through every page on desktop and phone before calling it done.
 
 ## 9. Hand-over later
@@ -172,7 +178,7 @@ Repo transfer to Sunny's GitHub, Supabase project transfer to an org Sunny owns,
 
 1. Supabase project, schema, RLS, allowed users. Collector with tests. Backfill. Hourly Action live. History starts accruing.
 2. Public site: `site.css`, home, live, partner. Reconcile numbers. Deploy to GitHub Pages.
-3. Analytics: auth, controls, Overview and Posts tabs first, then Growth, Episodes, Audience, Health; exports; episode report.
+3. Analytics: auth, controls, Overview and Posts tabs first, then Growth, Episodes, Audience, Health; then the artifacts in this order: episode report, posts table, monthly review, guest card, numbers as of today.
 4. Domain, hand-over prep.
 
 ## 11. Open items
@@ -180,3 +186,4 @@ Repo transfer to Sunny's GitHub, Supabase project transfer to an org Sunny owns,
 - Clean episode stills and a proper founder portrait from Sunny (the YouTube thumbnails carry baked-in text).
 - YouTube Data API key: needs a Google Cloud project on Ney's Google account; until then the collector uses yt-dlp for the catalogue.
 - The domain name and whether Hostinger hosting came with it.
+- Confirm the export artifacts with Sunny: which of the five he would actually send, and anything he needs that is not on the list (for example a report format Thai Sikh News already uses).
