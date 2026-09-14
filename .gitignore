@@ -6,3 +6,5 @@ __pycache__/
 sketches/out/
 sketches/shots/
 collector/*.egg-info/
+site/data/live.json
+tests/site/shots/
