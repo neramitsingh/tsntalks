@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TSN Live C — Rundown board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0D0706;--bg2:#150B09;--bg3:#1E1008;--bg4:#291508;--saffron:#E8621A;--saffron2:#F0852A;--gold:#C8901E;--gold2:#E0B040;
+    --cream:#F2E4CC;--cream-dim:#C4A880;--muted:#A08468;--border:rgba(232,98,26,.14);--border-hi:rgba(232,98,26,.38);
+    --yt:#E8621A;--tt:#2EA6A0;--ig:#7C6BF0;--grid:#2A1A12;--live:#E8621A}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:var(--bg);color:var(--cream);font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .tab{font-variant-numeric:tabular-nums}
+  /* top band */
+  .band{display:grid;grid-template-columns:auto 1fr auto;gap:28px;align-items:center;padding:20px 32px;border-bottom:1px solid var(--border);background:var(--bg2)}
+  .brand{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;line-height:1}
+  .brand em{font-style:italic;color:var(--gold2);font-weight:700}
+  .brand small{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:7px;font-weight:700}
+  .tiles{display:flex;gap:0;justify-self:center}
+  .tile{padding:0 26px;border-left:1px solid var(--border)}
+  .tile:first-child{border-left:0}
+  .tile .v{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1}
+  .tile .l{font-size:11px;color:var(--muted);margin-top:5px;letter-spacing:.04em}
+  .tile .l b{color:var(--gold2);font-weight:700}
+  .live{display:inline-flex;align-items:center;gap:9px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;justify-self:end;text-align:right}
+  .live::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--live);animation:pulse 2s ease-out infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(232,98,26,.55)}100%{box-shadow:0 0 0 12px rgba(232,98,26,0)}}
+  @media (prefers-reduced-motion:reduce){.live::before{animation:none}}
+  .live small{display:block;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);font-size:11.5px}
+  /* layout */
+  .main{display:grid;grid-template-columns:1fr 300px;gap:0;min-height:calc(100vh - 92px)}
+  .board{padding:22px 32px 40px;border-right:1px solid var(--border)}
+  aside{padding:22px 24px 40px;background:var(--bg2)}
+  /* now playing */
+  .now{display:grid;grid-template-columns:168px 1fr;gap:18px;align-items:center;border:1px solid var(--border-hi);padding:14px;margin-bottom:22px;background:linear-gradient(90deg,rgba(232,98,26,.08),transparent 60%)}
+  .now img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:var(--bg4)}
+  .now .tag{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--saffron2);font-weight:800}
+  .now .g{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin:3px 0 1px;line-height:1.15}
+  .now .r{font-size:12.5px;color:var(--cream-dim)}
+  .now .nums{display:flex;gap:22px;margin-top:10px;font-size:13px;color:var(--cream-dim)}
+  .now .nums b{color:var(--cream);font-weight:700}
+  /* filter row */
+  .filters{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .chip{border:1px solid var(--border);padding:6px 12px;font-size:12px;font-weight:600;color:var(--cream-dim);cursor:pointer;background:transparent;font-family:inherit;display:inline-flex;align-items:center;gap:7px}
+  .chip i{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--pc,transparent)}
+  .chip[aria-pressed="true"]{color:var(--cream);border-color:var(--border-hi);background:var(--bg3)}
+  .filters .sp{flex:1}
+  .filters .cnt{font-size:12px;color:var(--muted)}
+  /* board table */
+  table{width:100%;border-collapse:collapse}
+  thead th{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;text-align:left;padding:8px 8px 8px 0;border-bottom:1px solid var(--border-hi)}
+  thead th.n{text-align:right}
+  tbody td{padding:9px 8px 9px 0;border-bottom:1px solid var(--border);vertical-align:middle;font-size:13px}
+  tbody tr:hover td{background:rgba(232,98,26,.04)}
+  td.d{color:var(--muted);white-space:nowrap;width:78px}
+  td.p{width:26px}
+  td.p i{width:10px;height:10px;display:block}
+  td.t{color:var(--cream);max-width:0}
+  td.t span{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  td.t small{display:block;color:var(--muted);font-size:11.5px}
+  td.n{text-align:right;white-space:nowrap;font-weight:600}
+  td.n.dim{color:var(--cream-dim);font-weight:500}
+  td.bar{width:160px}
+  td.bar i{display:block;height:8px;background:var(--pc);border-radius:0 3px 3px 0;min-width:2px}
+  /* aside panels */
+  aside h3{font-size:12.5px;font-weight:700;margin-bottom:2px}
+  aside .src{font-size:11px;color:var(--muted);margin-bottom:10px}
+  aside .blk{padding:0 0 18px;margin-bottom:18px;border-bottom:1px solid var(--border)}
+  .ch{display:grid;gap:10px}
+  .chrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-size:13px}
+  .chrow i{width:10px;height:10px;display:block}
+  .chrow .k{font-weight:600}
+  .chrow .k small{display:block;font-weight:500;color:var(--muted);font-size:11px}
+  .chrow .v{text-align:right;font-weight:700}
+  .chrow .v small{display:block;font-weight:500;color:var(--muted);font-size:11px}
+  .bars{display:grid;gap:6px}
+  .bar{display:grid;grid-template-columns:50px 1fr 38px;align-items:center;gap:8px;font-size:12px}
+  .bar .t{height:9px;background:var(--bg4);position:relative}
+  .bar .t i{position:absolute;inset:0 auto 0 0;background:var(--saffron);border-radius:0 3px 3px 0}
+  .bar .v{text-align:right}
+  .bar .k{color:var(--cream-dim)}
+  .split{height:12px;display:flex;gap:2px;margin:6px 0 8px}
+  .split i{display:block;height:100%}
+  .leg{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:11.5px;color:var(--cream-dim)}
+  .leg i{width:8px;height:8px;display:inline-block;margin-right:5px}
+  .mo{display:grid;gap:8px}
+  .mo div{display:flex;justify-content:space-between;font-size:12.5px;color:var(--cream-dim)}
+  .mo div b{color:var(--cream)}
+  footer{grid-column:1/-1;padding:16px 32px 30px;font-size:11.5px;color:var(--muted);border-top:1px solid var(--border);line-height:1.7}
+  td.t{width:100%}
+  @media (max-width:980px){.band{grid-template-columns:1fr;gap:14px;padding:16px 18px}.tiles{justify-self:start;flex-wrap:wrap;gap:12px 0}.tile{padding:0 16px}.tile:first-child{padding-left:0}.tile .v{font-size:24px}.live{justify-self:start;text-align:left}.main{grid-template-columns:1fr}.board{padding:18px;border-right:0}aside{padding:18px}.now{grid-template-columns:120px 1fr}.now .nums{flex-wrap:wrap;gap:8px 16px}td.d{width:auto}.opt{display:none}footer{padding:14px 18px 26px}}
+</style>
+</head>
+<body>
+<div class="band">
+  <div class="brand">TSN <em>Talks</em><small>Live rundown</small></div>
+  <div class="tiles" id="tiles"></div>
+  <div class="live">On air<small id="stamp"></small></div>
+</div>
+
+<div class="main">
+  <div class="board">
+    <a class="now" id="now" target="_blank" rel="noopener"></a>
+    <div class="filters" id="filters">
+      <button class="chip" aria-pressed="true" data-k="all">All platforms</button>
+      <button class="chip" aria-pressed="false" data-k="youtube" style="--pc:var(--yt)"><i></i>YouTube</button>
+      <button class="chip" aria-pressed="false" data-k="instagram" style="--pc:var(--ig)"><i></i>Instagram</button>
+      <button class="chip" aria-pressed="false" data-k="tiktok" style="--pc:var(--tt)"><i></i>TikTok</button>
+      <span class="sp"></span><span class="cnt" id="cnt"></span>
+    </div>
+    <table>
+      <thead><tr><th>Published</th><th></th><th>Post</th><th class="n">Views</th><th class="n opt">Likes</th><th class="n opt">Comments</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <aside>
+    <div class="blk"><h3>Channels</h3><div class="src">Followers · views on synced posts</div><div class="ch" id="ch"></div></div>
+    <div class="blk"><h3>Momentum</h3><div class="src">Rolling windows</div><div class="mo" id="mo"></div></div>
+    <div class="blk"><h3>YouTube audience</h3><div class="src">Share of views by age · 12 months</div><div class="bars" id="age"></div>
+      <div class="src" style="margin-top:12px">By country</div><div class="split" id="cty"></div><div class="leg" id="ctyleg"></div></div>
+    <div class="blk" style="border:0;margin:0"><h3>Instagram followers</h3><div class="src">Top cities · this month</div><div class="bars" id="city"></div></div>
+  </aside>
+  <footer id="foot"></footer>
+</div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const PC = {youtube:'var(--yt)', instagram:'var(--ig)', tiktok:'var(--tt)'};
+const NAME = {youtube:'YouTube', instagram:'Instagram', tiktok:'TikTok'};
+const full = n => n.toLocaleString('en-US');
+const fmt = n => n>=1e6 ? (n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M' : n>=1e4 ? Math.round(n/1e3)+'K' : n>=1e3 ? (n/1e3).toFixed(1).replace(/\.0$/,'')+'K' : String(n);
+const $ = id => document.getElementById(id);
+const dt = s => new Date(s).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});
+$('stamp').textContent = 'updated ' + new Date(D.fetched).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});
+
+const nposts = Object.values(D.platforms).reduce((a,p)=>a+p.posts,0);
+$('tiles').innerHTML = [
+  [full(D.total_views), 'views · all platforms'],
+  [full(D.total_followers), 'followers · <b>3</b> channels'],
+  [D.episodes.length, 'episodes · <b>2</b> seasons'],
+  [nposts, 'posts tracked live'],
+].map(([v,l])=>`<div class="tile"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+
+const e=D.episodes[0]; const now=$('now'); now.href=`https://www.youtube.com/watch?v=${e.id}`;
+now.innerHTML=`<img src="${e.thumb}" alt=""><div><div class="tag">Now playing · ${e.num}</div><div class="g">${e.guest}</div><div class="r">${e.role}</div><div class="nums"><span><b>${e.views==null?'—':full(e.views)}</b> views</span><span><b>${e.likes==null?'—':full(e.likes)}</b> likes</span><span><b>${e.comments==null?'—':full(e.comments)}</b> comments</span><span>YouTube${e.date?' · '+dt(e.date):''}</span></div></div>`;
+
+// board rows: all synced posts across platforms, newest first
+const rows=[]; for (const k of Object.keys(D.top_posts)) {} // top_posts is 5 each; use latest + tops for the sketch
+const seen=new Set(); const pool=[];
+D.latest.forEach(p=>{if(!seen.has(p.url)){seen.add(p.url);pool.push(p);}});
+for (const k of ['tiktok','instagram','youtube']) D.top_posts[k].forEach(p=>{if(!seen.has(p.url)){seen.add(p.url);pool.push({...p,platform:k});}});
+pool.sort((a,b)=>b.date.localeCompare(a.date));
+const vmax=Math.max(...pool.map(p=>p.views));
+function render(filter){
+  const list=pool.filter(p=>filter==='all'||p.platform===filter);
+  $('rows').innerHTML=list.map(p=>`<tr><td class="d tab">${dt(p.date)}</td><td class="p"><i style="background:${PC[p.platform]}" title="${NAME[p.platform]}"></i></td><td class="t"><span>${(p.title||'Untitled').replace(/\s+/g,' ')}</span><small>${NAME[p.platform]}</small></td><td class="n tab">${full(p.views)}</td><td class="n dim tab opt">${full(p.likes)}</td><td class="n dim tab opt">${full(p.comments)}</td></tr>`).join('');
+  $('cnt').textContent=`${list.length} of ${nposts} tracked posts shown (sketch: latest + top)`;
+}
+render('all');
+$('filters').addEventListener('click',ev=>{const b=ev.target.closest('.chip');if(!b)return;[...document.querySelectorAll('.chip')].forEach(c=>c.setAttribute('aria-pressed',c===b));render(b.dataset.k);});
+
+// aside
+$('ch').innerHTML=['tiktok','instagram','youtube'].map(k=>{const p=D.platforms[k];return `<div class="chrow"><i style="background:${PC[k]}"></i><div class="k">${NAME[k]}<small>${p.handle}</small></div><div class="v">${full(p.followers)}<small>${fmt(p.views)} views</small></div></div>`;}).join('');
+$('mo').innerHTML=[
+  [`YouTube subs gained since ${new Date(D.yt.ch88.since).toLocaleString('en-GB',{day:'numeric',month:'short'})}`,`+${full(D.yt.ch88.subsGained)}`],
+  ['YouTube watch time, same window',`${fmt(D.yt.ch88.minutes)} min`],
+  ['Instagram views, last 30 days',full(D.ig.acct30.views)],
+  ['Instagram reach, last 30 days',full(D.ig.acct30.reach)],
+  ['TikTok total likes',full(D.tt.likes)],
+].map(([l,v])=>`<div><span>${l}</span><b>${v}</b></div>`).join('');
+const amax=Math.max(...D.yt.age.map(a=>a.pct));
+$('age').innerHTML=D.yt.age.map(a=>`<div class="bar"><span class="k">${a.band.replace('65-','65+')}</span><span class="t"><i style="width:${a.pct/amax*100}%"></i></span><span class="v tab">${a.pct}%</span></div>`).join('');
+const CC={IN:'India',TH:'Thailand',US:'USA',AU:'Australia',GB:'UK',Other:'Other'};
+const cTot=D.yt.country.reduce((a,c)=>a+c.views,0); const cCol=['var(--saffron)','var(--gold)','#8A5A2A','#6A4A30','#4A3424','#332218'];
+$('cty').innerHTML=D.yt.country.map((c,i)=>`<i style="width:${c.views/cTot*100}%;background:${cCol[i]}"></i>`).join('');
+$('ctyleg').innerHTML=D.yt.country.slice(0,3).map((c,i)=>`<span><i style="background:${cCol[i]}"></i>${CC[c.cc]||c.cc} ${Math.round(c.views/cTot*100)}%</span>`).join('');
+const cm=Math.max(...D.ig.city.map(c=>c.n));
+$('city').innerHTML=D.ig.city.map(c=>`<div class="bar"><span class="k">${c.city}</span><span class="t"><i style="width:${c.n/cm*100}%;background:var(--ig)"></i></span><span class="v tab">${full(c.n)}</span></div>`).join('');
+$('foot').textContent=`Source: YouTube, Instagram and TikTok analytics for TSN Talks' own accounts via Zernio, refreshed hourly. Board shows posts published since Sep 2025; Season 1 episodes before that are not yet tracked live. YouTube audience data lags three days. Facebook (Thai Sikh News) is a separate channel.`;
+</script>
+</body>
+</html>
