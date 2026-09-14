@@ -60,6 +60,9 @@ class Supa:
         return r.json()
 
     def upload_public(self, bucket: str, path: str, data: bytes, content_type: str, max_age: int = 300) -> None:
+        """Note (2026-09-15): this project's Storage serves `Cache-Control: no-cache` whatever we send —
+        tried as a raw header and as a `cacheControl` multipart field, on an existing path and a fresh one.
+        Left as the header form because it is simpler and the pages fetch with `cache: no-store` anyway."""
         r = self.s.post(f"{self.url}/storage/v1/object/{bucket}/{path}", data=data, timeout=self.timeout,
                         headers={"Content-Type": content_type, "x-upsert": "true", "cache-control": f"max-age={max_age}"})
         if r.status_code >= 300:
