@@ -89,7 +89,7 @@ The existing sponsorship content (five options, five bundles) restyled in the D1
 | Audience | Who watches? | YouTube age, gender, country; Instagram age, city, country; each as bars with a table twin; change versus the previous window. |
 | Health | Is the pipeline alive? | Last collector run, per-account status from Zernio (token validity, reconnect needed), row counts, freshness. |
 
-**Exports with a purpose.** There is no generic "export this view". Each export is a named artifact with a recipient, designed as a page and produced from the dashboard in one click. Starting set, to be confirmed with Sunny (he may have needs we have not seen):
+**Exports with a purpose.** There is no generic "export this view". Each export is a named artifact with a recipient, designed as a page and produced from the dashboard in one click. This set is **decided** (2026-09-15) and is what gets built; if Sunny later wants a sixth, or a different format, that is an edit to a working dashboard rather than a precondition for starting one:
 
 | Artifact | Sent to | Contents | Format |
 |---|---|---|---|
@@ -101,7 +101,7 @@ The existing sponsorship content (five options, five bundles) restyled in the D1
 
 Mechanism: each artifact is its own print-designed page in the dashboard; PDF comes from the browser's print-to-PDF, PNG from a canvas render of the card, CSV and XLSX are built in the browser (SheetJS, UMD, pinned, from cdnjs). Filenames carry the artifact, subject and date.
 
-Everything else stays on screen with a table twin. If Sunny asks for something new, it becomes a sixth artifact with a named recipient, not a menu.
+Everything else stays on screen with a table twin. If Sunny asks for something new it becomes a sixth artifact with a named recipient, not a menu item — and it is added after the five exist, not before.
 
 **Charts** follow the dataviz rules already applied in the sketches: thin marks, 2px surface gaps, hairline solid gridlines, selective direct labels, legend for two or more series, tooltip plus a table twin for every chart, no dual axes, hero figures in the sans.
 
@@ -183,7 +183,7 @@ Repo transfer to Sunny's GitHub, Supabase project transfer to an org Sunny owns,
 
 ## 11. Open items
 
-- Clean episode stills and a proper founder portrait from Sunny (the YouTube thumbnails carry baked-in text).
+- Clean episode stills and a proper founder portrait from Sunny (the YouTube thumbnails carry baked-in text). **Not a blocker:** `site/img/episodes/<video_id>.jpg` overrides a thumbnail with no code change, and the hero scrim covers the gap meanwhile.
 - YouTube Data API key: needs a Google Cloud project on Ney's Google account; until then the collector uses yt-dlp for the catalogue.
-- The domain name and whether Hostinger hosting came with it.
-- Confirm the export artifacts with Sunny: which of the five he would actually send, and anything he needs that is not on the list (for example a report format Thai Sikh News already uses).
+- The domain name and whether Hostinger hosting came with it. **Not a blocker:** the site is live on GitHub Pages; a domain is a DNS change on top.
+- ~~Confirm the export artifacts with Sunny.~~ **Decided 2026-09-15** — the five above get built, in the order listed in §10. Sunny is welcome to ask for a sixth (for example a report format Thai Sikh News already uses) once he can see the five working.
