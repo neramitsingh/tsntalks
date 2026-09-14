@@ -27,7 +27,12 @@ def load_episode_overrides(path: Path = DEFAULT_OVERRIDE_PATH) -> dict[str, dict
 
 
 def override_rows(existing: list[dict], overrides: dict[str, dict]) -> list[dict]:
-    """Upsert rows for the episodes whose curated values differ from what is stored. Never invents an episode."""
+    """The episodes whose curated values differ from what is stored, as patches. Never invents an episode.
+
+    A patch, not an upsert: `episodes.title` is NOT NULL and the curated file does not
+    carry it, so an upsert's insert arm would fail and its update arm would clobber
+    `match_terms`. Each row is `{youtube_video_id, <only the fields that changed>}`.
+    """
     rows = []
     for e in existing:
         ov = overrides.get(e.get("youtube_video_id"))
@@ -37,6 +42,20 @@ def override_rows(existing: list[dict], overrides: dict[str, dict]) -> list[dict
         if diff:
             rows.append({"youtube_video_id": e["youtube_video_id"], **diff})
     return rows
+
+
+def apply_episode_overrides(supa, path: Path = DEFAULT_OVERRIDE_PATH) -> int:
+    """Patch every episode whose curated truth differs from the stored parse. Returns rows touched."""
+    overrides = load_episode_overrides(path)
+    if not overrides:
+        return 0
+    existing = supa.select("episodes", select="youtube_video_id,season,number,guest,role")
+    n = 0
+    for row in override_rows(existing, overrides):
+        values = {k: v for k, v in row.items() if k != "youtube_video_id"}
+        supa.update("episodes", {"youtube_video_id": row["youtube_video_id"]}, values)
+        n += 1
+    return n
 
 
 @dataclass
@@ -125,11 +144,7 @@ class HourlyRun:
 
     def step_episode_overrides(self) -> int:
         """Curated guest and role from data/episodes.json win over the title parse."""
-        overrides = load_episode_overrides()
-        if not overrides:
-            return 0
-        existing = self.s.select("episodes", select="youtube_video_id,season,number,guest,role")
-        return self.s.upsert("episodes", override_rows(existing, overrides), on_conflict="youtube_video_id")
+        return apply_episode_overrides(self.s)
 
     def step_match_episodes(self) -> int:
         eps = self.s.select("episodes", select="id,match_terms")

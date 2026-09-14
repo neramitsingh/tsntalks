@@ -61,12 +61,9 @@ def cmd_backfill(args) -> int:
 
 
 def cmd_apply_episodes(args) -> int:
-    from .run import load_episode_overrides, override_rows
+    from .run import apply_episode_overrides
     st = settings_from_env()
-    s = Supa(st.supabase_url, st.supabase_service_key)
-    existing = s.select("episodes", select="youtube_video_id,season,number,guest,role")
-    rows = override_rows(existing, load_episode_overrides())
-    n = s.upsert("episodes", rows, on_conflict="youtube_video_id")
+    n = apply_episode_overrides(Supa(st.supabase_url, st.supabase_service_key))
     print(f"applied {n} episode overrides")
     return 0
 

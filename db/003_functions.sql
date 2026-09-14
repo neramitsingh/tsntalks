@@ -63,8 +63,11 @@ language sql stable as $$
     from v_post_latest where published_at is not null group by 1, 2
   ),
   eps as (
-    select e.id, e.season, e.number, e.guest, e.role, e.youtube_video_id, e.published_at,
+    select e.id, e.season, e.number, e.guest, e.role, e.youtube_video_id,
+           coalesce(pl.published_at, e.published_at) as published_at,
            pl.views, pl.likes, pl.comments,
+           'https://www.youtube.com/watch?v=' || e.youtube_video_id as url,
+           'https://i.ytimg.com/vi/' || e.youtube_video_id || '/maxresdefault.jpg' as thumb,
            (select coalesce(sum(c.views), 0) from v_post_latest c where c.episode_id = e.id and c.platform <> 'youtube') as clip_views,
            (select count(*) from v_post_latest c where c.episode_id = e.id and c.platform <> 'youtube') as clips
     from episodes e left join v_post_latest pl on pl.post_id = 'yt:' || e.youtube_video_id
@@ -88,7 +91,7 @@ language sql stable as $$
     'platforms', (select jsonb_object_agg(platform, jsonb_build_object('followers', followers, 'views', views, 'posts', posts,
                      'top', (select top from tops t where t.platform = plat.platform))) from plat),
     'months', (select jsonb_agg(jsonb_build_object('m', m, 'platform', platform, 'views', views) order by m) from months),
-    'episodes', (select jsonb_agg(to_jsonb(eps) order by season desc, number desc) from eps),
+    'episodes', (select jsonb_agg(to_jsonb(eps) order by published_at desc nulls last, season desc, (number)::int desc) from eps),
     'demographics', (select jsonb_object_agg(kind, items) from demo),
     'yt_90d', (select to_jsonb(yt88) from yt88)
   );
