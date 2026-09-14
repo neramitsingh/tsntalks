@@ -5,3 +5,4 @@ __pycache__/
 .pytest_cache/
 sketches/out/
 sketches/shots/
+collector/*.egg-info/
