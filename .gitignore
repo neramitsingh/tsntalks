@@ -1,2 +1,7 @@
+collector/.env
+collector/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
 sketches/out/
 sketches/shots/
