@@ -1,0 +1,22 @@
+[project]
+name = "tsn-collector"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = ["requests>=2.32", "yt-dlp>=2026.3.17"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "responses>=0.25"]
+
+[project.scripts]
+tsn-collect = "tsn_collector.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tsn_collector*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
