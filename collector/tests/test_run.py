@@ -86,3 +86,39 @@ def test_needs_reconnect_marks_run_failed():
     result = HourlyRun(z, s, now=datetime(2026, 9, 14, 11, 7, tzinfo=timezone.utc), daily=False, youtube_catalogue=None).execute()
     assert result.status == "failed"
     assert "needs reconnect" in result.notes["errors"][0]
+
+# --- episode overrides -------------------------------------------------------
+
+from pathlib import Path
+
+from tsn_collector.run import load_episode_overrides, override_rows
+
+FIX = Path(__file__).parent / "fixtures" / "episodes_override.json"
+
+
+def test_load_episode_overrides_drops_readme_key():
+    ov = load_episode_overrides(FIX)
+    assert "_README" not in ov
+    assert ov["vid1"]["guest"] == "Curated Name"
+
+
+def test_load_episode_overrides_missing_file_is_empty():
+    assert load_episode_overrides(Path("does-not-exist.json")) == {}
+
+
+def test_override_rows_only_touches_known_videos():
+    existing = [
+        {"youtube_video_id": "vid1", "guest": "Parsed Name", "role": "Parsed Role", "season": 1, "number": "3"},
+        {"youtube_video_id": "vid2", "guest": "Other", "role": "Other Role", "season": 1, "number": "4"},
+        {"youtube_video_id": "vid3", "guest": "Untouched", "role": "Untouched Role", "season": 1, "number": "5"},
+    ]
+    rows = override_rows(existing, load_episode_overrides(FIX))
+    by_id = {r["youtube_video_id"]: r for r in rows}
+    assert set(by_id) == {"vid1", "vid2"}
+    assert by_id["vid1"] == {"youtube_video_id": "vid1", "guest": "Curated Name", "role": "Curated Role"}
+    assert by_id["vid2"] == {"youtube_video_id": "vid2", "season": 2, "number": "11"}
+
+
+def test_override_rows_skips_rows_already_correct():
+    existing = [{"youtube_video_id": "vid1", "guest": "Curated Name", "role": "Curated Role", "season": 1, "number": "3"}]
+    assert override_rows(existing, load_episode_overrides(FIX)) == []

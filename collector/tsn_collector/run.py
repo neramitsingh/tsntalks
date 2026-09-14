@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any, Callable
 
 from . import episodes as E
@@ -11,6 +12,31 @@ from . import transform as T
 from .youtube import upload_date_to_iso
 
 PLATFORMS = ("youtube", "instagram", "tiktok")
+
+OVERRIDE_FIELDS = ("season", "number", "guest", "role")
+DEFAULT_OVERRIDE_PATH = Path(__file__).resolve().parents[2] / "data" / "episodes.json"
+
+
+def load_episode_overrides(path: Path = DEFAULT_OVERRIDE_PATH) -> dict[str, dict]:
+    """Curated episode truth from the repo, keyed by YouTube video id. Missing file means no overrides."""
+    try:
+        raw = json.loads(Path(path).read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {}
+    return {k: v for k, v in raw.items() if not k.startswith("_") and isinstance(v, dict)}
+
+
+def override_rows(existing: list[dict], overrides: dict[str, dict]) -> list[dict]:
+    """Upsert rows for the episodes whose curated values differ from what is stored. Never invents an episode."""
+    rows = []
+    for e in existing:
+        ov = overrides.get(e.get("youtube_video_id"))
+        if not ov:
+            continue
+        diff = {f: ov[f] for f in OVERRIDE_FIELDS if f in ov and ov[f] != e.get(f)}
+        if diff:
+            rows.append({"youtube_video_id": e["youtube_video_id"], **diff})
+    return rows
 
 
 @dataclass
@@ -97,6 +123,14 @@ class HourlyRun:
         n += self.s.upsert("episodes", ep_rows, on_conflict="youtube_video_id")
         return n
 
+    def step_episode_overrides(self) -> int:
+        """Curated guest and role from data/episodes.json win over the title parse."""
+        overrides = load_episode_overrides()
+        if not overrides:
+            return 0
+        existing = self.s.select("episodes", select="youtube_video_id,season,number,guest,role")
+        return self.s.upsert("episodes", override_rows(existing, overrides), on_conflict="youtube_video_id")
+
     def step_match_episodes(self) -> int:
         eps = self.s.select("episodes", select="id,match_terms")
         if not eps:
@@ -158,6 +192,7 @@ class HourlyRun:
             self._step(f"posts:{p}", lambda p=p: self.step_posts(p))
         if self.daily:
             self._step("youtube_catalogue", self.step_youtube_catalogue)
+            self._step("episode_overrides", self.step_episode_overrides)
             self._step("daily:youtube", self.step_daily_youtube)
             self._step("daily:instagram", self.step_daily_instagram)
             self._step("daily:tiktok", self.step_daily_tiktok)

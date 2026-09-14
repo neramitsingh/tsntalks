@@ -60,6 +60,17 @@ def cmd_backfill(args) -> int:
     return 0
 
 
+def cmd_apply_episodes(args) -> int:
+    from .run import load_episode_overrides, override_rows
+    st = settings_from_env()
+    s = Supa(st.supabase_url, st.supabase_service_key)
+    existing = s.select("episodes", select="youtube_video_id,season,number,guest,role")
+    rows = override_rows(existing, load_episode_overrides())
+    n = s.upsert("episodes", rows, on_conflict="youtube_video_id")
+    print(f"applied {n} episode overrides")
+    return 0
+
+
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(prog="tsn-collect")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -67,6 +78,7 @@ def main(argv=None) -> None:
     h = sub.add_parser("health"); h.set_defaults(fn=cmd_health)
     p = sub.add_parser("publish-live-json"); p.add_argument("--out", default=None); p.set_defaults(fn=cmd_publish)
     b = sub.add_parser("backfill-youtube"); b.add_argument("--months", type=int, default=12); b.add_argument("--top", type=int, default=30); b.set_defaults(fn=cmd_backfill)
+    a = sub.add_parser("apply-episodes"); a.set_defaults(fn=cmd_apply_episodes)
     args = ap.parse_args(argv)
     sys.exit(args.fn(args))
 

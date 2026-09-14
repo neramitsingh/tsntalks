@@ -1,0 +1,6 @@
+{
+  "_README": "test fixture",
+  "vid1": { "guest": "Curated Name", "role": "Curated Role" },
+  "vid2": { "season": 2, "number": "11" },
+  "missing_vid": { "guest": "Nobody" }
+}
