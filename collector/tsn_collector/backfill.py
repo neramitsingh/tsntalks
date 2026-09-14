@@ -32,7 +32,11 @@ def backfill_youtube(z, s, months: int = 12, top_videos: int = 30) -> int:
         if not vid:
             continue
         for start, end in month_chunks(months):
-            d = z.yt_daily_views(acct["id"], vid, start, end)
+            try:
+                d = z.yt_daily_views(acct["id"], vid, start, end)
+            except RuntimeError as ex:  # YouTube's analytics backend returns transient 500s; skip the chunk, keep going
+                print(f"skip {vid} {start}..{end}: {str(ex)[:120]}")
+                continue
             rows = [{"account_id": acct["id"], "day": x["date"][:10], "metric": f"ytv_{vid}_views", "value": x.get("views") or 0}
                     for x in d.get("dailyViews") or []]
             n += s.upsert("metric_daily", rows, on_conflict="account_id,day,metric")
