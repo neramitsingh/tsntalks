@@ -44,6 +44,7 @@ jobs:
       - name: commit daily live.json
         if: ${{ always() }}
         run: |
+          mkdir -p data
           python -m tsn_collector.cli publish-live-json --out data/live.json
           HOUR=$(TZ=Asia/Bangkok date +%H)
           if [ "$HOUR" = "03" ] || [ "${{ github.event.inputs.daily }}" = "true" ]; then
