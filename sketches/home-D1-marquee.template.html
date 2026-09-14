@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TSN Home D1 — Marquee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0D0706;--bg2:#150B09;--bg3:#1E1008;--bg4:#291508;--saffron:#E8621A;--saffron2:#F0852A;--gold:#C8901E;--gold2:#E0B040;--cream:#F2E4CC;--cream-dim:#C4A880;--muted:#A08468;--rule:rgba(242,228,204,.14);--rule-hi:rgba(232,98,26,.45);--yt:#E8621A;--tt:#2EA6A0;--ig:#7C6BF0;
+    --display:'Bodoni Moda',Georgia,serif;--text:'Hanken Grotesk',system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:var(--bg);color:var(--cream);font-family:var(--text);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  img{display:block;max-width:100%}
+  .wrap{padding:0 clamp(20px,4vw,56px)}
+  /* nav */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:22px clamp(20px,4vw,56px);position:absolute;inset:0 0 auto 0;z-index:5}
+  .mark{font-family:var(--display);font-size:26px;font-weight:700;letter-spacing:-.01em}
+  .mark em{font-style:italic;color:var(--gold2);font-weight:500}
+  nav ul{display:flex;gap:28px;list-style:none;align-items:center;font-size:14px;font-weight:500;color:var(--cream-dim)}
+  nav ul a.cta{color:var(--bg);background:var(--saffron);padding:10px 16px;font-weight:700}
+  /* hero */
+  .hero{position:relative;min-height:92vh;display:grid;align-items:end;overflow:hidden}
+  .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:70% 30%;filter:saturate(.85)}
+  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(13,7,6,.96) 0%,rgba(13,7,6,.82) 32%,rgba(13,7,6,.25) 62%,rgba(13,7,6,.05) 100%),linear-gradient(0deg,rgba(13,7,6,1) 0%,rgba(13,7,6,0) 38%)}
+  .hero-in{position:relative;z-index:2;padding:140px clamp(20px,4vw,56px) 0;max-width:1400px}
+  .ep-line{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold2);font-weight:700;display:flex;gap:14px;align-items:center}
+  .ep-line i{width:34px;height:1px;background:var(--gold2);display:inline-block}
+  .guest{font-family:var(--display);font-size:clamp(56px,9.5vw,148px);line-height:.92;letter-spacing:-.02em;font-weight:600;margin:16px 0 14px;max-width:11ch;text-wrap:balance}
+  .role{font-size:clamp(16px,1.5vw,20px);color:var(--cream-dim);max-width:44ch}
+  .watch{display:inline-flex;align-items:center;gap:12px;margin-top:26px;font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  .watch b{width:44px;height:44px;border:1px solid var(--cream);border-radius:50%;display:grid;place-items:center}
+  .watch b::after{content:"";border-left:12px solid var(--cream);border-top:7px solid transparent;border-bottom:7px solid transparent;margin-left:3px}
+  .strap{position:relative;z-index:2;margin-top:64px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:16px clamp(20px,4vw,56px);display:flex;flex-wrap:wrap;gap:8px 0;font-size:14px;color:var(--cream-dim)}
+  .strap span{padding-right:22px;margin-right:22px;border-right:1px solid var(--rule)}
+  .strap span:last-child{border:0}
+  .strap b{color:var(--cream);font-weight:700;font-variant-numeric:tabular-nums}
+  .strap .live{color:var(--saffron2);font-weight:700}
+  .strap .live::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--saffron);margin-right:8px;vertical-align:1px}
+  /* sections */
+  section{padding:clamp(56px,8vw,110px) 0 0}
+  .head{display:grid;grid-template-columns:1fr auto;align-items:end;gap:24px;margin-bottom:34px}
+  h2{font-family:var(--display);font-size:clamp(36px,4.6vw,64px);font-weight:500;line-height:1;letter-spacing:-.015em;text-wrap:balance}
+  h2 em{font-style:italic;color:var(--gold2)}
+  .head p{max-width:40ch;color:var(--cream-dim);font-size:15px}
+  /* poster wall */
+  .wall{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:150px;gap:10px}
+  .po{position:relative;overflow:hidden;background:var(--bg3)}
+  .po img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+  .po:hover img{transform:scale(1.04)}
+  .po::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(13,7,6,.92),rgba(13,7,6,.1) 55%)}
+  .po .t{position:absolute;left:14px;right:14px;bottom:12px;z-index:2}
+  .po .n{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold2);font-weight:700}
+  .po .g{font-family:var(--display);font-size:22px;line-height:1.05;font-weight:600;margin-top:3px}
+  .po.big .g{font-size:clamp(28px,3vw,44px)}
+  .po .v{font-size:12px;color:var(--cream-dim);margin-top:4px}
+  .po.big{grid-column:span 3;grid-row:span 3}
+  .po.mid{grid-column:span 2;grid-row:span 2}
+  .po.sm{grid-column:span 1;grid-row:span 1}
+  .po.sm .g{font-size:15px}
+  .po.sm .v,.po.sm .n{display:none}
+  /* season one index */
+  .index{margin-top:56px;display:grid;grid-template-columns:auto 1fr;gap:40px;align-items:start}
+  .index h3{font-family:var(--display);font-size:28px;font-weight:500;font-style:italic;color:var(--gold2);white-space:nowrap}
+  .index h3 small{display:block;font-family:var(--text);font-style:normal;font-size:12px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:6px}
+  .index ol{list-style:none;columns:2;column-gap:40px}
+  .index li{display:flex;gap:14px;padding:9px 0;border-bottom:1px solid var(--rule);font-size:14px;break-inside:avoid}
+  .index li b{color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums;width:26px;flex:none}
+  .index li span{color:var(--cream)}
+  .index li small{color:var(--muted);display:block;font-size:12.5px}
+  /* audience */
+  .aud{display:grid;grid-template-columns:1.1fr 1fr;gap:64px;align-items:start}
+  .bignum{font-family:var(--display);font-size:clamp(72px,9vw,150px);line-height:.9;letter-spacing:-.02em;font-weight:500}
+  .bignum i{font-style:italic;color:var(--gold2);font-size:.5em;vertical-align:.25em;font-weight:400;margin-left:.05em}
+  .aud p{color:var(--cream-dim);max-width:46ch;margin-top:18px}
+  .aud p b{color:var(--cream);font-weight:600}
+  .prop{display:flex;gap:3px;height:16px;margin:26px 0 10px;max-width:520px}
+  .prop i{display:block;height:100%}
+  .prop-leg{display:flex;gap:18px;font-size:13px;color:var(--cream-dim)}
+  .prop-leg i{width:9px;height:9px;display:inline-block;margin-right:7px}
+  table.rep{width:100%;border-collapse:collapse;font-size:14px}
+  table.rep caption{text-align:left;font-family:var(--display);font-size:20px;font-style:italic;color:var(--gold2);padding-bottom:10px}
+  table.rep th{text-align:left;font-weight:600;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:8px 0;border-bottom:1px solid var(--rule-hi)}
+  table.rep th.r,table.rep td.r{text-align:right;font-variant-numeric:tabular-nums}
+  table.rep td{padding:9px 0;border-bottom:1px solid var(--rule);color:var(--cream)}
+  table.rep td.bar{width:42%;padding:0 12px}
+  table.rep td.bar i{display:block;height:8px;background:var(--saffron);border-radius:0 3px 3px 0}
+  table.rep+table.rep{margin-top:34px}
+  /* founder */
+  .founder{display:grid;grid-template-columns:380px 1fr;gap:56px;align-items:center;border-top:1px solid var(--rule);padding-top:clamp(40px,6vw,80px)}
+  .founder .ph{position:relative}
+  .founder .ph img{width:100%;filter:saturate(.9)}
+  .founder .ph::after{content:"";position:absolute;inset:auto -14px -14px auto;width:60%;height:60%;border:1px solid var(--rule-hi);z-index:-1}
+  .quote{font-family:var(--display);font-size:clamp(26px,3vw,40px);font-style:italic;font-weight:400;line-height:1.2;text-wrap:balance}
+  .quote+p{margin-top:20px;color:var(--cream-dim);max-width:52ch}
+  .byline{margin-top:22px;display:flex;align-items:center;gap:14px;font-size:14px}
+  .byline img{width:44px;height:44px;border-radius:50%}
+  .byline b{display:block;font-weight:700}
+  .byline small{color:var(--muted)}
+  /* partner */
+  .tiers{border-top:1px solid var(--rule)}
+  .tier{display:grid;grid-template-columns:64px 1fr 1.2fr auto;gap:24px;align-items:baseline;padding:22px 0;border-bottom:1px solid var(--rule)}
+  .tier .k{font-family:var(--display);font-size:30px;color:var(--gold2);font-style:italic}
+  .tier .n{font-family:var(--display);font-size:24px;font-weight:500;line-height:1.1}
+  .tier .d{color:var(--cream-dim);font-size:14.5px}
+  .tier .p{font-weight:700;font-size:18px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .tier .p small{display:block;font-weight:500;color:var(--muted);font-size:12px;text-align:right}
+  .cta-row{display:flex;gap:18px;align-items:center;margin-top:34px;flex-wrap:wrap}
+  .btn{background:var(--saffron);color:var(--bg);font-weight:700;padding:16px 26px;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+  .btn.ghost{background:transparent;color:var(--cream);border:1px solid var(--rule-hi)}
+  footer{margin-top:clamp(56px,8vw,110px);border-top:1px solid var(--rule);padding:26px clamp(20px,4vw,56px) 40px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+  footer .pl{display:flex;gap:22px}
+  footer .pl a{color:var(--cream-dim);font-weight:600}
+  @media (prefers-reduced-motion:reduce){.po img{transition:none}}
+  @media (max-width:900px){.hero{min-height:78vh}.hero img{object-position:60% 20%}.wall{grid-template-columns:repeat(2,1fr);grid-auto-rows:140px}.po.big{grid-column:span 2;grid-row:span 2}.po.mid{grid-column:span 1;grid-row:span 1}.po.mid .v,.po.mid .n{display:none}.po.mid .g{font-size:15px}.index{grid-template-columns:1fr;gap:18px}.index ol{columns:1}.aud,.founder{grid-template-columns:1fr;gap:34px}.tier{grid-template-columns:44px 1fr;gap:6px 16px}.tier .d{grid-column:2}.tier .p{grid-column:2}.tier .p small{text-align:left}nav ul li:not(:last-child){display:none}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="mark" href="#">TSN <em>Talks</em></a>
+  <ul><li><a href="#guests">Guests</a></li><li><a href="#audience">Audience</a></li><li><a href="#live">Live numbers</a></li><li><a class="cta" href="#partner">Partner</a></li></ul>
+</nav>
+
+<header class="hero">
+  <img id="heroimg" alt="">
+  <div class="hero-in">
+    <div class="ep-line"><i></i><span id="epline"></span></div>
+    <h1 class="guest" id="guest"></h1>
+    <p class="role" id="role"></p>
+    <a class="watch" id="watch" target="_blank" rel="noopener"><b></b>Watch the episode</a>
+  </div>
+  <div class="strap" id="strap"></div>
+</header>
+
+<section id="guests" class="wrap">
+  <div class="head"><h2>Season two, <em>so far.</em></h2><p>Entrepreneurs, doctors, diplomats and community leaders shaping the Thai-Indian story. YouTube views read live.</p></div>
+  <div class="wall" id="wall"></div>
+  <div class="index"><h3>Season one<small>22 episodes · 2024 to 2025</small></h3><ol id="s1"></ol></div>
+</section>
+
+<section id="audience" class="wrap">
+  <div class="head"><h2>Who is <em>listening.</em></h2><p>Audience figures come straight from YouTube and Instagram, not from a deck. Updated every hour.</p></div>
+  <div class="aud">
+    <div>
+      <div class="bignum" id="bignum"></div>
+      <p id="audp"></p>
+      <div class="prop" id="prop"></div><div class="prop-leg" id="propleg"></div>
+    </div>
+    <div>
+      <table class="rep" id="agetab"><caption>YouTube viewers by age</caption></table>
+      <table class="rep" id="ctytab"><caption>YouTube views by country</caption></table>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="founder">
+    <div class="ph"><img src="img/tsn-prasert.jpg" alt="Prasert Sakchiraphong, founder of Thai Sikh News"></div>
+    <div>
+      <p class="quote">"We built the most trusted voice in this community one story at a time. TSN Talks is where those stories get the length they deserve."</p>
+      <p>Thai Sikh News is Thailand's largest Indian-Thai news platform, built on community trust rather than advertising budgets. TSN Talks is its long-form arm: one guest, one honest conversation, every week.</p>
+      <div class="byline"><img src="img/tsn-logo.jpg" alt=""><div><b>Prasert Sakchiraphong</b><small>Founder, Thai Sikh News · Host, TSN Talks</small></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="partner" class="wrap">
+  <div class="head"><h2>Put your brand <em>in the room.</em></h2><p>Five ways to partner, from a host-read mention to a signature segment named after you.</p></div>
+  <div class="tiers" id="tiers"></div>
+  <div class="cta-row"><a class="btn" href="mailto:thaisikhnews@gmail.com">Talk to us</a><a class="btn ghost" href="#">See bundle pricing</a></div>
+</section>
+
+<footer>
+  <div>TSN Talks · Presented by Thai Sikh News · Bangkok</div>
+  <div class="pl"><a href="https://www.youtube.com/@TSNTalksTH">YouTube</a><a href="https://www.instagram.com/tsntalks">Instagram</a><a href="https://www.tiktok.com/@tsntalks.th">TikTok</a></div>
+</footer>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const D=JSON.parse(document.getElementById('data').textContent);
+const $=id=>document.getElementById(id); const full=n=>n.toLocaleString('en-US');
+const fmt=n=>n>=1e6?(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M':n>=1e4?Math.round(n/1e3)+'K':n>=1e3?(n/1e3).toFixed(1).replace(/\.0$/,'')+'K':String(n);
+const PC={youtube:'var(--yt)',instagram:'var(--ig)',tiktok:'var(--tt)'}; const NAME={youtube:'YouTube',instagram:'Instagram',tiktok:'TikTok'};
+const s2=D.episodes.filter(e=>e.num.startsWith('S2')), s1=D.episodes.filter(e=>!e.num.startsWith('S2'));
+const latest=s2[0];
+$('heroimg').src=`https://img.youtube.com/vi/${latest.id}/maxresdefault.jpg`;
+$('epline').textContent=`Season 2 · Episode 7 · Latest`;
+$('guest').textContent=latest.guest; $('role').textContent=latest.role.replace(' · ',' — ');
+$('watch').href=`https://www.youtube.com/watch?v=${latest.id}`;
+const upd=new Date(D.fetched).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});
+$('strap').innerHTML=`<span class="live">Live</span><span><b>${full(D.total_views)}</b> views across YouTube, Instagram and TikTok</span><span><b>${full(D.total_followers)}</b> followers</span><span><b>${D.episodes.length}</b> episodes</span><span>Updated ${upd}</span>`;
+
+// poster wall: the top S2 episode big, next two mid, rest small
+const byViews=[...s2].sort((a,b)=>(b.views||0)-(a.views||0));
+const sizes={}; sizes[byViews[0].id]='big'; sizes[byViews[1].id]='mid'; sizes[byViews[2].id]='mid';
+$('wall').innerHTML=s2.map(e=>`<a class="po ${sizes[e.id]||'sm'}" href="https://www.youtube.com/watch?v=${e.id}" target="_blank" rel="noopener"><img src="https://img.youtube.com/vi/${e.id}/${sizes[e.id]?'maxresdefault':'hqdefault'}.jpg" alt=""><div class="t"><div class="n">${e.num}</div><div class="g">${e.guest}</div><div class="v">${e.views==null?e.role:full(e.views)+' views · '+e.role}</div></div></a>`).join('');
+$('s1').innerHTML=s1.map(e=>`<li><b>${e.num.replace('Ep ','')}</b><div><span>${e.guest}</span><small>${e.role}</small></div></li>`).join('');
+
+// audience
+const male=D.yt.gender.find(g=>g.g==='male').pct, a25=D.yt.age.find(a=>a.band==='25-34').pct;
+$('bignum').innerHTML=`${(D.total_views/1e6).toFixed(2)}<i>M</i>`;
+$('audp').innerHTML=`views on ${Object.values(D.platforms).reduce((a,p)=>a+p.posts,0)} episodes and clips since September 2025. <b>${male}%</b> of YouTube viewers are men, <b>${a25}%</b> are 25 to 34, and the audience splits almost evenly between <b>India</b> and <b>Thailand</b>. On Instagram it is Bangkok first.`;
+const keys=['tiktok','instagram','youtube'];
+$('prop').innerHTML=keys.map(k=>`<i style="width:${D.platforms[k].views/D.total_views*100}%;background:${PC[k]}"></i>`).join('');
+$('propleg').innerHTML=keys.map(k=>`<span><i style="background:${PC[k]}"></i>${NAME[k]} ${Math.round(D.platforms[k].views/D.total_views*100)}%</span>`).join('');
+const amax=Math.max(...D.yt.age.map(a=>a.pct));
+$('agetab').insertAdjacentHTML('beforeend',`<tr><th>Age</th><th></th><th class="r">Share of views</th></tr>`+D.yt.age.map(a=>`<tr><td>${a.band.replace('65-','65+')}</td><td class="bar"><i style="width:${a.pct/amax*100}%"></i></td><td class="r">${a.pct}%</td></tr>`).join(''));
+const CC={IN:'India',TH:'Thailand',US:'United States',AU:'Australia',GB:'United Kingdom',Other:'Other'}; const ctot=D.yt.country.reduce((a,c)=>a+c.views,0);
+$('ctytab').insertAdjacentHTML('beforeend',`<tr><th>Country</th><th class="r">Views</th><th class="r">Share</th></tr>`+D.yt.country.slice(0,4).map(c=>`<tr><td>${CC[c.cc]||c.cc}</td><td class="r">${full(c.views)}</td><td class="r">${Math.round(c.views/ctot*100)}%</td></tr>`).join(''));
+
+// tiers (from the sponsorship page)
+const tiers=[['I','"Brought to you by" + on-screen branding','Logo on screen throughout, lower-thirds at key moments, branded end card.','25,000','per episode'],['II','Product placement','Your product in the studio, dedicated segments, guest gifting acknowledged on air.','20,000','per episode'],['III','Host-read mentions','Pre-roll, a 60-second mid-roll, post-roll thanks, logo in the description.','15,000','per episode'],['IV','Signature segment','A recurring segment named after your brand, asked to every guest.','70,000','per month, 4 episodes'],['V','Guest feature episode','Your leader as the guest. A reusable content asset for your own channels.','20,000','from']];
+$('tiers').innerHTML=tiers.map(t=>`<div class="tier"><div class="k">${t[0]}</div><div class="n">${t[1]}</div><div class="d">${t[2]}</div><div class="p">฿${t[3]}<small>${t[4]}</small></div></div>`).join('');
+</script>
+</body>
+</html>

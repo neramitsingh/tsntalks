@@ -23,10 +23,15 @@ Warm, cinematic, trusted. The house voice is "unheard stories, authentic voices"
 
 ## Anti-references
 
+- **The current site itself** (Sep 2026): centered hero with glowing orbs, a pill badge, a strip of four identical stat boxes, a small tracked uppercase eyebrow above every section, the "Unheard stories. *Authentic voices.*" italic-serif headline formula, 29 identical episode cards with hover play buttons, Playfair Display and Plus Jakarta Sans. Ney's verdict 2026-09-15: "rework the whole design to make it look less AI generated". Keep the palette, replace everything else.
 - A generic SaaS analytics dashboard: grey cards, one accent, a KPI row with sparklines, "hero metric" template.
 - YouTube Studio or a Google Analytics clone re-skinned. Familiar but placeless.
 - Vanity framing: rounded-up follower counts, cumulative-only totals with no time window, numbers with no source.
 - Cream or beige grounds, glass cards, gradient text. The brand is dark and saffron; stay there.
+
+## Existing identity to build from (not the website)
+
+The show's real visual language lives in its video assets, not the site: a gold vintage microphone logo with a waveform, heavy condensed gold capitals ("TSN TALKS", guest names on every thumbnail), episode stills with the guest's name set huge, and proper portrait photography of guests. The Thai Sikh News mark is the Thai and Indian flags in a saffron ring. Any redesign starts from these.
 
 ## Design Principles
 

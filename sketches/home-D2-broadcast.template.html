@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TSN Home D2 — Broadcast</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0D0706;--bg2:#150B09;--bg3:#1E1008;--bg4:#291508;--saffron:#E8621A;--saffron2:#F0852A;--gold:#C8901E;--gold2:#E0B040;--cream:#F2E4CC;--cream-dim:#C4A880;--muted:#A08468;--rule:rgba(242,228,204,.14);--rule-hi:rgba(232,98,26,.45);--yt:#E8621A;--tt:#2EA6A0;--ig:#7C6BF0;
+    --display:'Big Shoulders Display',Impact,sans-serif;--text:'Familjen Grotesk',system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:var(--bg);color:var(--cream);font-family:var(--text);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  img{display:block;max-width:100%}
+  .shell{display:grid;grid-template-columns:300px 1fr;min-height:100vh}
+  /* programme rail */
+  .rail{border-right:1px solid var(--rule);position:sticky;top:0;height:100vh;overflow:auto;padding:26px 0 40px;scrollbar-width:thin}
+  .rail .mark{padding:0 24px 22px;display:flex;align-items:center;gap:12px}
+  .rail .mark img{width:44px;height:44px;object-fit:cover;object-position:center;border-radius:4px}
+  .rail .mark b{font-family:var(--display);font-size:30px;font-weight:900;letter-spacing:.02em;color:var(--gold2);line-height:1}
+  .rail .mark small{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:2px}
+  .rail h4{font-family:var(--display);font-size:20px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--cream-dim);padding:18px 24px 8px;border-top:1px solid var(--rule)}
+  .rail ol{list-style:none}
+  .rail li a{display:grid;grid-template-columns:44px 1fr;gap:10px;padding:8px 24px;align-items:baseline}
+  .rail li a:hover,.rail li a.on{background:var(--bg3)}
+  .rail li a.on b{color:var(--saffron2)}
+  .rail li b{font-family:var(--display);font-size:22px;font-weight:800;color:var(--gold2);letter-spacing:.03em}
+  .rail li span{font-size:14px;font-weight:600;line-height:1.25;display:block}
+  .rail li small{display:block;font-size:12px;color:var(--muted);font-weight:400;line-height:1.3}
+  /* main */
+  main{min-width:0}
+  .top{display:flex;justify-content:space-between;align-items:center;padding:22px 40px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--cream-dim)}
+  .top .live{color:var(--saffron2);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:12px}
+  .top .live::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--saffron);margin-right:9px;animation:pulse 2s ease-out infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(232,98,26,.5)}100%{box-shadow:0 0 0 10px rgba(232,98,26,0)}}
+  @media (prefers-reduced-motion:reduce){.top .live::before{animation:none}}
+  .top nav a{margin-left:22px;font-weight:600}
+  .top nav a.cta{background:var(--saffron);color:var(--bg);padding:9px 14px;font-weight:700}
+  .hero{display:grid;grid-template-columns:1.25fr .9fr;gap:40px;padding:56px 40px 36px;align-items:center}
+  h1{font-family:var(--display);font-size:clamp(64px,7.4vw,124px);font-weight:900;line-height:.88;letter-spacing:.01em;text-transform:uppercase;color:var(--cream);text-wrap:balance}
+  h1 em{font-style:normal;color:var(--gold2)}
+  .hero p{margin-top:22px;font-size:18px;color:var(--cream-dim);max-width:44ch}
+  .hero .still{position:relative}
+  .hero .still img{width:100%;aspect-ratio:16/10;object-fit:cover}
+  .hero .still .cap{position:absolute;left:0;right:0;bottom:0;padding:14px 16px;background:linear-gradient(0deg,rgba(13,7,6,.95),transparent);display:flex;justify-content:space-between;align-items:end;gap:12px}
+  .hero .still .cap b{font-family:var(--display);font-size:30px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;line-height:1}
+  .hero .still .cap small{display:block;font-size:12px;color:var(--cream-dim);letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:4px}
+  .hero .still .cap span{font-size:13px;color:var(--cream-dim);white-space:nowrap}
+  /* waveform (the show's own motif, drawn from real monthly views) */
+  .wave{padding:0 40px 10px}
+  .wave svg{width:100%;height:120px;display:block}
+  .wave .cap{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:600;margin-top:8px}
+  /* on-air numbers */
+  .onair{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;padding:40px 40px 0;border-top:1px solid var(--rule);margin-top:26px}
+  .count{font-family:var(--display);font-size:clamp(88px,11vw,180px);font-weight:900;line-height:.85;letter-spacing:.01em;color:var(--gold2)}
+  .count+.lab{font-family:var(--display);font-size:26px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--cream-dim);margin-top:10px}
+  .lab small{display:block;font-family:var(--text);font-size:13px;letter-spacing:0;text-transform:none;font-weight:400;color:var(--muted);margin-top:4px}
+  .chan{display:grid;gap:0;border-top:1px solid var(--rule);align-self:end}
+  .chan div{display:grid;grid-template-columns:14px 1fr auto auto;gap:16px;align-items:baseline;padding:14px 0;border-bottom:1px solid var(--rule)}
+  .chan i{width:12px;height:12px;display:block;align-self:center}
+  .chan b{font-family:var(--display);font-size:26px;font-weight:800;letter-spacing:.03em;text-transform:uppercase}
+  .chan b small{display:block;font-family:var(--text);font-size:12px;color:var(--muted);letter-spacing:0;text-transform:none;font-weight:400}
+  .chan .n{font-variant-numeric:tabular-nums;font-weight:700;font-size:18px;text-align:right}
+  .chan .n small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+  /* guests strip */
+  .guests{padding:64px 40px 0}
+  .sec-h{display:flex;align-items:baseline;gap:18px;margin-bottom:22px}
+  .sec-h h2{font-family:var(--display);font-size:clamp(40px,4.4vw,64px);font-weight:900;text-transform:uppercase;letter-spacing:.02em;line-height:.9}
+  .sec-h h2 em{font-style:normal;color:var(--gold2)}
+  .sec-h p{color:var(--muted);font-size:14px;max-width:44ch}
+  .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .strip figure{position:relative;overflow:hidden;background:var(--saffron)}
+  .strip img{width:100%;aspect-ratio:3/4;object-fit:cover;filter:grayscale(1) contrast(1.05);mix-blend-mode:multiply;opacity:.92}
+  .strip figcaption{position:absolute;left:12px;bottom:10px;font-family:var(--display);font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--bg);line-height:1}
+  .eplist{margin-top:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .eplist a{position:relative;overflow:hidden;background:var(--bg3)}
+  .eplist img{width:100%;aspect-ratio:16/9;object-fit:cover}
+  .eplist .t{padding:10px 12px 12px;border:1px solid var(--rule);border-top:0}
+  .eplist .t b{font-family:var(--display);font-size:24px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;line-height:1;display:block}
+  .eplist .t small{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+  .eplist .t em{font-style:normal;color:var(--gold2);font-size:12px;font-weight:700;letter-spacing:.1em}
+  /* rate card */
+  .rate{padding:64px 40px 0}
+  table{width:100%;border-collapse:collapse}
+  th{font-family:var(--display);font-size:20px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--cream-dim);text-align:left;padding:10px 0;border-bottom:2px solid var(--rule-hi)}
+  th.r,td.r{text-align:right}
+  td{padding:16px 0;border-bottom:1px solid var(--rule);vertical-align:top;font-size:15px}
+  td.k{font-family:var(--display);font-size:28px;font-weight:800;color:var(--gold2);width:56px;letter-spacing:.03em}
+  td.n{font-weight:700;font-size:17px;width:32%}
+  td.d{color:var(--cream-dim);padding-right:24px}
+  td.p{font-family:var(--display);font-size:30px;font-weight:800;white-space:nowrap;letter-spacing:.02em}
+  td.p small{display:block;font-family:var(--text);font-size:12px;color:var(--muted);font-weight:400;letter-spacing:0}
+  .cta{display:inline-block;margin-top:28px;background:var(--saffron);color:var(--bg);font-family:var(--display);font-size:24px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:14px 26px}
+  /* founder */
+  .founder{padding:64px 40px 0;display:grid;grid-template-columns:1fr 260px;gap:40px;align-items:center}
+  .founder blockquote{font-size:clamp(20px,2.2vw,28px);line-height:1.35;color:var(--cream);max-width:34ch;font-style:italic}
+  .founder p{margin-top:16px;color:var(--cream-dim);max-width:52ch}
+  .founder .who{margin-top:16px;font-family:var(--display);font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+  .founder .who small{display:block;font-family:var(--text);font-size:12px;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400}
+  .founder img{width:100%;aspect-ratio:1;object-fit:cover;object-position:top}
+  footer{margin-top:64px;border-top:1px solid var(--rule);padding:24px 40px 40px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+  footer a{color:var(--cream-dim);font-weight:600;margin-left:18px}
+  @media (max-width:1000px){.shell{grid-template-columns:1fr}.rail{position:static;height:auto;border-right:0;border-bottom:1px solid var(--rule);padding-bottom:0}.rail ol{display:none}.rail h4{display:none}.hero,.onair,.founder{grid-template-columns:1fr;padding-left:20px;padding-right:20px}.top,.wave,.guests,.rate{padding-left:20px;padding-right:20px}.strip,.eplist{grid-template-columns:repeat(2,1fr)}.top nav a:not(.cta){display:none}td.d{display:none}footer{padding:24px 20px 40px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="rail">
+  <div class="mark"><img src="img/tsn-s2-logo.jpg" alt=""><div><b>TSN TALKS</b><small>Programme</small></div></div>
+  <h4>Season 2</h4><ol id="s2"></ol>
+  <h4>Season 1</h4><ol id="s1"></ol>
+</aside>
+
+<main>
+  <div class="top"><span class="live">On air</span><span id="upd"></span><nav><a href="#guests">Guests</a><a href="#numbers">Numbers</a><a class="cta" href="#rate">Rate card</a></nav></div>
+
+  <section class="hero">
+    <div>
+      <h1>The Thai-Indian story, <em>one conversation</em> at a time.</h1>
+      <p>Thailand's interview series from Thai Sikh News. Entrepreneurs, doctors, diplomats and community leaders, unedited and in full. Every week on YouTube, Instagram and TikTok.</p>
+    </div>
+    <a class="still" id="still" target="_blank" rel="noopener"><img id="stillimg" alt=""><div class="cap"><div><small id="stillnum"></small><b id="stillguest"></b></div><span id="stillviews"></span></div></a>
+  </section>
+
+  <div class="wave"><div id="wave"></div><div class="cap"><span>Sep 2025</span><span>Views by month · TikTok, Instagram, YouTube</span><span>Sep 2026</span></div></div>
+
+  <section class="onair" id="numbers">
+    <div><div class="count" id="count"></div><div class="lab">Views<small id="countsub"></small></div></div>
+    <div class="chan" id="chan"></div>
+  </section>
+
+  <section class="guests" id="guests">
+    <div class="sec-h"><h2>The <em>guests</em></h2><p>Twenty-six voices across two seasons. Every episode in full on YouTube, cut into reels and TikToks for the rest of the week.</p></div>
+    <div class="strip">
+      <figure><img src="img/tsn-guest-1.jpg" alt=""></figure>
+      <figure><img src="img/tsn-guest-2.jpg" alt=""></figure>
+      <figure><img src="img/tsn-guest-3.jpg" alt=""></figure>
+      <figure><img src="img/tsn-guest-4.jpg" alt=""></figure>
+    </div>
+    <div class="eplist" id="eplist"></div>
+  </section>
+
+  <section class="rate" id="rate">
+    <div class="sec-h"><h2>Rate <em>card</em></h2><p>Five ways to partner. Prices per episode unless stated.</p></div>
+    <table><thead><tr><th></th><th>Option</th><th>What you get</th><th class="r">From</th></tr></thead><tbody id="tiers"></tbody></table>
+    <a class="cta" href="mailto:thaisikhnews@gmail.com">Book a slot</a>
+  </section>
+
+  <section class="founder">
+    <div>
+      <blockquote>"Built on community trust, not advertising budgets. That is why people answer the questions here."</blockquote>
+      <p>Thai Sikh News is Thailand's largest Indian-Thai news platform. TSN Talks is its long-form arm: one guest, one honest conversation.</p>
+      <div class="who">Prasert Sakchiraphong<small>Founder, Thai Sikh News · Host</small></div>
+    </div>
+    <img src="img/tsn-prasert.jpg" alt="Prasert Sakchiraphong">
+  </section>
+
+  <footer><span>TSN Talks · Presented by Thai Sikh News · Bangkok</span><span><a href="https://www.youtube.com/@TSNTalksTH">YouTube</a><a href="https://www.instagram.com/tsntalks">Instagram</a><a href="https://www.tiktok.com/@tsntalks.th">TikTok</a></span></footer>
+</main>
+</div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const D=JSON.parse(document.getElementById('data').textContent);
+const $=id=>document.getElementById(id); const full=n=>n.toLocaleString('en-US');
+const fmt=n=>n>=1e6?(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M':n>=1e4?Math.round(n/1e3)+'K':n>=1e3?(n/1e3).toFixed(1).replace(/\.0$/,'')+'K':String(n);
+const PC={youtube:'var(--yt)',instagram:'var(--ig)',tiktok:'var(--tt)'}; const NAME={youtube:'YouTube',instagram:'Instagram',tiktok:'TikTok'};
+const s2=D.episodes.filter(e=>e.num.startsWith('S2')), s1=D.episodes.filter(e=>!e.num.startsWith('S2'));
+$('upd').textContent='Updated '+new Date(D.fetched).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'});
+const li=e=>`<li><a href="https://www.youtube.com/watch?v=${e.id}" target="_blank" rel="noopener" data-id="${e.id}"><b>${e.num.replace('S2 · ','').replace('Ep ','').replace('Kickoff','K')}</b><div><span>${e.guest}</span><small>${e.role}</small></div></a></li>`;
+$('s2').innerHTML=s2.map(li).join(''); $('s1').innerHTML=s1.map(li).join('');
+const latest=s2[0];
+function showStill(e){$('stillimg').src=`https://img.youtube.com/vi/${e.id}/maxresdefault.jpg`;$('still').href=`https://www.youtube.com/watch?v=${e.id}`;$('stillnum').textContent=e.num+(e===latest?' · latest':'');$('stillguest').textContent=e.guest;$('stillviews').textContent=e.views==null?'':full(e.views)+' views';}
+showStill(latest); document.querySelector(`.rail a[data-id="${latest.id}"]`).classList.add('on');
+document.querySelectorAll('.rail a').forEach(a=>a.addEventListener('mouseenter',()=>{const e=D.episodes.find(x=>x.id===a.dataset.id);document.querySelectorAll('.rail a').forEach(x=>x.classList.remove('on'));a.classList.add('on');showStill(e);}));
+
+// waveform from monthly views: mirrored bars, one per month, subdivided into platform segments
+(function(){const W=1000,H=120,mid=H/2,n=D.months.length,slot=W/n; const tot=D.months.map(m=>m.tiktok+m.instagram+m.youtube); const max=Math.max(...tot);
+ let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Monthly views drawn as a waveform">`;
+ s+=`<line x1="0" y1="${mid}" x2="${W}" y2="${mid}" stroke="rgba(242,228,204,.18)" stroke-width="1"/>`;
+ D.months.forEach((m,i)=>{const cx=i*slot+slot/2; const segs=[['tiktok','#2EA6A0'],['instagram','#7C6BF0'],['youtube','#E8621A']]; let acc=0;
+   // draw 5 thin bars per month with decaying heights to look like a wave burst
+   [0.35,0.7,1,0.7,0.35].forEach((k,j)=>{const x=cx-14+j*7; let y0=mid; segs.forEach(([key,col])=>{const v=m[key]; if(!v) return; const h=Math.max(1,(v/max)*(mid-6)*k); s+=`<rect x="${x}" y="${y0-h}" width="4" height="${h*2}" fill="${col}" rx="2"><title>${m.m}: ${full(tot[i])} views</title></rect>`; y0=y0; });});
+ });
+ s+='</svg>'; $('wave').innerHTML=s;})();
+
+// on-air numbers
+$('count').textContent=full(D.total_views);
+$('countsub').textContent=`across YouTube, Instagram and TikTok · ${Object.values(D.platforms).reduce((a,p)=>a+p.posts,0)} posts since Sep 2025 · read live`;
+$('chan').innerHTML=['tiktok','instagram','youtube'].map(k=>{const p=D.platforms[k];return `<div><i style="background:${PC[k]}"></i><b>${NAME[k]}<small>${p.handle}</small></b><span class="n">${full(p.followers)}<small>${k==='youtube'?'subscribers':'followers'}</small></span><span class="n">${fmt(p.views)}<small>views</small></span></div>`;}).join('');
+
+// episode list (S2)
+$('eplist').innerHTML=s2.map(e=>`<a href="https://www.youtube.com/watch?v=${e.id}" target="_blank" rel="noopener"><img src="https://img.youtube.com/vi/${e.id}/hqdefault.jpg" alt=""><div class="t"><em>${e.num}</em><b>${e.guest}</b><small>${e.role}${e.views!=null?' · '+full(e.views)+' views':''}</small></div></a>`).join('');
+
+const tiers=[['01','On-screen branding','Logo on screen throughout, lower-thirds, branded end card, logo in thumbnail and description.','฿25,000','per episode'],['02','Product placement','Product in the studio, dedicated segments, guest gifting acknowledged on air.','฿20,000','per episode'],['03','Host-read mentions','Pre-roll, 60-second mid-roll, post-roll thanks.','฿15,000','per episode'],['04','Signature segment','A recurring segment named after your brand, asked to every guest, clips tagged for social.','฿70,000','per month · 4 episodes'],['05','Guest feature','Your business leader as the guest. Files handed over for your own marketing.','฿20,000','basic · ฿45,000 standard']];
+$('tiers').innerHTML=tiers.map(t=>`<tr><td class="k">${t[0]}</td><td class="n">${t[1]}</td><td class="d">${t[2]}</td><td class="p r">${t[3]}<small>${t[4]}</small></td></tr>`).join('');
+</script>
+</body>
+</html>

@@ -150,7 +150,13 @@ DATA = {
 
 OUT.mkdir(exist_ok=True)
 blob = json.dumps(DATA, ensure_ascii=False)
-for tpl in sorted(HERE.glob("live-*.template.html")):
+IMG = HERE / "img"
+for dst in [OUT / "img", TUMMY / "img"]:
+    if dst.parent.exists():
+        dst.mkdir(exist_ok=True)
+        for f in IMG.glob("tsn-*.jpg"):
+            shutil.copy(f, dst / f.name)
+for tpl in sorted(HERE.glob("*.template.html")):
     name = tpl.name.replace(".template", "")
     html = tpl.read_text(encoding="utf-8").replace("__DATA__", blob)
     (OUT / name).write_text(html, encoding="utf-8")
