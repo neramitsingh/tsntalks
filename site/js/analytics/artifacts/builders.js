@@ -42,3 +42,16 @@ register('monthly-review', async ({ window: w, format }) => {
   }
   printPage('monthly-review', { month: key });
 });
+
+/* Both formats open the same page. The PNG is drawn on a canvas that needs the
+   page's fonts loaded and the page's numbers already fetched; producing it from
+   the dashboard instead would mean loading Bodoni into the dashboard to render
+   a card the dashboard does not show. `download=png` makes the tab produce the
+   file rather than asking for a second click. */
+register('guest-card', ({ episode, format }) => {
+  if (!episode) throw new Error('No episode was chosen.');
+  printPage('guest-card', {
+    episode: episode.episodeId,
+    download: format === 'png' ? 'png' : '',
+  });
+});

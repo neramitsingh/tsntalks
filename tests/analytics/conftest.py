@@ -39,13 +39,13 @@ VENDOR = Path(__file__).parent / "stubs" / "vendor"
 BANGKOK = dt.timezone(dt.timedelta(hours=7))
 
 ANALYTICS = "/analytics/"
-# Booting the shell means loading a dozen modules and awaiting the access probe
-# before anything is visible. Playwright's 30s default is plenty on an idle box
-# and can be tight on a busy one — a second test run, or a CI box doing three
-# things at once — and when it is tight it fails in fixture SETUP, which reads
-# as a broken test rather than a slow one. Waiting longer costs nothing when it
-# passes.
-BOOT_TIMEOUT = 90_000
+# Playwright's 30s default is plenty on an idle box and tight on a busy one — a
+# second test run, an antivirus sweep, a CI box doing three things at once. When
+# it is tight the failure lands in whichever wait happened to be running, which
+# looks like a different broken test every time. Raising the default for the
+# whole context covers all of them at once, and waiting longer costs nothing on
+# a run that passes.
+DEFAULT_TIMEOUT = 90_000
 
 TEST_ANON_KEY = "test-anon-key-not-a-real-one"
 ALLOWED_EMAIL = "ney@example.test"
@@ -425,6 +425,12 @@ def analytics_url(base_url):
 
 
 @pytest.fixture
+def timeout_ms():
+    """The context default, for tests that build their own context."""
+    return DEFAULT_TIMEOUT
+
+
+@pytest.fixture
 def halve_previous():
     """`stub.rpc_hook = halve_previous("2026-09-01")` — see halve_before()."""
     return halve_before
@@ -442,7 +448,10 @@ def allowed_email():
 
 
 def _context(browser, width, height):
-    return browser.new_context(viewport={"width": width, "height": height})
+    ctx = browser.new_context(viewport={"width": width, "height": height},
+                              accept_downloads=True)
+    ctx.set_default_timeout(DEFAULT_TIMEOUT)
+    return ctx
 
 
 @pytest.fixture
@@ -475,7 +484,7 @@ def dashboard(browser, base_url, stub):
     stub.install(pg)
     sign_in(pg)
     pg.goto(base_url + ANALYTICS)
-    pg.wait_for_selector("#shell:not([hidden])", timeout=BOOT_TIMEOUT)
+    pg.wait_for_selector("#shell:not([hidden])")
     yield pg
     ctx.close()
 
@@ -488,7 +497,7 @@ def phone(browser, base_url, stub):
     stub.install(pg)
     sign_in(pg)
     pg.goto(base_url + ANALYTICS)
-    pg.wait_for_selector("#shell:not([hidden])", timeout=BOOT_TIMEOUT)
+    pg.wait_for_selector("#shell:not([hidden])")
     yield pg
     ctx.close()
 

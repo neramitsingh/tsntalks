@@ -70,9 +70,15 @@ def test_registering_an_artifact_that_does_not_exist_fails_loudly(a):
 
 
 def test_running_an_unbuilt_artifact_returns_a_reason_rather_than_throwing(a):
-    got = js(a, "return await artifacts.run('guest-card', {});")
+    # numbers-today is the last one still unbuilt.
+    got = js(a, "return await artifacts.run('numbers-today', {});")
     assert got["ok"] is False
     assert "not built yet" in got["reason"]
+
+
+def test_an_unknown_artifact_id_is_refused_by_name(a):
+    got = js(a, "return await artifacts.run('nope', {});")
+    assert got == {"ok": False, "reason": 'No artifact called "nope".'}
 
 
 def test_a_builder_that_throws_becomes_a_reason_not_an_unhandled_rejection(a):
@@ -156,7 +162,9 @@ def test_the_source_note_names_a_single_platform_when_that_is_the_scope(a):
 def test_a_missing_collector_run_is_admitted_rather_than_glossed(browser, stub,
                                                                  analytics_url, signin):
     stub.tables["collector_runs"] = []
-    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900},
+                              accept_downloads=True)
+    ctx.set_default_timeout(90_000)
     pg = ctx.new_page()
     stub.install(pg)
     signin(pg)
@@ -304,7 +312,9 @@ def test_a_missing_spreadsheet_library_says_csv_still_works(browser, stub, analy
                                                             signin):
     """CSV is written by hand and needs nothing. Only XLSX needs the network,
     and the message should say which half is still available."""
-    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900},
+                              accept_downloads=True)
+    ctx.set_default_timeout(90_000)
     pg = ctx.new_page()
     stub.install(pg)
     pg.route("**/xlsx.full.min.js", lambda r: r.abort())
@@ -322,7 +332,9 @@ def test_a_missing_spreadsheet_library_says_csv_still_works(browser, stub, analy
 # --- the pages themselves ---------------------------------------------------
 
 def open_artifact(browser, stub, base_url, signin, page_name, query=""):
-    ctx = browser.new_context(viewport={"width": 1240, "height": 1600})
+    ctx = browser.new_context(viewport={"width": 1240, "height": 1600},
+                              accept_downloads=True)
+    ctx.set_default_timeout(90_000)
     pg = ctx.new_page()
     errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))
@@ -823,6 +835,169 @@ def test_the_pdf_and_the_workbook_agree(dashboard, scratch, stub, browser, base_
     ctx.close()
 
     assert from_page == from_workbook
+
+
+# --- the guest card ---------------------------------------------------------
+
+@pytest.fixture
+def card(browser, stub, base_url, signin):
+    pg, ctx, errors = open_artifact(browser, stub, base_url, signin,
+                                    "guest-card.html", "?episode=1")
+    pg.wait_for_selector("#sheet footer.colophon")
+    yield pg, errors
+    ctx.close()
+
+
+def test_the_guest_card_draws_without_throwing(card):
+    pg, errors = card
+    assert errors == []
+    assert pg.inner_text("#sheet h1").strip() == "Testy McFixture"
+
+
+def test_the_card_says_watched_n_times_and_never_n_people(card):
+    """The spec's wording is "reached N people". The number is a sum of view
+    counts across the cuts, so "people" would be a claim the data does not make
+    -- on the one artifact a guest is most likely to screenshot and post."""
+    pg, _ = card
+    text = pg.inner_text("#sheet .card-square")
+    assert "47,000" in text
+    assert "times, across the episode and every clip" in text
+    assert "people" not in text.lower()
+
+
+def test_the_colophon_explains_what_the_number_is_not(card):
+    pg, _ = card
+    note = pg.inner_text("#sheet footer.colophon")
+    assert "not a count of people" in note
+
+
+def test_the_card_carries_the_platform_split_with_its_numbers(card):
+    pg, _ = card
+    legend = pg.locator("#sheet .band-legend").inner_text()
+    for platform in ("YouTube", "Instagram", "TikTok"):
+        assert platform in legend
+    assert "18,000" in legend and "%" in legend
+
+
+def test_the_card_names_the_clip_that_travelled_furthest(card):
+    pg, _ = card
+    text = pg.inner_text("#sheet .clip-row")
+    assert "Travelled furthest" in text or "TRAVELLED FURTHEST" in text.upper()
+    assert "Instagram" in text.title() or "INSTAGRAM" in text.upper()
+    assert "18,000" in text
+
+
+def test_the_card_carries_a_share_link_to_the_episode(card):
+    pg, _ = card
+    link = pg.locator("#sheet .card-square a").last
+    assert link.get_attribute("href") == \
+        "https://www.youtube.com/watch?v=FIXTUREVID01"
+
+
+def test_an_episode_with_no_clips_still_makes_a_card(browser, stub, base_url, signin):
+    stub.rpc["post_deltas"] = [r for r in stub.rpc["post_deltas"]
+                               if r["post_id"] == "yt:FIXTUREVID01"]
+    pg, ctx, errors = open_artifact(browser, stub, base_url, signin,
+                                    "guest-card.html", "?episode=1")
+    pg.wait_for_selector("#sheet footer.colophon")
+    assert errors == []
+    assert "No clips have been matched" in pg.inner_text("#sheet")
+    ctx.close()
+
+
+# --- the PNG ----------------------------------------------------------------
+
+def png_size(data):
+    """Width and height out of the PNG's IHDR chunk."""
+    assert data[:8] == b"\x89PNG\r\n\x1a\n", "not a PNG"
+    assert data[12:16] == b"IHDR"
+    return (int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big"))
+
+
+def test_the_png_comes_out_at_the_declared_dimensions(card, scratch):
+    """1080 square: LINE's share image and an Instagram feed post are both that,
+    so one file serves both."""
+    pg, _ = card
+    with pg.expect_download() as caught:
+        pg.click("[data-png]")
+    path = scratch / caught.value.suggested_filename
+    caught.value.save_as(path)
+
+    assert caught.value.suggested_filename == \
+        "tsn-guest-card-s2e10-" + _today() + ".png"
+    assert png_size(path.read_bytes()) == (1080, 1080)
+
+
+def test_the_png_button_states_the_size_it_will_produce(card):
+    pg, _ = card
+    assert "1080×1080" in pg.inner_text("[data-png]")
+
+
+def test_the_dashboard_png_button_produces_the_file_without_a_second_click(
+        browser, stub, base_url, signin, scratch):
+    """The dashboard's PNG button opens the card's own tab, because the canvas
+    needs that page's fonts. It must not then ask for another click."""
+    ctx = browser.new_context(viewport={"width": 1240, "height": 1600},
+                              accept_downloads=True)
+    ctx.set_default_timeout(90_000)
+    pg = ctx.new_page()
+    stub.install(pg)
+    signin(pg)
+    with pg.expect_download() as caught:
+        pg.goto(f"{base_url}/analytics/artifacts/guest-card.html"
+                "?episode=1&download=png")
+    assert caught.value.suggested_filename.endswith(".png")
+    ctx.close()
+
+
+def test_the_png_is_the_brand_dark_where_the_pdf_is_ink_on_paper(card, scratch):
+    """PRODUCT.md puts cream grounds on the anti-reference list for screen
+    surfaces, and a PDF on a dark ground is unreadable on a train. Same numbers,
+    the ground each medium actually wants."""
+    pg, _ = card
+    corner = pg.evaluate("""async () => {
+      const png = await import('/js/analytics/artifacts/png.js');
+      const blob = await png.renderGuestCard({
+        episode: { season: 2, number: '10', guest: 'Testy McFixture', role: 'Founder',
+                   totalReach: 47000, ytViews: 12000,
+                   clipViews: { youtube: 3000, instagram: 18000, tiktok: 14000 } },
+        shareUrl: 'https://example.test/x',
+      });
+      const bitmap = await createImageBitmap(blob);
+      const canvas = new OffscreenCanvas(1, 1);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(bitmap, -540, -900, bitmap.width, bitmap.height);
+      const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+      return [r, g, b];
+    }""")
+    # --bg is #0D0706.
+    assert corner == [13, 7, 6]
+
+
+def test_a_very_long_guest_name_is_shrunk_rather_than_clipped(card):
+    """A card that clips the guest's own name is not a card you send the guest."""
+    pg, _ = card
+    sizes = pg.evaluate("""async () => {
+      const png = await import('/js/analytics/artifacts/png.js');
+      const out = [];
+      for (const guest of ['Sam Lee',
+                           'Mr. Deepak Sajnani of the Thai-Sindhi Association']) {
+        const blob = await png.renderGuestCard({
+          episode: { season: 2, number: '10', guest, role: '', totalReach: 47000,
+                     ytViews: 12000,
+                     clipViews: { youtube: 0, instagram: 18000, tiktok: 14000 } },
+          shareUrl: 'https://example.test/x',
+        });
+        out.push(blob.size);
+      }
+      return out;
+    }""")
+    assert all(size > 0 for size in sizes)
+
+
+def _today():
+    import datetime as dt
+    return dt.datetime.now(dt.timezone(dt.timedelta(hours=7))).strftime("%Y-%m-%d")
 
 
 # --- the UI -----------------------------------------------------------------

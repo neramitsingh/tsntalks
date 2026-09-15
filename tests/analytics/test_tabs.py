@@ -214,7 +214,9 @@ def test_a_metric_nobody_reported_is_named_rather_than_drawn_as_zero(browser, st
     """A flat line at zero across a quarter is a claim that nobody watched."""
     stub.tables["metric_daily"] = [
         r for r in stub.tables["metric_daily"] if r["metric"] != "yt_minutes"]
-    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900},
+                              accept_downloads=True)
+    ctx.set_default_timeout(90_000)
     pg = ctx.new_page()
     stub.install(pg)
     signin(pg)
@@ -545,7 +547,9 @@ def test_the_unassigned_list_ignores_the_platform_control(browser, stub, analyti
                                                           signin):
     """A clip is unassigned wherever it was posted. Hiding two thirds of the
     list behind a filter makes "everything is matched" look true."""
-    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900},
+                              accept_downloads=True)
+    ctx.set_default_timeout(90_000)
     pg = ctx.new_page()
     stub.install(pg)
     signin(pg)
@@ -663,7 +667,9 @@ def test_a_long_tail_is_described_rather_than_silently_dropped(browser, stub,
          "prev_window_start": "2026-03-20", "prev_window_end": "2026-06-17"}
         for code in ("SG", "MY", "AE", "NZ", "DE", "ID", "PH", "JP", "KR")
     ]
-    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900},
+                              accept_downloads=True)
+    ctx.set_default_timeout(90_000)
     pg = ctx.new_page()
     stub.install(pg)
     signin(pg)
@@ -713,7 +719,9 @@ def test_a_fresh_collector_run_reads_green(he):
 def test_the_dot_follows_the_thresholds_it_printed(browser, stub, analytics_url, signin,
                                                    minutes, expected):
     stub.last_run_minutes_ago = minutes
-    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900},
+                              accept_downloads=True)
+    ctx.set_default_timeout(90_000)
     pg = ctx.new_page()
     stub.install(pg)
     signin(pg)
@@ -762,7 +770,9 @@ def test_an_unfamiliar_run_status_surfaces_as_amber_rather_than_reading_green(
     stub.tables["collector_runs"] = [
         {**r, "status": "weird" if i == 0 else r["status"]}
         for i, r in enumerate(stub.tables["collector_runs"])]
-    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900},
+                              accept_downloads=True)
+    ctx.set_default_timeout(90_000)
     pg = ctx.new_page()
     stub.install(pg)
     signin(pg)
@@ -789,7 +799,9 @@ def test_row_counts_are_exact_and_a_dash_is_not_a_zero(he):
 def test_a_table_that_cannot_be_counted_reads_as_unknown(browser, stub, analytics_url,
                                                           signin):
     stub.fail("demographics", status=500, message="nope")
-    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900},
+                              accept_downloads=True)
+    ctx.set_default_timeout(90_000)
     pg = ctx.new_page()
     stub.install(pg)
     signin(pg)
@@ -854,7 +866,9 @@ def test_no_panel_is_ever_blank(dashboard, tab):
 @pytest.mark.parametrize("tab", BUILT)
 def test_a_tab_draws_without_a_console_error(browser, base_url, stub, analytics_url,
                                              signin, tab):
-    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900},
+                              accept_downloads=True)
+    ctx.set_default_timeout(90_000)
     pg = ctx.new_page()
     errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))
@@ -880,7 +894,9 @@ def test_one_dead_endpoint_leaves_the_rest_of_the_tab_standing(browser, base_url
     """rollup_followers down. The follower panel says so; the views panel and
     the headline figures still draw."""
     stub.fail("rollup_followers", status=503, message="down")
-    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900},
+                              accept_downloads=True)
+    ctx.set_default_timeout(90_000)
     pg = ctx.new_page()
     stub.install(pg)
     signin(pg)
@@ -898,7 +914,9 @@ def test_an_empty_window_gets_a_named_empty_state_not_a_blank_panel(browser, stu
                                                                     analytics_url, signin):
     for name in ("rollup_views", "rollup_followers", "rollup_engagement", "post_deltas"):
         stub.rpc[name] = []
-    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900},
+                              accept_downloads=True)
+    ctx.set_default_timeout(90_000)
     pg = ctx.new_page()
     stub.install(pg)
     signin(pg)
