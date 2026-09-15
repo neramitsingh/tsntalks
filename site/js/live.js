@@ -15,6 +15,11 @@ function clip(text, n) {
   return `${(sp > n * 0.6 ? cut.slice(0, sp) : cut).replace(/[\s,.;:…-]+$/, '')}…`;
 }
 
+/* Social captions open with a siren or a medal. The tile is not the post. */
+function stripLeadingSymbols(text) {
+  return (text || '').replace(/^[^\p{L}\p{N}]+/u, '');
+}
+
 const MONTH = (m) => new Date(`${m}-01T00:00:00Z`)
   .toLocaleDateString('en-GB', { month: 'short', year: '2-digit', timeZone: 'UTC' });
 
@@ -165,7 +170,7 @@ function renderFacts(d) {
 function renderTop(d) {
   const latest = d.episodes[0];
   const tiles = [{
-    cls: 'big',
+    cls: 'lead',
     href: latest.url,
     img: latest.youtube_video_id,
     kicker: `Latest episode · ${bkk(latest.published_at)}`,
@@ -176,11 +181,11 @@ function renderTop(d) {
   for (const k of ['youtube', 'instagram', 'tiktok']) {
     const t = d.platforms[k].top;
     tiles.push({
-      cls: 'mid',
+      cls: '',
       href: t.url,
       thumb: t.thumb,
       kicker: `Top on ${PLATFORM_NAME[k]} · ${bkk(t.date)}`,
-      title: (t.title || '').split('\n')[0].slice(0, 70),
+      title: clip(stripLeadingSymbols(t.title), 70),
       note: `${full(t.views)} views`,
       colour: PLATFORM_COLOR[k],
     });
@@ -188,7 +193,7 @@ function renderTop(d) {
 
   $('top').replaceChildren(...tiles.map((t) => {
     const a = document.createElement('a');
-    a.className = `po ${t.cls}`;
+    a.className = t.cls ? `po ${t.cls}` : 'po';
     a.href = t.href;
     a.target = '_blank';
     a.rel = 'noopener';
@@ -201,7 +206,7 @@ function renderTop(d) {
       img.loading = 'lazy';
       img.decoding = 'async';
       /* Instagram and TikTok CDN thumbs expire; the tile keeps its ground when they do. */
-      img.addEventListener('error', () => img.remove());
+      img.addEventListener('error', () => { img.removeAttribute('src'); });
       img.src = t.thumb;
       a.appendChild(img);
     }

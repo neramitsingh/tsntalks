@@ -1,7 +1,20 @@
 /* ============================================================================
    TSN Talks — D1 "Marquee"
-   One stylesheet for home, /live and /partner. Bodoni Moda for display,
-   Hanken Grotesk for everything else, on a dark saffron ground.
+   One stylesheet for home, /live and /partner, on a dark saffron ground.
+
+   Display is Archivo at a condensed width and a heavy weight, set in capitals.
+   That is not a taste call: it is the show's own type. Every episode thumbnail
+   sets the headline and the guest's name in heavy condensed gold capitals, and
+   a Didone on the website meant the site and the artwork it displayed were
+   speaking in two different voices. One family with a real width axis carries
+   the whole display range, so the page reads as TSN Talks rather than as a
+   magazine that happens to be about TSN Talks.
+
+   Hanken Grotesk carries text. Noto Sans Thai sits behind both stacks so the
+   baht sign renders in a matching grotesque instead of whatever the OS
+   substitutes — on a rate card quoted entirely in baht, that glyph is on
+   screen more often than any other.
+
    Fonts are linked in each page's <head>; nothing is loaded from here.
    ========================================================================= */
 
@@ -15,7 +28,6 @@
 
   --saffron: #E8621A;
   --saffron2: #F0852A;
-  --gold: #C8901E;
   --gold2: #E0B040;
 
   --cream: #F2E4CC;
@@ -30,8 +42,13 @@
   --tt: #2EA6A0;
   --ig: #7C6BF0;
 
-  --display: 'Bodoni Moda', Georgia, 'Times New Roman', serif;
-  --text: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --display: 'Archivo', 'Noto Sans Thai', 'Arial Narrow', system-ui, sans-serif;
+  --text: 'Hanken Grotesk', 'Noto Sans Thai', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* The display width. 70% is where Archivo matches the condensed capitals on
+     the episode artwork; it opens up on phones because a narrow face in a
+     narrow column is twice as hard to read. */
+  --display-wdth: 70%;
 
   --gutter: clamp(20px, 4vw, 56px);
   --section: clamp(56px, 8vw, 110px);
@@ -96,47 +113,68 @@ section { padding-top: var(--section); }
 
 /* --- 4. Type ------------------------------------------------------------- */
 
-h1, h2, h3 { font-family: var(--display); font-weight: 500; letter-spacing: -.015em; line-height: 1; }
+/* Headings are heavy condensed capitals, because that is what the show sets its
+   own titles in. Emphasis is carried by weight and size only — there is no
+   `em` rule here on purpose. Every heading on the old site was built from one
+   construction (roman words, comma, italic gold word, full stop), which is a
+   template with a slot rather than a voice. */
+h1, h2, h3 {
+  font-family: var(--display);
+  font-stretch: var(--display-wdth);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .012em;
+  line-height: .95;
+}
 
-h1 { font-size: clamp(40px, 6vw, 84px); text-wrap: balance; }
-h2 { font-size: clamp(36px, 4.6vw, 64px); text-wrap: balance; }
-h3 { font-size: clamp(22px, 2.2vw, 30px); }
+h1 { font-size: clamp(34px, 6.4vw, 92px); text-wrap: balance; }
+h2 { font-size: clamp(26px, 4.6vw, 64px); text-wrap: balance; }
+h3 { font-size: clamp(18px, 2.2vw, 30px); }
 
-h1 em, h2 em, h3 em { font-style: italic; color: var(--gold2); }
+/* The floors matter as much as the ceilings. With h1 bottoming out at 40px
+   while h2 was still falling to 36px, every phone rendered the two at an 11%
+   difference — a scale flat enough to read as no scale at all. */
+@media (max-width: 720px) { :root { --display-wdth: 80%; } }
 
 .lede { max-width: 42ch; color: var(--cream-dim); font-size: 15px; }
 .head .lede { justify-self: end; text-align: left; }
-
-.eyebrow {
-  font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
-  color: var(--gold2); font-weight: 700;
-}
 
 .fine { font-size: 13px; color: var(--muted); }
 
 .bignum {
   font-family: var(--display);
-  font-size: clamp(72px, 9vw, 150px);
-  line-height: .9; letter-spacing: -.02em; font-weight: 500;
+  font-stretch: var(--display-wdth);
+  font-size: clamp(64px, 7.6vw, 112px);
+  line-height: .9; letter-spacing: .005em; font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 .bignum i {
-  font-style: italic; color: var(--gold2);
-  font-size: .5em; vertical-align: .25em; font-weight: 400; margin-left: .05em;
+  font-style: normal; color: var(--gold2);
+  font-size: .52em; vertical-align: .16em; font-weight: 700; margin-left: .04em;
 }
 
 /* --- 5. Navigation ------------------------------------------------------- */
 
+/* Sticky, because the Partner button is the only sales affordance above the
+   fold and the nav used to be absolutely positioned — it scrolled away at 844px
+   and never came back, on a page seven thousand pixels long. */
+.navbar {
+  position: sticky; top: 0; z-index: 5;
+  background: var(--bg);
+  border-bottom: 1px solid var(--rule);
+}
 nav {
   display: flex; align-items: center; justify-content: space-between; gap: 20px;
-  padding: 22px var(--gutter);
+  padding: 16px var(--gutter);
   max-width: var(--maxw); margin: 0 auto;
-  position: relative; z-index: 5;
 }
-nav.over { position: absolute; inset: 0 0 auto 0; }
 
-.mark { font-family: var(--display); font-size: 26px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; }
-.mark em { font-style: italic; color: var(--gold2); font-weight: 500; }
+.mark {
+  font-family: var(--display); font-stretch: var(--display-wdth);
+  font-size: 24px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .03em; white-space: nowrap;
+}
+.mark em { font-style: normal; color: var(--gold2); }
 .mark:hover { color: var(--cream); }
 
 nav ul {
@@ -152,45 +190,63 @@ nav ul a.cta:hover { background: var(--saffron2); color: var(--bg); }
 
 /* --- 6. Hero ------------------------------------------------------------- */
 
-.hero { position: relative; min-height: 92vh; display: grid; align-items: end; overflow: hidden; }
+/* The hero used to be a full-bleed still under a heavy scrim with the guest's
+   name set at 137px on top of it. The still already had that name baked into
+   the pixels in the show's own condensed capitals, so the page was covering up
+   its own artwork and then re-setting the same words in a different typeface.
+   Worse, it did not generalise: season two alone ships at least two thumbnail
+   layouts (type panel right on one episode, headline across the bottom on the
+   next), so no crop is safe for all of them and the scrim was the only way to
+   hide the collision.
 
-.hero > img {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; object-position: 70% 30%;
-  filter: saturate(.85);
+   So the artwork is now shown whole, uncropped and unscrimmed, and the page's
+   own type says what the artwork does not: what this show is, and what it
+   costs to sponsor. */
+.hero {
+  position: relative;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: clamp(28px, 4vw, 64px); align-items: center;
+  padding: clamp(40px, 6vh, 72px) var(--gutter) 0;
+  max-width: var(--maxw); margin: 0 auto;
 }
 
-/* The scrim is heavy on purpose. YouTube stills have the guest's name and
-   "TSN TALKS" set large and baked into the pixels; at a lighter weight they
-   collide with the page's own typography. The still is atmosphere, not content. */
-.hero::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background:
-    linear-gradient(90deg, rgba(13,7,6,.97) 0%, rgba(13,7,6,.93) 38%, rgba(13,7,6,.74) 68%, rgba(13,7,6,.62) 100%),
-    linear-gradient(0deg, rgba(13,7,6,1) 0%, rgba(13,7,6,.15) 46%, rgba(13,7,6,.55) 100%);
-}
-
-.hero-in {
-  position: relative; z-index: 2;
-  padding: 140px var(--gutter) 0;
-  max-width: var(--maxw); width: 100%; margin: 0 auto;
-}
+.hero-in { position: relative; z-index: 2; }
 
 .ep-line { display: flex; gap: 14px; align-items: center; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold2); font-weight: 700; }
 .ep-line i { width: 34px; height: 1px; background: var(--gold2); display: inline-block; flex: none; }
 
-.guest {
-  font-family: var(--display);
-  font-size: clamp(52px, 9.5vw, 148px);
-  line-height: .92; letter-spacing: -.02em; font-weight: 600;
-  margin: 16px 0 14px; max-width: 11ch; text-wrap: balance;
+/* The page's identity, not the week's guest. The old h1 was the guest name,
+   which changes every episode — a screen reader announced a stranger's name as
+   the page title, and a sponsor arriving cold never learned what the show was. */
+.hero h1 {
+  margin: 18px 0 16px; max-width: 13ch;
   animation: rise .7s cubic-bezier(.2, .7, .2, 1) both;
 }
 
-.role { font-size: clamp(16px, 1.5vw, 20px); color: var(--cream-dim); max-width: 44ch; }
+.role { font-size: clamp(15px, 1.4vw, 19px); color: var(--cream-dim); max-width: 46ch; }
+
+/* The offer, in the fold. A sponsor arrives from a LINE link with seconds to
+   spare; the price used to be six screens down. */
+.offer {
+  margin-top: 22px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px;
+  font-size: clamp(15px, 1.5vw, 18px); color: var(--cream);
+}
+.offer b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.offer small { color: var(--muted); font-size: 13px; }
+
+.hero-cta { display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: center; margin-top: 26px; }
+
+/* The episode artwork, shown whole. `contain` rather than `cover` is the whole
+   point: a crop would slice the baked-in headline mid-word, which is exactly
+   what made the old wall read as machine-made. */
+.hero-art { position: relative; }
+.hero-art a { display: block; background: var(--bg2); border: 1px solid var(--rule); }
+.hero-art img { width: 100%; aspect-ratio: 16 / 9; object-fit: contain; background: var(--bg2); }
+.hero-cap { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; font-size: 13.5px; color: var(--cream-dim); }
+.hero-cap b { color: var(--cream); font-weight: 700; }
 
 .watch {
-  display: inline-flex; align-items: center; gap: 12px; margin-top: 26px;
+  display: inline-flex; align-items: center; gap: 12px;
   font-weight: 700; font-size: 14px; letter-spacing: .06em; text-transform: uppercase;
 }
 .watch b {
@@ -212,15 +268,16 @@ nav ul a.cta:hover { background: var(--saffron2); color: var(--bg); }
 
 .strap {
   position: relative; z-index: 2;
-  margin-top: 64px;
+  margin: clamp(34px, 5vw, 58px) auto 0;
   border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
   padding: 16px var(--gutter);
-  max-width: var(--maxw); width: 100%; margin-inline: auto;
+  max-width: var(--maxw); width: 100%;
   display: flex; flex-wrap: wrap; gap: 8px 0;
   font-size: 14px; color: var(--cream-dim);
 }
-.strap span { padding-right: 22px; margin-right: 22px; border-right: 1px solid var(--rule); }
-.strap span:last-child { border-right: 0; padding-right: 0; margin-right: 0; }
+/* The separator belongs between items, not after them. Hanging it off the right
+   of every span left a stray rule dangling at the wrap point on a phone. */
+.strap span + span { padding-left: 22px; margin-left: 22px; border-left: 1px solid var(--rule); }
 .strap b { color: var(--cream); font-weight: 700; font-variant-numeric: tabular-nums; }
 
 .live { color: var(--saffron2); font-weight: 700; }
@@ -229,74 +286,87 @@ nav ul a.cta:hover { background: var(--saffron2); color: var(--bg); }
   background: var(--saffron); margin-right: 8px; vertical-align: 1px;
   animation: pulse 2.4s ease-in-out infinite;
 }
-.strap.stale { color: var(--muted); }
+
+/* Stale used to be communicated by dimming the text, which nobody can notice:
+   you cannot see the absence of a dot you never saw. It says so in words now. */
+.strap.stale { color: var(--cream-dim); }
+.stale-flag { color: var(--gold2); font-weight: 700; }
+.stale-flag::before {
+  content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--gold2); margin-right: 8px; vertical-align: 1px;
+}
 
 /* --- 8. Poster wall ------------------------------------------------------ */
 
-/* Tiles are emitted most-watched first, so `dense` packs the mixed sizes with
-   no holes. Without it the 3x3 tile strands a row of gaps beside itself. */
+/* Every tile shows its thumbnail whole and puts the caption underneath it.
+
+   The old wall cropped each still to fill a mixed-size masonry cell and laid a
+   scrim and a caption over the result. Because the show bakes its headline and
+   the guest's name into the artwork, that produced ten tiles of mid-word
+   fragments — "USD / ERED TO THE FIRST", "WHY I LAUN / HUMAN ST" — each with
+   the guest's name printed a second time in a different typeface on top. It
+   also put an 11px platform-coloured kicker over a photograph, which measured
+   as low as 1.4:1 against the pixels actually behind it.
+
+   Showing the artwork whole fixes the composition and the contrast at once:
+   there is no text over an image anywhere on this page any more. */
 .wall {
-  display: grid; grid-template-columns: repeat(6, 1fr);
-  grid-auto-rows: 150px; grid-auto-flow: row dense; gap: 10px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: clamp(16px, 2vw, 26px);
 }
 
-.po { position: relative; overflow: hidden; background: var(--bg3); display: block; }
+.po { display: block; }
 .po img {
-  width: 100%; height: 100%; object-fit: cover;
-  transition: transform .5s cubic-bezier(.2, .7, .2, 1);
+  width: 100%; aspect-ratio: 16 / 9; object-fit: contain;
+  background: var(--bg2); border: 1px solid var(--rule);
+  transition: border-color .25s;
 }
-.po:hover img { transform: scale(1.04); }
-.po::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(0deg, rgba(13,7,6,.92), rgba(13,7,6,.1) 55%);
-}
-/* A small tile is mostly caption, so the same scrim would black it out. */
-.po.sm::after { background: linear-gradient(0deg, rgba(13,7,6,.88), rgba(13,7,6,.22) 78%); }
-/* A big tile shows enough of the still for its baked-in title text to collide
-   with the caption, so it gets the hero's treatment at half strength. */
-.po.big::after {
-  background:
-    linear-gradient(0deg, rgba(13,7,6,.95), rgba(13,7,6,.08) 62%),
-    linear-gradient(90deg, rgba(13,7,6,.45) 0%, rgba(13,7,6,.1) 45%, rgba(13,7,6,.55) 100%);
-}
-
-/* "Now playing": the latest episode as a banner, then one tile per platform.
-   The default six-column wall cannot tile 1 big + 3 mid without leaving holes. */
-.wall.now { grid-template-columns: repeat(3, 1fr); grid-auto-rows: 190px; }
-.wall.now .po.big { grid-column: 1 / -1; grid-row: span 2; }
-.wall.now .po.mid { grid-column: span 1; grid-row: span 1; }
-.wall.now .po.mid .g { font-size: 17px; }
-/* These tiles carry a caption over someone else's thumbnail, which is busy by
-   nature — a platform-coloured kicker needs a real ground under it. */
-.wall.now .po.mid::after { background: linear-gradient(0deg, rgba(13,7,6,.96) 0%, rgba(13,7,6,.72) 34%, rgba(13,7,6,.12) 72%); }
-.wall.now .po.big::after {
-  background:
-    linear-gradient(0deg, rgba(13,7,6,.96), rgba(13,7,6,.06) 58%),
-    linear-gradient(90deg, rgba(13,7,6,.35) 0%, rgba(13,7,6,.1) 35%, rgba(13,7,6,.82) 100%);
-}
+.po:hover img { border-color: var(--rule-hi); }
 .po:hover { color: inherit; }
 
-.po .t { position: absolute; left: 14px; right: 14px; bottom: 12px; z-index: 2; }
+.po .t { margin-top: 12px; }
 .po .n { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold2); font-weight: 700; }
-.po .g { font-family: var(--display); font-size: 22px; line-height: 1.05; font-weight: 600; margin-top: 3px; }
-.po .v { font-size: 12px; color: var(--cream-dim); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.po .g {
+  font-family: var(--display); font-stretch: var(--display-wdth);
+  font-size: 19px; text-transform: uppercase; letter-spacing: .012em;
+  line-height: 1.05; font-weight: 800; margin-top: 5px;
+}
+.po .v { font-size: 12.5px; color: var(--cream-dim); margin-top: 5px; font-variant-numeric: tabular-nums; }
 
-.po.big { grid-column: span 3; grid-row: span 3; }
-.po.mid { grid-column: span 2; grid-row: span 2; }
-.po.sm  { grid-column: span 1; grid-row: span 1; }
-.po.big .g { font-size: clamp(28px, 3vw, 44px); }
-.po.sm .g { font-size: 15px; }
-.po.sm .v, .po.sm .n { display: none; }
+/* The latest episode leads at double width — a real hierarchy from recency,
+   not a decorative size mix. The old wall ranked tiles by view count, which
+   guaranteed the largest tile carried the largest number and every tile after
+   it visibly decayed: a deficit gradient, and the one shape PRODUCT.md's first
+   principle rules out. */
+.po.lead { grid-column: span 2; }
+.po.lead .g { font-size: clamp(22px, 2.4vw, 30px); }
+
+/* "Now playing" on /live: the episode leads full width, one tile per platform
+   follows. Same rules — artwork whole, caption under it. */
+.wall.now { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); align-items: start; }
+/* The three platform tiles carry someone's actual post, and those arrive at
+   whatever shape the platform uses — a 9:16 Reel, a 3:4 TikTok, a 16:9 upload.
+   Forcing them into a shared 16:9 box either crops the post or strands it as a
+   sliver between two pillarboxes, so each one keeps its own proportions. */
+.wall.now .po:not(.lead) img { aspect-ratio: auto; height: auto; }
+/* Capped. Full-bleed 16:9 at this max-width is a 1,384px banner for one
+   episode, which drowns the three platform tiles it is meant to lead. */
+.wall.now .po.lead { grid-column: 1 / -1; max-width: 860px; }
 
 /* --- 9. Index list ------------------------------------------------------- */
 
-.index { margin-top: 56px; display: grid; grid-template-columns: auto 1fr; gap: 40px; align-items: start; }
-.index h3 { font-style: italic; color: var(--gold2); white-space: nowrap; }
-.index h3 small {
-  display: block; font-family: var(--text); font-style: normal; font-size: 12px;
-  color: var(--muted); letter-spacing: .1em; text-transform: uppercase; margin-top: 6px;
+/* Twenty-two names in a column served nobody scanning, so season one is closed
+   by default and opens for the reader who actually wants the back catalogue. */
+.index { margin-top: 56px; border-top: 1px solid var(--rule); }
+.index > summary {
+  cursor: pointer; padding: 18px 0; display: flex; align-items: baseline; gap: 14px;
 }
-.index ol { columns: 2; column-gap: 40px; }
+.index > summary h3 { color: var(--gold2); white-space: nowrap; }
+.index > summary small {
+  font-size: 12.5px; color: var(--muted);
+}
+.index > summary:hover small { color: var(--cream-dim); }
+.index .cols2 { columns: 2; column-gap: 40px; padding-bottom: 18px; }
 .index li {
   display: flex; gap: 14px; padding: 9px 0;
   border-bottom: 1px solid var(--rule);
@@ -321,7 +391,8 @@ nav ul a.cta:hover { background: var(--saffron2); color: var(--bg); }
 /* The printed-report table. Serves both pages; --plat recolours the bars. */
 table.rep { width: 100%; border-collapse: collapse; font-size: 14px; }
 table.rep caption {
-  text-align: left; font-family: var(--display); font-size: 20px; font-style: italic;
+  text-align: left; font-family: var(--display); font-stretch: var(--display-wdth);
+  font-size: 19px; font-weight: 800; text-transform: uppercase; letter-spacing: .012em;
   color: var(--gold2); padding-bottom: 10px;
 }
 table.rep th {
@@ -329,7 +400,11 @@ table.rep th {
   text-transform: uppercase; color: var(--muted);
   padding: 8px 0; border-bottom: 1px solid var(--rule-hi);
 }
-table.rep tbody th, table.rep tr > th[scope="row"] {
+/* `tbody th` alone also matched the column headers: the tables are built with
+   innerHTML and the rows are appended with no explicit <tbody>, so the browser
+   inserts one around every row, header row included. The header of every table
+   on the page was rendering byte-identically to its own data. */
+table.rep tbody th[scope="row"], table.rep tr > th[scope="row"] {
   font-size: 14px; letter-spacing: 0; text-transform: none;
   color: var(--cream); font-weight: 400; border-bottom: 1px solid var(--rule);
   padding: 9px 0;
@@ -373,7 +448,12 @@ details.twin .scroll { overflow-x: auto; padding-bottom: 8px; }
 
 /* --- 11. Columns chart --------------------------------------------------- */
 
-.cols-scroll { overflow-x: auto; padding-bottom: 10px; }
+/* Without this the OS scrollbar draws a bright band straight across the dark
+   chart on every phone. */
+.cols-scroll {
+  overflow-x: auto; padding-bottom: 10px;
+  scrollbar-width: thin; scrollbar-color: var(--rule-hi) transparent;
+}
 .cols {
   display: grid; grid-auto-flow: column; grid-auto-columns: minmax(34px, 1fr);
   gap: 6px; height: 300px; align-items: end;
@@ -397,15 +477,20 @@ details.twin .scroll { overflow-x: auto; padding-bottom: 8px; }
   display: grid; grid-template-columns: 380px 1fr; gap: 56px; align-items: center;
   border-top: 1px solid var(--rule); padding-top: clamp(40px, 6vw, 80px);
 }
-.founder .ph { position: relative; isolation: isolate; }
-.founder .ph img { width: 100%; filter: saturate(.9); }
-.founder .ph::after {
-  content: ""; position: absolute; inset: auto -14px -14px auto;
-  width: 60%; height: 60%; border: 1px solid var(--rule-hi); z-index: -1;
+.founder .ph { position: relative; }
+/* The source is 800x706 and the markup carried height="475" with no object-fit,
+   so it computed to `fill` and squeezed the only face on the site by 29%.
+   It is also a white-background studio cut-out, which on a near-black page was
+   a 20:1 white rectangle — the brightest object anywhere here. Setting it in a
+   deliberate cream plate makes that a frame rather than an accident. */
+.founder .ph img {
+  width: 100%; height: auto; aspect-ratio: 800 / 706; object-fit: cover;
+  background: var(--cream); border: 1px solid var(--rule);
 }
 .quote {
-  font-family: var(--display); font-size: clamp(26px, 3vw, 40px);
-  font-style: italic; font-weight: 400; line-height: 1.2; text-wrap: balance;
+  font-family: var(--display); font-stretch: var(--display-wdth);
+  font-size: clamp(24px, 2.8vw, 38px); text-transform: uppercase;
+  font-weight: 800; letter-spacing: .012em; line-height: 1.08; text-wrap: balance;
 }
 .quote + p { margin-top: 20px; color: var(--cream-dim); max-width: 52ch; }
 .byline { margin-top: 22px; display: flex; align-items: center; gap: 14px; font-size: 14px; }
@@ -415,20 +500,58 @@ details.twin .scroll { overflow-x: auto; padding-bottom: 8px; }
 
 /* --- 13. Partner --------------------------------------------------------- */
 
+/* The price leads the row. It used to be the fourth element at 18px, behind a
+   30px roman numeral — the one number a sponsor came for, losing to decoration
+   that implied a rank the prices themselves contradicted (I=25k, II=20k,
+   III=15k). The numerals are gone and the 330px of dead column they sat in
+   with them. */
 .tiers { border-top: 1px solid var(--rule); }
+/* A definite first column, not `auto`. Each row is its own grid, so an
+   intrinsic width let every row size its price column to its own unit line —
+   "from, per month · 4 episodes" is wider than "from, per episode" — and the
+   five titles stepped in and out against each other down the card. */
 .tier {
-  display: grid; grid-template-columns: 64px 1fr 1.2fr auto;
-  gap: 24px; align-items: baseline;
-  padding: 22px 0; border-bottom: 1px solid var(--rule);
+  display: grid; grid-template-columns: clamp(132px, 15vw, 186px) 1fr;
+  gap: 10px 32px; align-items: baseline;
+  padding: 24px 0; border-bottom: 1px solid var(--rule);
 }
-.tier .k { font-family: var(--display); font-size: 30px; color: var(--gold2); font-style: italic; }
-.tier .n { font-family: var(--display); font-size: 24px; font-weight: 500; line-height: 1.1; }
+.tier .p {
+  font-family: var(--display); font-stretch: var(--display-wdth);
+  font-weight: 800; font-size: clamp(26px, 2.6vw, 34px); line-height: 1;
+  white-space: nowrap; font-variant-numeric: tabular-nums;
+  grid-row: span 2;
+}
+.tier .p small {
+  display: block; font-family: var(--text); font-stretch: normal;
+  font-weight: 500; color: var(--muted); font-size: 12px;
+  text-transform: none; letter-spacing: 0; margin-top: 7px; white-space: normal;
+}
+.tier .n {
+  font-family: var(--display); font-stretch: var(--display-wdth);
+  font-size: 21px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .012em; line-height: 1.08;
+}
 .tier .d { color: var(--cream-dim); font-size: 14.5px; }
 .tier .d ul { margin-top: 8px; display: grid; gap: 4px; }
 .tier .d li { padding-left: 16px; position: relative; font-size: 13.5px; color: var(--muted); }
 .tier .d li::before { content: ""; position: absolute; left: 0; top: .62em; width: 7px; height: 1px; background: var(--rule-hi); }
-.tier .p { font-weight: 700; font-size: 18px; white-space: nowrap; font-variant-numeric: tabular-nums; text-align: right; }
-.tier .p small { display: block; font-weight: 500; color: var(--muted); font-size: 12px; text-align: right; }
+
+/* The partner page shipped with no image of any kind — on the one page where a
+   sponsor decides. These are three real episodes as published, not mock-ups:
+   the thing being sold, shown whole. */
+.showreel {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px; margin-bottom: 14px;
+}
+/* `height: auto` is load-bearing. The markup carries width/height attributes for
+   layout stability, and a presentational height defeats aspect-ratio — which is
+   the same bug that squeezed the founder portrait by 29%. Without it these were
+   540px-tall boxes cropping the artwork mid-word: "AI SINDHI ASSOCIAT". */
+.showreel img {
+  width: 100%; height: auto; aspect-ratio: 16 / 9;
+  object-fit: contain; background: var(--bg2); border: 1px solid var(--rule);
+}
+.showreel-cap { max-width: 70ch; margin-bottom: 40px; }
 
 .bundles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
 .bundle {
@@ -436,19 +559,21 @@ details.twin .scroll { overflow-x: auto; padding-bottom: 8px; }
   display: flex; flex-direction: column; gap: 12px; background: var(--bg2);
 }
 .bundle.flag { border-color: var(--rule-hi); background: var(--bg3); }
-.bundle .tag {
-  font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
-  color: var(--gold2); font-weight: 700;
-}
-.bundle h3 { font-size: 24px; line-height: 1.05; }
+.bundle h3 { font-size: 22px; line-height: 1.05; }
 .bundle .term { font-size: 13px; color: var(--muted); }
 .bundle ul { display: grid; gap: 6px; font-size: 13.5px; color: var(--cream-dim); }
 .bundle li { padding-left: 16px; position: relative; }
 .bundle li::before { content: ""; position: absolute; left: 0; top: .62em; width: 7px; height: 1px; background: var(--rule-hi); }
+/* `min-height` so the five prices share a baseline. Without it the one card
+   whose reach line wrapped to two lines — the flagship, the price that matters
+   most — sat 20px out of line with the other four. */
+.bundle .reach { font-size: 13px; color: var(--gold2); font-weight: 600; min-height: 2.6em; }
 .bundle .price { margin-top: auto; padding-top: 12px; }
 .bundle .was { font-size: 13px; color: var(--muted); text-decoration: line-through; }
-.bundle .now { font-family: var(--display); font-size: 34px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.bundle .reach { font-size: 13px; color: var(--gold2); font-weight: 600; margin-top: 6px; }
+.bundle .now {
+  font-family: var(--display); font-stretch: var(--display-wdth);
+  font-size: 32px; font-weight: 800; font-variant-numeric: tabular-nums;
+}
 
 .cta-row { display: flex; gap: 18px; align-items: center; margin-top: 34px; flex-wrap: wrap; }
 .btn {
@@ -488,45 +613,52 @@ footer > div { max-width: 62ch; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .guest { animation: none; }
+  .hero h1 { animation: none; }
   .live::before { animation: none; }
-  .po img { transition: none; }
-  .po:hover img { transform: none; }
-  * { transition-duration: .01ms !important; }
+  /* `*` matches elements, not pseudo-elements, so these two need naming. */
+  *, *::before, *::after { transition-duration: .01ms !important; }
 }
+
+/* --- 15b. Data failure --------------------------------------------------- */
+
+/* live-data.js sets .data-failed on <html> when both the committed copy and the
+   hourly one fail. It used to set a class no rule matched, so the promise in
+   that module — "the page can say so instead of showing an empty frame" — was
+   not kept: the page shipped headings over empty slots and said nothing. */
+.datamsg { display: none; }
+.data-failed .datamsg {
+  display: block; margin: 20px 0; padding: 14px 16px;
+  border: 1px solid var(--rule-hi); background: var(--bg2);
+  color: var(--cream-dim); font-size: 14px; max-width: 62ch;
+}
+.data-failed .datamsg b { color: var(--cream); font-weight: 700; }
 
 /* --- 16. Responsive ------------------------------------------------------ */
 
 @media (max-width: 1100px) {
   .legend { grid-template-columns: 1fr; gap: 14px; }
-  .tier { grid-template-columns: 52px 1fr auto; }
-  .tier .d { grid-column: 2 / -1; }
 }
 
 @media (max-width: 900px) {
-  .hero { min-height: 78vh; }
-  .hero > img { object-position: 60% 20%; }
-  .hero-in { padding-top: 120px; }
+  /* The nav is in flow and sticky now, so the hero no longer has to clear an
+     overlaid bar. It used to reserve 104px for one that is not there. */
+  .hero { grid-template-columns: 1fr; gap: 26px; padding-top: 28px; align-items: start; }
+  /* Artwork first on a phone: it is the show, and it is what a LINE link
+     promised. The offer follows immediately underneath it. */
+  .hero-art { order: -1; }
 
   .head { grid-template-columns: 1fr; align-items: start; }
   .head .lede { justify-self: start; }
 
-  .wall { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 140px; }
-  .po.big { grid-column: span 2; grid-row: span 2; }
-  .po.mid { grid-column: span 1; grid-row: span 1; }
-  .po.mid .v, .po.mid .n { display: none; }
-  .po.mid .g { font-size: 15px; }
+  .po.lead { grid-column: span 1; }
 
-  .index { grid-template-columns: 1fr; gap: 18px; }
-  .index ol { columns: 1; }
+  .index .cols2 { columns: 1; }
 
   .aud, .founder { grid-template-columns: 1fr; gap: 34px; }
   .founder .ph { max-width: 340px; }
 
-  .tier { grid-template-columns: 44px 1fr; gap: 6px 16px; }
-  .tier .d, .tier .p { grid-column: 2; }
-  .tier .p { text-align: left; }
-  .tier .p small { text-align: left; }
+  .tier { grid-template-columns: 1fr; gap: 4px; }
+  .tier .p { grid-row: auto; }
 
   /* The sketch hid the nav on phones. Sponsors arrive on phones and need /live. */
   nav { gap: 12px; }
@@ -545,12 +677,9 @@ footer > div { max-width: 62ch; }
      "Live numbers" stays because that is the page a sponsor is sent to check. */
   nav ul li.anchor { display: none; }
 
-  /* Three tiles across a 390px screen leaves 120px each and six-line titles. */
-  .wall.now { grid-template-columns: 1fr; grid-auto-rows: 170px; }
-  .wall.now .po.big { grid-row: span 2; }
+  .wall, .wall.now { grid-template-columns: 1fr; }
 
   .strap { font-size: 13px; }
-  .strap span { padding-right: 14px; margin-right: 14px; }
+  .strap span + span { padding-left: 14px; margin-left: 14px; }
   .cols { height: 220px; }
-  .founder .ph::after { display: none; }
 }

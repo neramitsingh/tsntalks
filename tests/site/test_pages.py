@@ -6,6 +6,7 @@ import pytest
 PAGES = ["/", "/live/", "/partner/"]
 NAMES = {"/": "home", "/live/": "live", "/partner/": "partner"}
 SHOTS = Path(__file__).parent / "shots"
+ROOT = Path(__file__).resolve().parents[2]
 
 # An element may legitimately stick out of the viewport when some ancestor scrolls
 # horizontally — the nav strip and the column chart both do. Walk up, do not stop
@@ -46,20 +47,74 @@ def test_no_console_or_page_errors(page, base_url, path):
 
 @pytest.mark.parametrize("path", PAGES)
 def test_display_and_text_fonts_load(page, base_url, path):
+    """document.fonts.check() answers true for a family the document has never
+    heard of, so it cannot tell you a webfont arrived — the old version of this
+    test passed just as happily with the display face deleted. Ask the font set
+    what it actually loaded, and confirm the heading is rendered in it."""
     page.goto(base_url + path, wait_until="networkidle")
-    page.wait_for_timeout(600)
-    assert page.evaluate("document.fonts.check('600 48px \"Bodoni Moda\"')")
-    assert page.evaluate("document.fonts.check('500 16px \"Hanken Grotesk\"')")
+    page.evaluate("document.fonts.ready")
+    page.wait_for_timeout(700)
+    loaded = page.evaluate(
+        "[...document.fonts].filter(f => f.status === 'loaded').map(f => f.family)")
+    assert "Archivo" in loaded, f"display face did not load: {sorted(set(loaded))}"
+    assert "Hanken Grotesk" in loaded, f"text face did not load: {sorted(set(loaded))}"
+
+    # And it is actually in use: a condensed 800 heading must not be measuring
+    # the same as the fallback stack.
+    assert page.evaluate("""() => {
+      const h = document.querySelector('h1, h2');
+      const cs = getComputedStyle(h);
+      return cs.fontFamily.includes('Archivo')
+          && cs.textTransform === 'uppercase'
+          && Number(cs.fontWeight) >= 700;
+    }""")
 
 
 # --- the numbers on the page are the numbers in live.json --------------------
 
 def test_home_hero_is_the_newest_episode(desktop, base_url, live_data):
+    """The <h1> is the show, not the week's guest — a heading that changed every
+    episode announced a stranger's name as the page title. The guest belongs in
+    the artwork's caption, and both links still point at the newest episode."""
     desktop.goto(base_url + "/", wait_until="networkidle")
     desktop.wait_for_timeout(600)
     newest = max(live_data["episodes"], key=lambda e: e["published_at"])
-    assert desktop.inner_text("#guest").strip() == newest["guest"]
+    assert desktop.inner_text("h1").strip().lower() == "thai-indian stories, told at length"
+    assert newest["guest"] in desktop.inner_text("#herocap")
     assert desktop.get_attribute("#watch", "href") == newest["url"]
+    assert desktop.get_attribute("#herolink", "href") == newest["url"]
+
+
+def test_hero_quotes_the_entry_price_in_the_first_screen(desktop, base_url):
+    """A sponsor arrives from a LINE link with seconds to spare. The floor price
+    is generated from data/pricing.json, so it cannot drift from the rate card."""
+    import json as _json
+    pricing = _json.loads((ROOT / "data" / "pricing.json").read_text(encoding="utf-8"))
+    floor = min(t["amount"] for t in pricing["tiers"])
+    desktop.goto(base_url + "/", wait_until="networkidle")
+    assert f"฿{floor:,}" == desktop.inner_text("#floor").strip()
+    box = desktop.locator(".offer").bounding_box()
+    assert box["y"] < 900, "the entry price must be in the first screen"
+
+
+def test_no_text_is_printed_over_a_photograph(desktop, base_url):
+    """The tell that made the old wall read as machine-made: the show bakes its
+    headline and the guest's name into every thumbnail, so a caption laid over
+    one collided with type already in the pixels — and an 11px platform-coloured
+    kicker over a photo measured as low as 1.4:1. Captions sit below the image."""
+    desktop.goto(base_url + "/", wait_until="networkidle")
+    desktop.wait_for_timeout(600)
+    overlapping = desktop.evaluate("""() => {
+      const bad = [];
+      for (const po of document.querySelectorAll('.po')) {
+        const img = po.querySelector('img'), cap = po.querySelector('.t');
+        if (!img || !cap) continue;
+        const a = img.getBoundingClientRect(), b = cap.getBoundingClientRect();
+        if (b.top < a.bottom - 1) bad.push(po.className);
+      }
+      return bad;
+    }""")
+    assert overlapping == []
 
 
 def test_home_strap_carries_the_real_totals(desktop, base_url, live_data):
@@ -92,11 +147,61 @@ def test_season_one_index_is_complete(desktop, base_url, live_data):
     assert all(roles)
 
 
-def test_poster_wall_has_one_big_and_two_mid(desktop, base_url):
+@pytest.mark.parametrize("path", PAGES)
+def test_no_image_is_stretched_out_of_its_own_aspect_ratio(desktop, base_url, path):
+    """A width/height attribute pair defeats `aspect-ratio` unless `height: auto`
+    is set, and the result is a silently distorted photograph. It happened twice:
+    the founder portrait rendered 29% narrow, and the partner showreel cropped
+    episode artwork mid-word. `contain` letterboxes and `cover` crops — both are
+    deliberate and neither distorts. `fill`, the default, is the one that
+    silently stretches a face, so that is what this catches."""
+    desktop.goto(base_url + path, wait_until="networkidle")
+    desktop.wait_for_timeout(900)
+    desktop.evaluate("""async () => {
+      for (let y = 0; y < document.body.scrollHeight; y += 700) {
+        window.scrollTo(0, y); await new Promise(r => setTimeout(r, 60));
+      }
+      window.scrollTo(0, 0);
+      await Promise.all([...document.images].filter(i => !i.complete)
+        .map(i => new Promise(r => { i.onload = i.onerror = r; })));
+    }""")
+    desktop.wait_for_timeout(700)
+    bad = desktop.evaluate("""() => {
+      const out = [];
+      for (const i of document.images) {
+        if (!i.naturalWidth || i.naturalWidth < 3) continue;
+        const cs = getComputedStyle(i);
+        if (cs.objectFit !== 'fill') continue;   // contain/cover never distort
+        const r = i.getBoundingClientRect();
+        if (r.width < 4 || r.height < 4) continue;
+        const natural = i.naturalWidth / i.naturalHeight;
+        const drawn = r.width / r.height;
+        if (Math.abs(drawn - natural) / natural > 0.02) {
+          out.push({ src: i.currentSrc.slice(-42), natural: +natural.toFixed(3),
+                     drawn: +drawn.toFixed(3), fit: cs.objectFit });
+        }
+      }
+      return out;
+    }""")
+    assert bad == [], f"images not rendering at their true aspect ratio: {bad}"
+
+
+def test_poster_wall_leads_with_the_newest_not_the_most_watched(desktop, base_url, live_data):
+    """Ranking tiles by view count guaranteed the biggest tile carried the biggest
+    number and every tile after it visibly decayed — a deficit gradient, which is
+    the one shape PRODUCT.md's first principle rules out. Newest first."""
     desktop.goto(base_url + "/", wait_until="networkidle")
     desktop.wait_for_timeout(600)
-    assert desktop.locator("#wall .po.big").count() == 1
-    assert desktop.locator("#wall .po.mid").count() == 2
+    s2 = [e for e in live_data["episodes"] if e["season"] == 2]
+    assert desktop.locator("#wall .po").count() == len(s2)
+    assert desktop.locator("#wall .po.lead").count() == 1
+
+    order = desktop.eval_on_selector_all("#wall .po .g", "els => els.map(e => e.textContent)")
+    by_date = [e["guest"] for e in sorted(s2, key=lambda e: e["published_at"], reverse=True)]
+    assert order == by_date
+
+    first = desktop.locator("#wall .po").first
+    assert "lead" in (first.get_attribute("class") or "")
 
 
 def test_live_chart_has_a_table_twin_with_the_same_months(desktop, base_url, live_data):
@@ -200,8 +305,26 @@ def test_page_still_renders_when_storage_is_down(browser, base_url, live_data):
     pg.route("**/storage/v1/object/public/public/live.json", lambda r: r.abort())
     pg.goto(base_url + "/", wait_until="networkidle")
     pg.wait_for_timeout(800)
-    assert pg.inner_text("#guest").strip() != ""
+    assert pg.inner_text("#herocap").strip() != ""
+    assert pg.locator("#wall .po").count() > 0
     assert f"{live_data['total_views']:,}" in pg.inner_text("#strap")
+    ctx.close()
+
+
+def test_a_total_data_failure_says_so_instead_of_shipping_blank(browser, base_url):
+    """live-data.js sets .data-failed when both sources die. It used to set a
+    class no stylesheet matched, so the page shipped headings over empty slots
+    and said nothing at all."""
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    pg = ctx.new_page()
+    pg.route("**/data/live.json", lambda r: r.abort())
+    pg.route("**/storage/v1/object/public/public/live.json", lambda r: r.abort())
+    pg.goto(base_url + "/", wait_until="networkidle")
+    pg.wait_for_timeout(800)
+    assert pg.locator("html.data-failed").count() == 1
+    msg = pg.locator(".datamsg")
+    assert msg.is_visible()
+    assert "not available" in msg.inner_text().lower()
     ctx.close()
 
 

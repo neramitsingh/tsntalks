@@ -17,7 +17,7 @@ Success looks like: a sponsor opens the site from a LINE link and believes the n
 | Data store and auth | Supabase (Postgres, Auth, Storage), new project `tsntalks` in Ney's org, region ap-southeast-1. |
 | Collector | GitHub Actions cron, Python. |
 | Hosting | Static site on GitHub Pages under Ney's GitHub (`neramitsingh/tsntalks`). Domain (Hostinger, Sunny's) attached later. |
-| Visual direction | D1 "Marquee": Bodoni Moda display, Hanken Grotesk text. Palette kept: ground `#0D0706`, saffron `#E8621A`, gold `#C8901E` / `#E0B040`, cream `#F2E4CC`. |
+| Visual direction | D1 "Marquee": **Archivo condensed capitals** for display, Hanken Grotesk text, Noto Sans Thai behind both for `฿`. Palette kept: ground `#0D0706`, saffron `#E8621A`, gold `#E0B040`, cream `#F2E4CC`. *Revised 2026-09-15 — was Bodoni Moda; see "Typography revision" below.* |
 | Platform colours | YouTube `#E8621A`, TikTok `#2EA6A0`, Instagram `#7C6BF0`. Validated for colour-blind separation on the dark ground. Fixed, never reassigned. |
 | Public register | Brand. A media kit that happens to be live. Never a dashboard. |
 | Private register | Product. A dashboard. Familiar controls, dense where useful. |
@@ -43,7 +43,7 @@ flowchart LR
 
 Direction D1 as sketched in `sketches/home-D1-marquee.template.html`, built properly.
 
-1. **Hero.** The latest episode's still full-bleed, the guest's name in Bodoni set huge and left-aligned, season and episode line, role, "Watch the episode". Under it a single strap line with the live numbers: total views across platforms, followers, episode count, updated time, live dot.
+1. **Hero.** The latest episode's artwork shown **whole and unscrimmed** beside the page's own type: the show's proposition as the `<h1>`, the entry price, and two calls to action. The guest's name sits in the artwork's caption, not over the image. *Revised 2026-09-15 — was a full-bleed scrimmed still with the guest's name overprinted at 137px; see "Typography revision" below.* Under it a single strap line with the live numbers: total views across platforms, followers, episode count, updated time, live dot.
 2. **Season two.** A poster wall of the season's episodes in mixed sizes: the most-viewed episode large, the next two medium, the rest small. Guest name and live YouTube views on each. No identical cards.
 3. **Season one.** A two-column text index: number, guest, role.
 4. **Who is listening.** One large figure (total views), a paragraph that states gender, largest age band and the India/Thailand split in words, a proportion bar by platform, and two printed-report tables: YouTube viewers by age, YouTube views by country.
@@ -187,3 +187,34 @@ Repo transfer to Sunny's GitHub, Supabase project transfer to an org Sunny owns,
 - YouTube Data API key: needs a Google Cloud project on Ney's Google account; until then the collector uses yt-dlp for the catalogue.
 - The domain name and whether Hostinger hosting came with it. **Not a blocker:** the site is live on GitHub Pages; a domain is a DNS change on top.
 - ~~Confirm the export artifacts with Sunny.~~ **Decided 2026-09-15** — the five above get built, in the order listed in §10. Sunny is welcome to ask for a sixth (for example a report format Thai Sikh News already uses) once he can see the five working.
+
+---
+
+## Typography revision — 2026-09-15
+
+Ney's verdict on the shipped D1 build: *"the GitHub page still looks vibecoded."* A two-agent design critique
+(`.impeccable/critique/2026-09-15T06-57-31Z__site-index-html.md`, 21/40) found the cause was not any single
+value but the **aesthetic lane**. Given this brief's own anti-references — not cream, not SaaS-dashboard, not
+Playfair/Plus Jakarta — the next place a model lands is editorial-typographic, and D1 landed there exactly:
+display serif with a full italic axis, tracked micro-labels, hairline rules on ten components, one hue family,
+and zero imagery on `/partner`. Bodoni Moda is not on any ban list, but it was the substitution move: the
+nearest un-banned Didone to the Playfair the old site used. Same shape, one name over.
+
+**The fix came from the show's own assets, not from a font catalogue.** Every episode thumbnail sets its
+headline and the guest's name in heavy condensed gold capitals. The site was scrimming that artwork and
+re-setting the same words in a Didone on top of it — covering up its own brand. `--display` is now **Archivo**
+at `font-stretch: 70%` and weight 800, set in capitals, which is what the artwork is already speaking.
+
+Three things follow from looking at the real assets rather than assuming:
+
+- **There is no safe crop.** Season two ships at least two thumbnail layouts — a type panel on the right for
+  episode 10, a headline across the bottom for episode 9 — so any fixed crop that works for one mutilates the
+  other. Artwork is shown **whole**, `object-fit: contain` on a `--bg2` ground, captions underneath. This also
+  removes the five measured contrast failures structurally: there is no text over a photograph anywhere now.
+- **Season one is a different design system entirely** — studio portrait cut-outs on a warm gradient, with
+  past sponsors' logos baked in. It stays a text index, not a wall, which is what it already was.
+- **`฿` had no home.** Hanken Grotesk carries no Thai block, so the baht sign fell back to whatever the OS
+  supplied at all fifteen-plus price points. Noto Sans Thai now sits behind both stacks.
+
+Headings: nine across three pages, no two sharing a construction, and the `h1 em, h2 em, h3 em` italic-gold
+rule is deleted. Gold italic survives in exactly one place, the wordmark.

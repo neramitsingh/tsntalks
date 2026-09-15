@@ -22,15 +22,18 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PRICING = ROOT / "data" / "pricing.json"
 
-# Which generated block lives in which page. A block is delimited by
-# <!-- pricing:NAME --> ... <!-- /pricing:NAME --> inside its container div.
+# Which generated block lives in which page, and at what indent. A block is
+# delimited by <!-- pricing:NAME --> ... <!-- /pricing:NAME --> inside its
+# container. The indent is per block because the hero's floor price sits one
+# level shallower than the rate-card blocks.
 BLOCKS = [
-    ("site/index.html", "tiers-brief"),
-    ("site/partner/index.html", "tiers-full"),
-    ("site/partner/index.html", "bundles"),
+    ("site/index.html", "hero-floor", "    "),
+    ("site/index.html", "tiers-brief", "      "),
+    ("site/partner/index.html", "tiers-full", "      "),
+    ("site/partner/index.html", "bundles", "      "),
 ]
 
-IND = "      "          # the blocks sit two levels in, as the hand markup did
+IND = "      "          # the rate-card blocks sit two levels in, as the hand markup did
 
 LF = "\n"
 CRLF = "\r\n"
@@ -57,15 +60,25 @@ def _price(t: dict) -> str:
             f'<small>{escape(t["unit"], quote=False)}</small></div>')
 
 
+def render_hero_floor(p: dict) -> list[str]:
+    """The cheapest tier, quoted in the hero. A sponsor arrives from a LINE link
+    with seconds to spare, so the entry price is in the first screen — and it is
+    generated here so it can never drift from the rate card below it."""
+    lo = min(t["amount"] for t in p["tiers"])
+    return [f'{IND_OF["hero-floor"]}<b id="floor">{baht(lo)}</b>']
+
+
+# The tiers lead with the price. It used to come fourth, at 18px, behind a 30px
+# roman numeral — and the numerals implied a rank the prices contradicted
+# (I=฿25,000, II=฿20,000, III=฿15,000). They are gone.
 def render_tiers_brief(p: dict) -> list[str]:
     """The homepage cards: one line of pitch, one price, no breakdown."""
     out = []
     for t in p["tiers"]:
         out += [f'{IND}<div class="tier">',
-                f'{IND}  {_tag("div", "k", t["numeral"])}',
+                f'{IND}  {_price(t)}',
                 f'{IND}  {_tag("div", "n", t.get("short_name") or t["name"])}',
                 f'{IND}  {_tag("div", "d", t["short"])}',
-                f'{IND}  {_price(t)}',
                 f'{IND}</div>']
     return out
 
@@ -81,13 +94,12 @@ def render_tiers_full(p: dict) -> list[str]:
         lines = ([f'{o["name"]}, {baht(o["amount"])}: {o["detail"]}' for o in t["options"]]
                  if t.get("options") else t.get("includes", []))
         out += [f'{IND}<div class="tier">',
-                f'{IND}  {_tag("div", "k", t["numeral"])}',
+                f'{IND}  {_price(t)}',
                 f'{IND}  {_tag("div", "n", t["name"])}',
                 f'{IND}  <div class="d">',
                 f'{IND}    {escape(t["long"], quote=False)}',
                 *_bullets(lines, f"{IND}    "),
                 f'{IND}  </div>',
-                f'{IND}  {_price(t)}',
                 f'{IND}</div>']
     return out
 
@@ -104,9 +116,12 @@ def render_bundles(p: dict) -> list[str]:
             reach += f" · you save {baht(saving)}"
         cls = "bundle flag" if b.get("flagship") else "bundle"
         was = f'Regular {baht(b["regular"])}'
+        # The tag used to be a tracked uppercase kicker sitting above the heading
+        # on each of five identical cards — five in one viewport. Folded into the
+        # heading, it distinguishes two cards that both said "One month".
+        heading = f'{b["term"]} · {b["tag"]}'
         out += [f'{IND}<div class="{cls}">',
-                f'{IND}  {_tag("p", "tag", b["tag"])}',
-                f'{IND}  {_tag("h3", None, b["term"])}',
+                f'{IND}  {_tag("h3", None, heading)}',
                 *_bullets([*b["includes"], f'{baht(b["ad_budget"])} ad budget included'],
                           f"{IND}  "),
                 f'{IND}  <div class="price">',
@@ -118,7 +133,10 @@ def render_bundles(p: dict) -> list[str]:
     return out
 
 
+IND_OF = {name: ind for _, name, ind in BLOCKS}
+
 RENDER = {
+    "hero-floor": render_hero_floor,
     "tiers-brief": render_tiers_brief,
     "tiers-full": render_tiers_full,
     "bundles": render_bundles,
@@ -142,7 +160,7 @@ def replace_block(text: str, name: str, body: list[str], where: str) -> str:
     if i < 0 or j < 0:
         sys.exit(f"{where}: missing {open_m} … {close_m}")
     head = text[: i + len(open_m)]
-    return head + LF + LF.join(body) + LF + IND + text[j:]
+    return head + LF + LF.join(body) + LF + IND_OF[name] + text[j:]
 
 
 def check_prose(p: dict, errors: list[str]) -> None:
@@ -175,7 +193,7 @@ def main() -> int:
     errors: list[str] = []
     written: list[str] = []
 
-    for rel, name in BLOCKS:
+    for rel, name, _ind in BLOCKS:
         path = ROOT / rel
         before, eol = read(path)
         after = replace_block(before, name, RENDER[name](pricing), rel)

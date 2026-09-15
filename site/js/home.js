@@ -8,18 +8,29 @@ const BASE = import.meta.url;
 
 const episodeLabel = (e) => (e.number === '0' ? 'Kickoff' : `S${e.season} · E${e.number}`);
 
+/* The hero shows the episode's own artwork whole and says, in the page's own
+   voice, what the artwork cannot: what this show is and what it costs to be in
+   it. The <h1> is the show, not the week's guest — a heading that changed every
+   episode meant a screen reader announced a stranger's name as the page title,
+   and a sponsor arriving cold never learned what they had opened. */
 function renderHero(d) {
   const e = d.episodes[0];
-  const img = stillImage(e.youtube_video_id, `${e.guest} on TSN Talks`, BASE, { eager: true });
+  const img = stillImage(e.youtube_video_id, `TSN Talks ${episodeLabel(e)} — ${e.guest}`, BASE, { eager: true });
   img.id = 'heroimg';
   $('heroimg').replaceWith(img);
 
   const num = e.number === '0' ? 'Season kickoff' : `Episode ${e.number}`;
-  $('epline').textContent = `Season ${e.season} · ${num} · ${bkk(e.published_at)}`;
-  $('guest').textContent = e.guest;
-  $('role').textContent = e.role || '';
+  $('herolink').href = e.url;
+  $('herocap').innerHTML = '<b></b><span></span><span></span>';
+  const [g, role, when] = $('herocap').children;
+  g.textContent = e.guest;
+  role.textContent = e.role || '';
+  when.textContent = `Season ${e.season} · ${num} · ${bkk(e.published_at)}`;
+
   $('watch').href = e.url;
   $('watch').setAttribute('aria-label', `Watch ${e.guest} on YouTube`);
+  $('reach').textContent =
+    `in front of ${compact(d.total_views)} views across YouTube, Instagram and TikTok`;
 }
 
 function renderStrap(d) {
@@ -27,25 +38,37 @@ function renderStrap(d) {
   const strap = $('strap');
   strap.classList.toggle('stale', f.stale);
   const eps = d.episodes.length;
-  strap.innerHTML = `${f.stale ? '' : '<span class="live">Live</span>'}
+  /* Say it in words. Dimming the text was the only stale signal, and nobody
+     notices the absence of a dot they never saw in the first place. */
+  const flag = f.stale
+    ? `<span class="stale-flag">Last updated ${f.hours} hours ago</span>`
+    : '<span class="live">Live</span>';
+  strap.innerHTML = `${flag}
     <span><b>${full(d.total_views)}</b> views across YouTube, Instagram and TikTok</span>
     <span><b>${full(d.total_followers)}</b> followers</span>
     <span><b>${eps}</b> ${eps === 1 ? 'episode' : 'episodes'}</span>
     <span>Updated ${f.stamp} Bangkok</span>`;
 }
 
-/* The poster wall: the most-watched season-two episode large, the next two medium,
-   the rest small. Deliberately not a grid of identical cards.
-   Emitted in rank order, which is also what lets the CSS grid pack without holes. */
-function renderWall(d) {
-  const ranked = d.episodes
-    .filter((e) => e.season === 2)
-    .sort((a, b) => (b.views || 0) - (a.views || 0));
-  const size = (i) => (i === 0 ? 'big' : i <= 2 ? 'mid' : 'sm');
+/* The episode wall. Every tile shows its thumbnail whole, with the caption
+   underneath rather than printed over it.
 
-  $('wall').replaceChildren(...ranked.map((e, i) => {
+   Two things changed here and both were substantive. The tiles used to be
+   ranked by view count, which guaranteed the biggest tile carried the biggest
+   number and every tile after it visibly decayed — a deficit gradient, and the
+   one shape PRODUCT.md's first principle rules out. They run newest first now,
+   which is also what a visitor expects from a show. And the view count has come
+   off the tile: season two's numbers are four and three digits, so a wall of
+   them argued against the 2.37M figure in the strap directly above it. The
+   tiles say who was on; the audience section says how many watched. */
+function renderWall(d) {
+  const eps = d.episodes
+    .filter((e) => e.season === 2)
+    .sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
+
+  $('wall').replaceChildren(...eps.map((e, i) => {
     const a = document.createElement('a');
-    a.className = `po ${size(i)}`;
+    a.className = i === 0 ? 'po lead' : 'po';
     a.href = e.url;
     a.target = '_blank';
     a.rel = 'noopener';
@@ -54,10 +77,9 @@ function renderWall(d) {
     const t = document.createElement('div');
     t.className = 't';
     t.innerHTML = '<div class="n"></div><div class="g"></div><div class="v"></div>';
-    t.querySelector('.n').textContent = episodeLabel(e);
+    t.querySelector('.n').textContent = i === 0 ? `Latest · ${episodeLabel(e)}` : episodeLabel(e);
     t.querySelector('.g').textContent = e.guest;
-    t.querySelector('.v').textContent =
-      e.views == null ? (e.role || '') : `${full(e.views)} views on YouTube`;
+    t.querySelector('.v').textContent = e.role || '';
     a.appendChild(t);
 
     a.setAttribute('aria-label', `${e.guest}, ${episodeLabel(e)} — watch on YouTube`);
