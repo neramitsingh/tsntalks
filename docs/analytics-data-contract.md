@@ -447,25 +447,53 @@ Every tab is a pure renderer over the table in §4. None of them fetch.
 ## 6. What each artifact calls
 
 No generic "export this view". Five artifacts, each with a named recipient, each
-declaring `{ id, name, recipient, why, formats, build(params) }` in
-`site/js/analytics/artifacts/index.js`. The recipient and the reason are rendered
-next to the button.
+declaring `{ id, name, recipient, why, formats, scope, page }` in
+`site/js/analytics/artifacts/index.js`, with its builder registered from
+`artifacts/builders.js`. The recipient and the reason are rendered next to the
+button, always — that sentence is the difference between this and an export
+menu, so it is on screen rather than merely true.
 
-| Artifact | Recipient | Calls | Formats |
-|---|---|---|---|
-| **Episode report** | the episode's sponsor, after it airs | `episodes()` for the row; `episodeClips(id)` for every clip; `postHistory('yt:'+videoId)` for the 7- and 30-day figures; `audience('yt_age', 90)` and `audience('yt_country', 90)` | PDF (A4 portrait, print-to-PDF) |
-| **Posts table** | whoever wants a spreadsheet | `posts(p)` — the tab's **current** rows, sort and filters, not a fresh query | CSV, XLSX |
-| **Monthly review** | Sunny and Thai Sikh News | `views`, `followers`, `engagement`, `posts` for the month with `compare: true`; `audience(kind)` for the shift | PDF, XLSX (the underlying tables, one sheet each) |
-| **Guest card** | the guest, a week after their episode | `episodes()` for the row; `episodeClips(id)` for the top clip and the platform split | PDF, PNG (canvas) |
-| **Numbers as of today** | a sponsor who asks for a deck | `views`, `followers`, `posts` and `audience` at `to = the chosen date`, laid out as the public `/live` page | PDF |
+Four of the five are **real pages** under `site/analytics/artifacts/`, opened in
+their own tab with their parameters in the query string. Not modals: a print
+dialog over a modal prints the modal, the artifact stylesheet is A4 and ink-safe
+where the dashboard is dark, and a page you can bookmark and reload is worth
+more than one you cannot. They carry the session because they are same-origin.
+
+| Artifact | Recipient | Calls | Formats | Page |
+|---|---|---|---|---|
+| **Episode report** | the episode's sponsor, after it airs | `episodes()`; `episodeClips(id)`; `viewsAt('yt:'+videoId, published+7d)` and `+30d`; `audience('yt_age', 90)`; `audience('yt_country', 90)` | PDF | `?episode=<id>` |
+| **Posts table** | whoever asked for a spreadsheet | none — it exports `postsView` from `tabs/posts.js`, the tab's **current** rows, sort and filter | CSV, XLSX | — |
+| **Monthly review** | Sunny and Thai Sikh News | `views`, `followers`, `engagement` for the month and the one before; `posts` for the month; `audience('yt_country', 90)` — all via `artifacts/monthly-review-data.js` | PDF, XLSX | `?month=YYYY-MM` |
+| **Guest card** | the guest, a week after their episode | `episodes()`; `episodeClips(id)` | PDF, PNG | `?episode=<id>`, `&download=png` |
+| **Numbers as of today** | a sponsor who asks for a deck | `posts` and `followers` at `to = the chosen date`; `audience('yt_country', 90)`; `audience('yt_age', 90)` | PDF | `?date=YYYY-MM-DD` |
+
+**A multi-format artifact renders one button per format**, not a dropdown; `run()`
+receives `format` alongside the scope's parameters.
+
+**The monthly review's PDF and XLSX come from one module.** Printing the review
+and opening the spreadsheet beside it must not show two answers, which is only
+guaranteed if one place decides what the figures are.
 
 Every artifact carries a **source note**: which platforms, which window, and the
 `collector_runs` row it was built from. Filenames carry artifact, subject and
-date: `tsn-episode-report-s2e10-2026-09-15.pdf`.
+date: `tsn-episode-report-s2e10-2026-09-15.pdf`. On the printed pages the
+document title is set to the filename, because that is what the browser's
+print-to-PDF offers as the default name.
 
 "Numbers as of today" is built from the windowed functions above rather than from
 `live_json()`, because `live_json()` is always *now* and the artifact's whole
 purpose is a date other than now.
+
+### Two places the wording departs from the spec, on purpose
+
+- The spec's guest card reads *"your episode reached N people"*. The number is
+  `episode_rollup.total_reach`, a **sum of view counts** across the cuts. The
+  card says **"watched N times, across the episode and every clip"** — true, the
+  same number, and warmer. `total_reach` is never printed as people anywhere.
+- The episode report's audience block is the **channel's** YouTube demographics
+  over YouTube's rolling 90 days, not the episode's. YouTube does not publish
+  per-video demographics at this tier. The block says so on the page, because a
+  sponsor reading an episode report would otherwise take it as the episode's.
 
 ---
 

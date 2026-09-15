@@ -19,6 +19,18 @@ STORAGE = "**/storage/v1/object/public/public/live.json"
 
 
 class QuietHandler(SimpleHTTPRequestHandler):
+    """The static server for the suite.
+
+    HTTP/1.1, so connections are kept alive and reused. The default is HTTP/1.0,
+    which closes after every response — and this suite makes on the order of ten
+    thousand requests, each leaving a socket in TIME_WAIT for minutes. On Windows
+    that eventually exhausts the ephemeral port range, and the symptom is one
+    page that simply never loads, which shows up as a fixture timing out in a
+    different test every run rather than as anything resembling its cause.
+    """
+
+    protocol_version = "HTTP/1.1"
+
     def log_message(self, *args):        # the suite is noisy enough
         pass
 
@@ -36,6 +48,7 @@ def base_url():
     port = s.getsockname()[1]
     s.close()
     httpd = ThreadingHTTPServer(("127.0.0.1", port), partial(QuietHandler, directory=str(SITE)))
+    httpd.daemon_threads = True
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     yield f"http://127.0.0.1:{port}"
     httpd.shutdown()

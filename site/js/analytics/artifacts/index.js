@@ -67,6 +67,7 @@ export const ARTIFACTS = [
     why: 'The live page’s figures frozen at a date, in the public layout.',
     formats: ['pdf'],
     scope: 'date',
+    page: 'numbers-today.html',
   },
 ];
 

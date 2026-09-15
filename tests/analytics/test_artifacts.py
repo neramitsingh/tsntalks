@@ -69,11 +69,11 @@ def test_registering_an_artifact_that_does_not_exist_fails_loudly(a):
     assert "no artifact called" in got
 
 
-def test_running_an_unbuilt_artifact_returns_a_reason_rather_than_throwing(a):
-    # numbers-today is the last one still unbuilt.
-    got = js(a, "return await artifacts.run('numbers-today', {});")
-    assert got["ok"] is False
-    assert "not built yet" in got["reason"]
+def test_all_five_artifacts_are_built(a):
+    """The definition of done for the five. Until Task 17 the unbuilt ones
+    returned "not built yet"; none of them do now."""
+    built = js(a, "return artifacts.ARTIFACTS.map((x) => [x.id, artifacts.has(x.id)]);")
+    assert built == [[id_, True] for id_ in THE_FIVE]
 
 
 def test_an_unknown_artifact_id_is_refused_by_name(a):
@@ -998,6 +998,118 @@ def test_a_very_long_guest_name_is_shrunk_rather_than_clipped(card):
 def _today():
     import datetime as dt
     return dt.datetime.now(dt.timezone(dt.timedelta(hours=7))).strftime("%Y-%m-%d")
+
+
+# --- the numbers, frozen at a date ------------------------------------------
+
+@pytest.fixture
+def frozen(browser, stub, base_url, signin):
+    pg, ctx, errors = open_artifact(browser, stub, base_url, signin,
+                                    "numbers-today.html", "?date=2026-09-15")
+    pg.wait_for_selector("#sheet footer.colophon")
+    yield pg, errors
+    ctx.close()
+
+
+def test_the_frozen_page_draws_without_throwing(frozen):
+    pg, errors = frozen
+    assert errors == []
+    assert pg.locator("#sheet section").count() >= 5
+
+
+def test_it_is_laid_out_like_the_public_live_page(frozen):
+    """One number, the platform split, when the hits happened, who is watching,
+    what is playing. The same order the site uses."""
+    pg, _ = frozen
+    assert pg.locator("#sheet h2").all_text_contents() == [
+        "By platform", "When the hits happened", "Who is watching", "Playing now"]
+    assert pg.locator("#sheet .hero-number").count() == 1
+    assert pg.locator("#sheet .band").count() == 1
+
+
+def test_a_lifetime_total_sits_next_to_a_ninety_day_momentum_figure(frozen):
+    """PRODUCT.md principle 3. A cumulative-only total with no window is on the
+    anti-reference list."""
+    pg, _ = frozen
+    labels = pg.locator("#sheet .figs .fig .k").all_text_contents()
+    assert labels == ["Views, all time", "Views, last 90 days", "Followers", "Posts"]
+    text = pg.locator("#sheet .card").inner_text()
+    assert "156,100" in text          # lifetime, summed from post_deltas
+    assert "69,900" in text           # the last 90 days
+
+
+def test_the_hero_picks_its_own_unit_rather_than_always_saying_millions(frozen):
+    """The live page hard-codes M, which reads as "0.16M" for a season that has
+    not got there yet -- and a deck assembled early is exactly when that
+    happens."""
+    pg, _ = frozen
+    assert pg.inner_text("#sheet .hero-number").strip() == "156K"
+
+
+def test_every_figure_says_the_date_it_is_as_at(frozen):
+    """A live page screenshotted in October and captioned "September" is the
+    hand-typed claim this project exists to replace."""
+    pg, _ = frozen
+    # The eyebrow is uppercased in CSS.
+    assert "AS AT 15 SEPT 2026" in pg.inner_text("#sheet").upper()
+    note = pg.inner_text("#sheet footer.colophon")
+    assert "as at 15 Sept 2026" in note
+    assert "It is not a live page and it does not update" in note
+
+
+def test_the_reporting_delay_is_stated(frozen):
+    pg, _ = frozen
+    assert "delay of up to 48 hours" in pg.inner_text("#sheet footer.colophon")
+
+
+def test_the_platform_table_carries_share_momentum_followers_and_best_post(frozen):
+    pg, _ = frozen
+    section = pg.locator("#sheet section", has_text="By platform")
+    headers = section.locator("thead th").all_text_contents()
+    assert headers == ["Platform", "Views", "Share", "Last 90 days", "Followers",
+                       "Posts", "Best post"]
+    shares = section.locator("tbody td:nth-child(3)").all_inner_texts()
+    assert sum(int(s.rstrip("%")) for s in shares) == pytest.approx(100, abs=1)
+
+
+def test_the_months_are_counted_by_publication_not_by_viewing(frozen):
+    """The shape the live page uses: a clip from November that is still being
+    watched counts in November."""
+    pg, _ = frozen
+    section = pg.locator("#sheet section", has_text="When the hits happened")
+    assert "the month the post was published" in section.inner_text()
+    totals = section.locator("tbody td:nth-child(5)").all_inner_texts()
+    assert sum(int(t.replace(",", "")) for t in totals) == 156100
+
+
+def test_the_audience_window_is_youtube_s_and_says_so(frozen):
+    pg, _ = frozen
+    section = pg.locator("#sheet section", has_text="Who is watching")
+    text = section.inner_text()
+    assert "This window is YouTube’s, not the date above" in text
+    assert "18 Jun" in text
+
+
+def test_a_date_in_the_future_is_clamped_to_now_rather_than_invented(browser, stub,
+                                                                     base_url, signin):
+    pg, ctx, errors = open_artifact(browser, stub, base_url, signin,
+                                    "numbers-today.html", "?date=2099-01-01")
+    pg.wait_for_selector("#sheet footer.colophon")
+    assert errors == []
+    assert "2099" not in pg.inner_text("#sheet")
+    ctx.close()
+
+
+def test_a_date_that_is_not_a_date_says_what_to_use(browser, stub, base_url, signin):
+    pg, ctx, _ = open_artifact(browser, stub, base_url, signin,
+                               "numbers-today.html", "?date=yesterday")
+    assert "Use YYYY-MM-DD" in pg.inner_text("#sheet")
+    ctx.close()
+
+
+def test_the_filename_carries_the_date_it_was_frozen_at(frozen):
+    pg, _ = frozen
+    assert pg.title().startswith("tsn-numbers-2026-09-15-")
 
 
 # --- the UI -----------------------------------------------------------------

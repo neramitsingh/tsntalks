@@ -48,6 +48,17 @@ register('monthly-review', async ({ window: w, format }) => {
    the dashboard instead would mean loading Bodoni into the dashboard to render
    a card the dashboard does not show. `download=png` makes the tab produce the
    file rather than asking for a second click. */
+/* The date the window ends on, not "today": someone assembling an October deck
+   needs the figures as at the end of September, and a live page screenshotted
+   in October and captioned "September" is the hand-typed claim this project
+   exists to replace. */
+register('numbers-today', ({ window: w }) => {
+  const asAt = w?.to ?? new Date();
+  printPage('numbers-today', {
+    date: asAt.toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' }),
+  });
+});
+
 register('guest-card', ({ episode, format }) => {
   if (!episode) throw new Error('No episode was chosen.');
   printPage('guest-card', {

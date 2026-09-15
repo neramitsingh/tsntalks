@@ -66,6 +66,21 @@ CDN_SHEETJS = "**/xlsx.full.min.js"
 # artifact's fallback chain instead of leaving a 404 in the console.
 YT_STILL = "**/i.ytimg.com/**"
 
+# Google Fonts. A render-blocking <link> to a third party is the one thing in
+# these pages that can hang, and when it hangs the page never paints, so
+# wait_for_selector never sees anything "visible" and the fixture times out —
+# which reads as a broken test rather than a bad minute on someone else's CDN.
+# Stubbed with an empty stylesheet so the suite is hermetic.
+#
+# What this gives up: these tests no longer prove the webfonts load.
+# tests/site/test_pages.py already checks that against the real Google Fonts for
+# the public pages, and test_auth.py checks statically that the dashboard asks
+# for the right families. What they DO still prove is the family that resolves —
+# Hanken Grotesk in the dashboard, Bodoni in the artifacts — because that comes
+# from the CSS, not from the font file.
+GOOGLE_FONTS = "**/fonts.googleapis.com/**"
+GOOGLE_FONT_FILES = "**/fonts.gstatic.com/**"
+
 # A 1x1 transparent PNG.
 PIXEL = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk"
@@ -119,7 +134,19 @@ def sheetjs_bytes():
 
 
 class QuietHandler(SimpleHTTPRequestHandler):
-    def log_message(self, *args):
+    """The static server for the suite.
+
+    HTTP/1.1, so connections are kept alive and reused. The default is HTTP/1.0,
+    which closes after every response — and this suite makes on the order of ten
+    thousand requests, each leaving a socket in TIME_WAIT for minutes. On Windows
+    that eventually exhausts the ephemeral port range, and the symptom is one
+    page that simply never loads, which shows up as a fixture timing out in a
+    different test every run rather than as anything resembling its cause.
+    """
+
+    protocol_version = "HTTP/1.1"
+
+    def log_message(self, *args):        # the suite is noisy enough
         pass
 
 
@@ -130,6 +157,7 @@ def base_url():
     port = s.getsockname()[1]
     s.close()
     httpd = ThreadingHTTPServer(("127.0.0.1", port), partial(QuietHandler, directory=str(SITE)))
+    httpd.daemon_threads = True
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     yield f"http://127.0.0.1:{port}"
     httpd.shutdown()
@@ -209,6 +237,9 @@ class Supabase:
         page.route(CDN_SUPABASE, self._shim)
         page.route(CDN_SHEETJS, self._sheetjs)
         page.route(YT_STILL, self._still)
+        page.route(GOOGLE_FONTS, lambda route: route.fulfill(
+            status=200, content_type="text/css", body="/* fonts stubbed */"))
+        page.route(GOOGLE_FONT_FILES, lambda route: route.abort())
         page.route("**/js/analytics/supa.js", self._supa_js)
         page.route(REST, self._rest)
         page.route(AUTH, self._auth)

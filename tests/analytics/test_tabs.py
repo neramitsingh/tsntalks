@@ -872,7 +872,18 @@ def test_a_tab_draws_without_a_console_error(browser, base_url, stub, analytics_
     pg = ctx.new_page()
     errors = []
     pg.on("pageerror", lambda e: errors.append(str(e)))
-    pg.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+    # "Failed to load resource" is filtered and replaced by the response watcher
+    # below, which can tell a same-origin script from Google Fonts having a bad
+    # minute. The question here is whether the dashboard's own code errors.
+    pg.on("console", lambda m: errors.append(m.text)
+          if m.type == "error" and "Failed to load resource" not in m.text else None)
+
+    def watch(response):
+        same_origin = response.url.startswith(analytics_url.rsplit("/analytics/", 1)[0])
+        if response.status >= 400 and same_origin:
+            errors.append(f"{response.status} {response.url}")
+
+    pg.on("response", watch)
     stub.install(pg)
     signin(pg)
     pg.goto(analytics_url + f"?tab={tab}")

@@ -174,6 +174,25 @@ def cdn_urls():
     return urls
 
 
+def test_the_dashboard_asks_for_hanken_grotesk_and_not_bodoni():
+    """The suite stubs Google Fonts so a third-party CDN cannot hang the page,
+    which means nothing at runtime checks WHICH families were requested. This
+    does, statically."""
+    html = (SITE / "analytics" / "index.html").read_text(encoding="utf-8")
+    link = re.search(r'<link href="(https://fonts\.googleapis\.com[^"]+)"', html)
+    assert link, "the dashboard requests no webfont at all"
+    assert "Hanken+Grotesk" in link.group(1)
+    assert "Bodoni" not in link.group(1)
+
+    for page in ("episode-report", "guest-card", "monthly-review", "numbers-today"):
+        markup = (SITE / "analytics" / "artifacts" / f"{page}.html").read_text(encoding="utf-8")
+        request = re.search(r'<link href="(https://fonts\.googleapis\.com[^"]+)"', markup)
+        assert request, page
+        # The artifacts are where Bodoni belongs.
+        assert "Bodoni+Moda" in request.group(1), page
+        assert "Hanken+Grotesk" in request.group(1), page
+
+
 def test_every_cdn_dependency_is_pinned_to_an_exact_version():
     urls = cdn_urls()
     assert urls, "the dashboard loads no CDN script at all"
