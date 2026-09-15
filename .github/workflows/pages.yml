@@ -6,6 +6,8 @@ on:
     paths:
       - "site/**"
       - "data/live.json"
+      - "data/pricing.json"
+      - "infra/build_pricing.py"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -26,6 +28,12 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
+      # The rate card is baked into the HTML at commit time, not fetched by the
+      # browser, so a price edited in the JSON and never baked would ship two
+      # different rate cards. Fail the deploy instead.
+      - name: the pages must match data/pricing.json
+        run: python infra/build_pricing.py --check
 
       # The collector commits data/live.json once a day, so this redeploys with
       # fresh baked numbers daily; the hourly Storage copy keeps the page current

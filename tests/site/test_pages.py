@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 import pytest
@@ -115,14 +116,60 @@ def test_live_legend_totals_match_the_data(desktop, base_url, live_data):
         assert f"{p['followers']:,}" in text
 
 
-def test_partner_carries_no_live_numbers(desktop, base_url):
-    """Prices are editorial. They must be readable with JS off and greppable by Sunny."""
+def _baht(n):
+    return f"฿{n:,}"
+
+
+def test_partner_carries_no_live_numbers(desktop, base_url, pricing):
+    """Prices are editorial. They must be readable with JS off and greppable by Sunny.
+
+    Baked from data/pricing.json by infra/build_pricing.py — so this asserts the
+    page carries every figure the rate card names, whatever those figures become.
+    """
     desktop.goto(base_url + "/partner/", wait_until="networkidle")
     html = desktop.content()
     assert "live-data" not in html
-    for price in ["฿25,000", "฿20,000", "฿15,000", "฿70,000",
-                  "฿29,000", "฿39,000", "฿69,000", "฿109,000", "฿185,000"]:
-        assert price in html, price
+    for t in pricing["tiers"]:
+        assert _baht(t["amount"]) in html, t["id"]
+        for o in t.get("options", []):
+            assert _baht(o["amount"]) in html, f'{t["id"]}/{o["name"]}'
+    for b in pricing["bundles"]:
+        assert _baht(b["amount"]) in html, b["id"]
+        assert _baht(b["regular"]) in html, f'{b["id"]} regular'
+        assert f'{b["reach"]:,} guaranteed reach' in html, f'{b["id"]} reach'
+
+
+def test_prices_survive_javascript_being_off(browser, base_url, pricing):
+    """The rate card is the money page. It may not depend on a script running."""
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900}, java_script_enabled=False)
+    pg = ctx.new_page()
+    for path in ("/", "/partner/"):
+        pg.goto(base_url + path, wait_until="domcontentloaded")
+        body = pg.inner_text("body")
+        for t in pricing["tiers"]:
+            assert _baht(t["amount"]) in body, f'{path} {t["id"]}'
+    ctx.close()
+
+
+def test_home_and_partner_quote_the_same_tier_prices(desktop, base_url, pricing):
+    """One rate card, two pages. They came apart once; they cannot again."""
+    seen = {}
+    for path in ("/", "/partner/"):
+        desktop.goto(base_url + path, wait_until="networkidle")
+        prices = desktop.eval_on_selector_all(
+            ".tiers .tier .p", "els => els.map(e => e.firstChild.textContent.trim())")
+        seen[path] = prices
+    assert seen["/"] == seen["/partner/"]
+    assert seen["/"] == [_baht(t["amount"]) for t in pricing["tiers"]]
+
+
+def test_pages_are_in_step_with_pricing_json():
+    """The guard the Pages workflow runs, run here too so drift never reaches CI."""
+    import subprocess
+    r = subprocess.run([sys.executable, "infra/build_pricing.py", "--check"],
+                       cwd=Path(__file__).resolve().parents[2],
+                       capture_output=True, text=True, encoding="utf-8")
+    assert r.returncode == 0, r.stdout + r.stderr
 
 
 def test_partner_footnotes_the_guaranteed_reach(desktop, base_url):

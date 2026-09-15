@@ -1,0 +1,164 @@
+{
+  "_comment": "The rate card: the only place a sponsorship price is written. After editing, run `python infra/build_pricing.py` to bake it into the homepage cards and the partner page tiers and bundles, then commit both. The Pages deploy and the site test suite fail if you forget. Amounts are whole baht.",
+  "currency": "THB",
+  "tiers": [
+    {
+      "id": "branding",
+      "numeral": "I",
+      "name": "“Brought to you by” and on-screen branding",
+      "short": "Your logo on screen throughout the episode, lower-third banners at the key moments, and a branded end card.",
+      "long": "Full episode ownership. The premium tier for a brand that wants to own the conversation.",
+      "includes": [
+        "Your logo on screen throughout the full episode",
+        "Lower-third banners at the key discussion moments",
+        "A three to five second branded end card on every episode",
+        "Your logo in the thumbnail and the video description"
+      ],
+      "amount": 25000,
+      "unit": "from, per episode"
+    },
+    {
+      "id": "placement",
+      "numeral": "II",
+      "name": "Content integration and product placement",
+      "short_name": "Product placement",
+      "short": "Your product in the studio, a dedicated segment, guest gifting acknowledged on air.",
+      "long": "Natural placement inside the studio set-up, acknowledged on air in a way that feels authentic rather than forced.",
+      "includes": [
+        "On-set product or logo placement seen by every viewer",
+        "A dedicated branded experience segment",
+        "Guest gifting acknowledged on air"
+      ],
+      "amount": 20000,
+      "unit": "from, per episode"
+    },
+    {
+      "id": "host-read",
+      "numeral": "III",
+      "name": "“Brought to you by”: verbal mentions",
+      "short_name": "Host-read mentions",
+      "short": "Pre-roll, a 60-second mid-roll, closing thanks, and your logo in the thumbnail and description.",
+      "long": "Entry-level sponsorship with strong impact. Good for a brand testing the water.",
+      "includes": [
+        "Pre-roll: “This episode is brought to you by…”",
+        "Mid-roll: a 60-second host-read ad",
+        "Post-roll: closing thanks and a mention",
+        "Your logo in the thumbnail and the video description"
+      ],
+      "amount": 15000,
+      "unit": "from, per episode"
+    },
+    {
+      "id": "segment",
+      "numeral": "IV",
+      "name": "Signature segment",
+      "short": "A recurring segment named after your brand, asked of every guest, introduced by the host with your logo on screen.",
+      "long": "A recurring, branded segment named after your brand, asked of every guest, every episode. Consistency builds recall. One-month minimum.",
+      "includes": [
+        "“The [Brand] Segment”, your name on every episode",
+        "Three signature quick-fire questions per guest",
+        "A logo overlay for the length of the segment",
+        "Every clip tagged and collaborated on social"
+      ],
+      "amount": 70000,
+      "unit": "from, per month · 4 episodes"
+    },
+    {
+      "id": "feature",
+      "numeral": "V",
+      "name": "Guest feature episode",
+      "short": "Your leader interviewed as the guest, and a reusable content asset for your own channels.",
+      "long": "Your business leader interviewed as the guest, in a dedicated episode that becomes a reusable asset for your own marketing. Option to record live at your venue.",
+      "options": [
+        {
+          "name": "Basic",
+          "amount": 20000,
+          "detail": "a 30-minute interview, standard editing, all platforms, two social clips"
+        },
+        {
+          "name": "Standard",
+          "amount": 45000,
+          "detail": "45 minutes with B-roll editing, all platforms plus thumbnail, five social clips, 1080p files handed to you"
+        }
+      ],
+      "amount": 20000,
+      "unit": "from, per episode"
+    }
+  ],
+  "bundles": [
+    {
+      "id": "starter",
+      "tag": "Starter · Brand intro",
+      "term": "One week",
+      "includes": [
+        "One episode of TSN Talks sponsorship",
+        "A promo banner across social media",
+        "Three to five posts on Facebook, Instagram and TikTok"
+      ],
+      "ad_budget": 5000,
+      "regular": 40000,
+      "amount": 29000,
+      "reach": 100000
+    },
+    {
+      "id": "growth",
+      "tag": "Growth · Visibility boost",
+      "term": "Two weeks",
+      "includes": [
+        "Two episodes, verbal and visual branding",
+        "A promo banner across all social media",
+        "Five to seven posts on Facebook, Instagram and TikTok"
+      ],
+      "ad_budget": 7000,
+      "regular": 55000,
+      "amount": 39000,
+      "reach": 200000
+    },
+    {
+      "id": "bundle-a",
+      "tag": "Bundle A · Brand visibility",
+      "term": "One month",
+      "includes": [
+        "Four full episode sponsorships with on-screen branding",
+        "A promo banner across all social media",
+        "Ten posts on Facebook, Instagram and TikTok"
+      ],
+      "ad_budget": 10000,
+      "regular": 105000,
+      "amount": 69000,
+      "reach": 350000
+    },
+    {
+      "id": "bundle-b",
+      "tag": "Bundle B · Premium · Most popular",
+      "term": "One month",
+      "includes": [
+        "Four full episode sponsorships with on-screen branding",
+        "One guest feature episode for your brand",
+        "Four product placement episodes",
+        "Twelve posts on Thai Sikh News"
+      ],
+      "ad_budget": 15000,
+      "regular": 150000,
+      "amount": 109000,
+      "reach": 500000
+    },
+    {
+      "id": "bundle-c",
+      "tag": "Bundle C · Flagship · Signature sponsor",
+      "term": "Two months",
+      "flagship": true,
+      "show_saving": true,
+      "includes": [
+        "Eight full episode sponsorships with on-screen branding",
+        "One guest feature episode",
+        "Eight signature segments carrying your brand name",
+        "Twenty or more posts on Thai Sikh News"
+      ],
+      "ad_budget": 25000,
+      "regular": 355000,
+      "amount": 185000,
+      "reach": 1000000
+    }
+  ]
+}

@@ -16,6 +16,7 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[2]
 SITE = ROOT / "site"
 LIVE_JSON = ROOT / "data" / "live.json"
+PRICING_JSON = ROOT / "data" / "pricing.json"
 STORAGE = "**/storage/v1/object/public/public/live.json"
 
 
@@ -53,6 +54,11 @@ def browser():
 @pytest.fixture(scope="session")
 def live_data():
     return json.loads(LIVE_JSON.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
+def pricing():
+    return json.loads(PRICING_JSON.read_text(encoding="utf-8"))
 
 
 def _stub_storage(pg):
