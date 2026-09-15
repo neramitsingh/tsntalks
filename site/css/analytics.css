@@ -357,6 +357,22 @@ button.a-expand:hover { color: var(--saffron2); }
 tr.a-expanded > td { background: var(--panel-hi); padding: 14px 16px; }
 tr.a-expanded svg.a-chart { max-height: 220px; }
 
+/* --- health states ------------------------------------------------------- */
+
+/* Colour is the second channel. Every pill carries its word as well as its
+   dot, and the thresholds behind the colours are printed on the tab. */
+.a-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+.a-pill i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.a-pill[data-state="ok"] { color: var(--ok); }
+.a-pill[data-state="ok"] i { background: var(--ok); }
+.a-pill[data-state="warn"] { color: var(--warn); }
+.a-pill[data-state="warn"] i { background: var(--warn); }
+.a-pill[data-state="bad"] { color: var(--bad); }
+.a-pill[data-state="bad"] i { background: var(--bad); }
+
 /* --- artifact buttons ---------------------------------------------------- */
 
 /* Every artifact names its recipient next to the button. The spec's whole

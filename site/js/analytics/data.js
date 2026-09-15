@@ -716,6 +716,51 @@ export async function accountHealth() {
 }
 
 /**
+ * When each platform last produced data.
+ *
+ * Not the same question as "did the collector run". The run can finish `ok`
+ * while one platform's token has expired and that account has not been
+ * snapshotted for a day — which is precisely the failure the Health tab exists
+ * to surface, and the one a green dot on the header would hide.
+ *
+ * Read from `account_snapshots`, because that is the table a platform writes to
+ * on every successful run.
+ */
+export async function platformFreshness() {
+  return once('platformFreshness', async () => {
+    const [{ data, error }, accs] = await Promise.all([
+      sb().from('account_snapshots')
+        .select('account_id,taken_at')
+        .order('taken_at', { ascending: false })
+        .limit(200),
+      accounts(),
+    ]);
+    if (error) throw new Error(error.message);
+
+    const platformOf = {};
+    for (const a of accs.ok ? accs.current.rows : []) platformOf[a.id] = a.platform;
+
+    const latest = new Map();
+    for (const r of data ?? []) {
+      if (!latest.has(r.account_id)) latest.set(r.account_id, r);
+    }
+    /* An account with no snapshot at all still gets a row, with a null age.
+       Leaving it out would make a platform that has never reported look fine. */
+    const rows = (accs.ok ? accs.current.rows : []).map((a) => {
+      const seen = latest.get(a.id);
+      return {
+        accountId: a.id,
+        platform: a.platform,
+        handle: a.handle,
+        lastSeen: seen ? new Date(seen.taken_at) : null,
+        ageMs: seen ? Date.now() - new Date(seen.taken_at).getTime() : null,
+      };
+    });
+    return ok({ rows: rows.sort((a, b) => a.platform.localeCompare(b.platform)) });
+  });
+}
+
+/**
  * Row counts per table, from PostgREST's Content-Range rather than a select.
  * A table that errors reports null, not zero — "we could not count" and "there
  * is nothing there" are different answers and the Health tab shows both.

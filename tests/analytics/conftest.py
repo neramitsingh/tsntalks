@@ -87,6 +87,7 @@ class Supabase:
             "account_health": fixture("account_health"),
             "metric_daily": fixture("metric_daily"),
             "post_snapshots": fixture("post_snapshots"),
+            "account_snapshots": fixture("account_snapshots"),
             "episodes": [],
         }
         self.counts = {"posts": 10, "post_snapshots": 4200, "accounts": 3,
@@ -113,6 +114,10 @@ class Supabase:
             target = _now() - dt.timedelta(minutes=self.last_run_minutes_ago)
             return _shift(rows, ("started_at", "finished_at"),
                           target - _parse(max(r["finished_at"] for r in rows)))
+        if table == "account_snapshots":
+            target = _now() - dt.timedelta(minutes=self.last_run_minutes_ago)
+            return _shift(rows, ("taken_at",),
+                          target - _parse(max(r["taken_at"] for r in rows)))
         if table == "account_health":
             target = _now() - dt.timedelta(minutes=self.last_run_minutes_ago)
             return _shift(rows, ("checked_at",),

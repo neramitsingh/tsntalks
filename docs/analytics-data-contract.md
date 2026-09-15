@@ -334,6 +334,7 @@ RLS does the work; no function wrapper.
 | `metric_daily?select=account_id,day,metric,value&day=gte.D&day=lte.D&metric=in.(...)` | Growth | `day` is a **date**, already Bangkok-dated by the collector; see §7.1 |
 | `post_snapshots?select=taken_at,views&post_id=eq.X&taken_at=gte.F&taken_at=lte.T&order=taken_at` | the inline growth curve on a Posts row | one post over one window is a handful of rows; a rollup function for it would be one more thing to apply for no gain |
 | `post_snapshots?select=taken_at&order=taken_at&limit=1` | the `all` frame | the earliest snapshot — see §7.6 |
+| `account_snapshots?select=account_id,taken_at&order=taken_at.desc&limit=200` | Health, freshness per platform | the newest snapshot per account. Not the same question as "did the collector run": a run can finish `ok` while one platform's token has expired |
 | `episodes?select=id,season,number,title,guest,role,youtube_video_id,published_at&order=season.desc` | Episodes fallback | only if `episode_rollup()` fails |
 | `allowed_users?select=email&limit=1` | the access probe in §2 | 1 row = allowed, 0 rows = not |
 | `HEAD {table}?select=*` with `Prefer: count=exact` | Health | row counts, read from `Content-Range` |
@@ -381,6 +382,7 @@ calendar edges.
 | `lastRun()` | `collector_runs` limit 1 | `{ run: {...}\|null, ageMs, stale, failed }` |
 | `runs(limit)` | `collector_runs` | `{ rows: [...] }` |
 | `accountHealth()` | `account_health` | `{ rows: [{ accountId, platform, checkedAt: Date, status, canFetchAnalytics, needsReconnect, tokenExpiresAt: Date\|null, ageMs }] }` |
+| `platformFreshness()` | `account_snapshots`, `accounts` | `{ rows: [{ accountId, platform, handle, lastSeen: Date\|null, ageMs: n\|null }] }`. An account with no snapshot at all still gets a row, with nulls — leaving it out would make a platform that has never reported look fine. |
 | `rowCounts()` | `HEAD` per table | `{ counts: { posts: n, post_snapshots: n, ... } }` |
 | `headline(p)` | derived from `views`, `followers`, `engagement` | `{ views, followers, postsPublished, rate }` — the Overview's four figures |
 | `access()` | `allowed_users` | `{ allowed: boolean }` |

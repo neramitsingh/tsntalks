@@ -12,7 +12,7 @@ import pytest
 
 FIX = Path(__file__).parent / "fixtures"
 
-BUILT = ["overview", "growth", "posts", "episodes", "audience"]
+BUILT = ["overview", "growth", "posts", "episodes", "audience", "health"]
 
 
 def load(name):
@@ -671,6 +671,133 @@ def test_a_long_tail_is_described_rather_than_silently_dropped(browser, stub,
     section = pg.locator("#view .a-panel").filter(
         has=pg.locator('h2:text-is("YouTube · country")'))
     assert "largest of 14" in section.inner_text()
+    ctx.close()
+
+
+# --- Health -----------------------------------------------------------------
+
+@pytest.fixture
+def he(dashboard):
+    open_tab(dashboard, "health")
+    return dashboard
+
+
+def test_health_covers_the_pipeline_end_to_end(he):
+    assert he.locator("#view .a-panel h2").all_text_contents() == [
+        "The collector", "Freshness per platform", "Accounts", "Recent runs", "Row counts"]
+
+
+def test_the_thresholds_are_written_on_screen_not_implied_by_colour(he):
+    """A green dot that means "under two hours" means "fine" to everyone who
+    did not write the page, and "fine" is not a measurement."""
+    text = panel_named(he, "The collector").inner_text()
+    assert "Green under 2 hours, amber under 6, red beyond" in text
+    assert "collector runs hourly" in text
+
+
+def test_every_state_carries_its_word_as_well_as_its_colour(he):
+    pills = he.locator("#view .a-pill").evaluate_all(
+        "els => els.map(e => ({ state: e.dataset.state, text: e.textContent.trim() }))")
+    assert pills
+    assert all(p["state"] in ("ok", "warn", "bad") for p in pills)
+    assert all(p["text"] for p in pills)
+
+
+def test_a_fresh_collector_run_reads_green(he):
+    assert panel_named(he, "The collector").locator(
+        '.a-pill[data-state="ok"]').count() == 1
+
+
+@pytest.mark.parametrize("minutes,expected", [(25, "ok"), (200, "warn"), (600, "bad")])
+def test_the_dot_follows_the_thresholds_it_printed(browser, stub, analytics_url, signin,
+                                                   minutes, expected):
+    stub.last_run_minutes_ago = minutes
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    pg = ctx.new_page()
+    stub.install(pg)
+    signin(pg)
+    pg.goto(analytics_url + "?tab=health")
+    pg.wait_for_selector('#view[data-state="ready"]')
+    section = pg.locator("#view .a-panel").filter(
+        has=pg.locator('h2:text-is("The collector")'))
+    assert section.locator(".a-pill").first.get_attribute("data-state") == expected
+    ctx.close()
+
+
+def test_a_platform_can_be_silent_while_the_run_says_ok(he):
+    """The failure this tab exists for. An expired token stops one account
+    without stopping the run, and a green header would hide it."""
+    section = panel_named(he, "Freshness per platform")
+    states = section.locator("tbody .a-pill").evaluate_all(
+        "els => els.map(e => e.dataset.state)")
+    assert states.count("ok") == 2          # YouTube and Instagram
+    assert "ok" not in states[states.index("ok") + 1:] or len(set(states)) > 1
+    assert "notices" in section.inner_text()
+
+
+def test_an_account_that_needs_reconnecting_is_named_with_what_it_costs(he):
+    section = panel_named(he, "Accounts")
+    assert section.locator('.a-pill:text("Reconnect needed")').count() == 1
+    text = section.inner_text()
+    assert "TikTok" in text
+    assert "every figure that includes it is short" in text
+
+
+def test_the_accounts_table_shows_token_expiry_and_whether_analytics_work(he):
+    headers = panel_named(he, "Accounts").locator("thead th").all_text_contents()
+    assert headers == ["Platform", "Account", "State", "Analytics", "Token expires", "Checked"]
+
+
+def test_a_failed_run_is_listed_with_the_step_that_failed(he):
+    text = panel_named(he, "Recent runs").inner_text()
+    assert "zernio returned 503" in text
+    assert "tiktok token expired" in text
+
+
+def test_an_unfamiliar_run_status_surfaces_as_amber_rather_than_reading_green(
+        browser, stub, analytics_url, signin):
+    """collector_runs.status is assumed to be ok/partial/failed. A fourth value
+    must not quietly read as healthy."""
+    stub.tables["collector_runs"] = [
+        {**r, "status": "weird" if i == 0 else r["status"]}
+        for i, r in enumerate(stub.tables["collector_runs"])]
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    pg = ctx.new_page()
+    stub.install(pg)
+    signin(pg)
+    pg.goto(analytics_url + "?tab=health")
+    pg.wait_for_selector('#view[data-state="ready"]')
+    section = pg.locator("#view .a-panel").filter(
+        has=pg.locator('h2:text-is("Recent runs")'))
+    first = section.locator("tbody .a-pill").first
+    assert first.get_attribute("data-state") == "warn"
+    assert first.inner_text().strip() == "weird"
+    ctx.close()
+
+
+def test_row_counts_are_exact_and_a_dash_is_not_a_zero(he):
+    section = panel_named(he, "Row counts")
+    rows = section.locator("tbody tr").count()
+    assert rows == 9                       # every table the dashboard reads
+    text = section.inner_text()
+    assert "4,200" in text                 # post_snapshots
+    assert "not the same as zero" in text
+    assert "Content-Range" in text
+
+
+def test_a_table_that_cannot_be_counted_reads_as_unknown(browser, stub, analytics_url,
+                                                          signin):
+    stub.fail("demographics", status=500, message="nope")
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    pg = ctx.new_page()
+    stub.install(pg)
+    signin(pg)
+    pg.goto(analytics_url + "?tab=health")
+    pg.wait_for_selector('#view[data-state="ready"]')
+    row = pg.locator("#view .a-panel").filter(
+        has=pg.locator('h2:text-is("Row counts")')).locator(
+        "tbody tr", has_text="demographics")
+    assert row.locator("td.none").count() == 1
     ctx.close()
 
 
