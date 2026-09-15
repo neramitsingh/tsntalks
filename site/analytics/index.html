@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TSN Talks — analytics</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Private analytics for TSN Talks. Sign-in required.">
+<link rel="icon" href="../img/tsn-logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Hanken Grotesk only. Bodoni is the brand face and belongs on the public
+     pages and in the print artifacts; it has no business in dashboard chrome. -->
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/site.css">
+<link rel="stylesheet" href="../css/analytics.css">
+<!-- Pinned exactly, from cdnjs. No @latest: this page is the only thing that
+     can read the database, and it should not change because a CDN shipped a
+     minor. -->
+<!-- No integrity hash: it cannot be computed from a worktree with no network.
+     Worth adding on review — `curl <url> | openssl dgst -sha384 -binary | openssl base64 -A`. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.39.3/umd/supabase.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script type="module" src="../js/analytics/app.js"></script>
+</head>
+<body>
+
+<a class="skip" href="#view">Skip to the dashboard</a>
+
+<!-- ---------------------------------------------------------------------- -->
+<!-- The gate. Shown until Supabase says there is a session.                  -->
+<!-- ---------------------------------------------------------------------- -->
+<section class="a-gate" id="gate" hidden>
+  <div class="card">
+    <h1>TSN Talks analytics</h1>
+    <p>Private. Sign in with a link sent to your email — no password to lose.</p>
+    <form id="gate-form" novalidate>
+      <label for="email">Email address</label>
+      <input type="email" id="email" name="email" autocomplete="email"
+             placeholder="you@example.com" required>
+      <button class="a-btn primary" type="submit" id="gate-send" style="width:100%">
+        Email me a sign-in link
+      </button>
+    </form>
+    <p class="msg" id="gate-msg" role="status" aria-live="polite"></p>
+    <!-- Deliberate: Supabase will not say whether an address is known, and it
+         should not — that would turn this form into an email-enumeration
+         oracle. Access is enforced after sign-in, not here. -->
+    <p class="fine">If that address has access, the link is on its way. Only the
+      addresses on the allow list can read anything once signed in.</p>
+  </div>
+</section>
+
+<!-- ---------------------------------------------------------------------- -->
+<!-- Signed in, but not on the allow list. Not an empty dashboard.           -->
+<!-- ---------------------------------------------------------------------- -->
+<section class="a-block" id="noaccess" hidden>
+  <div class="card">
+    <h1>This account doesn't have access</h1>
+    <p>You're signed in as <b id="noaccess-email"></b>, but that address isn't on
+      the allow list, so every query comes back empty. That's the database
+      refusing, not the dashboard failing.</p>
+    <p>Ask Ney to add the address to <code>allowed_users</code>, or sign in with
+      a different one.</p>
+    <button class="a-btn" type="button" data-signout>Sign out</button>
+  </div>
+</section>
+
+<!-- ---------------------------------------------------------------------- -->
+<!-- The anon key has not been pasted into supa.js yet.                      -->
+<!-- ---------------------------------------------------------------------- -->
+<section class="a-block" id="unconfigured" hidden>
+  <div class="card">
+    <h1>Not configured yet</h1>
+    <p id="unconfigured-why">The Supabase anon key is missing.</p>
+    <p>It is safe in this file — <code>db/002_rls.sql</code> gives anonymous
+      users nothing and <code>db/004_analytics.sql</code> revokes execute on
+      every function from <code>public</code> and <code>anon</code>. Paste it
+      into <code>SUPABASE_ANON_KEY</code> in
+      <code>site/js/analytics/supa.js</code>.</p>
+    <p class="a-note">The service-role key must never go anywhere under
+      <code>site/</code>.</p>
+  </div>
+</section>
+
+<!-- ---------------------------------------------------------------------- -->
+<!-- The dashboard.                                                          -->
+<!-- ---------------------------------------------------------------------- -->
+<div class="a-shell" id="shell" hidden>
+
+  <header class="a-head">
+    <a class="mark" href="../">TSN <em>Talks</em></a>
+    <h1>Analytics</h1>
+    <span class="a-fresh" id="fresh" data-state="unknown">
+      <i class="a-dot" aria-hidden="true"></i><span id="fresh-text">collector status not loaded</span>
+    </span>
+    <span class="spacer"></span>
+    <span class="a-who" id="who"></span>
+    <button class="a-btn" type="button" data-signout>Sign out</button>
+  </header>
+
+  <div class="a-controls" id="controls" role="group" aria-label="Time frame, granularity, platform and compare"></div>
+
+  <div class="a-tabs" id="tabs" role="tablist" aria-label="Views"></div>
+
+  <main class="a-view" id="view" tabindex="-1"></main>
+
+</div>
+
+</body>
+</html>

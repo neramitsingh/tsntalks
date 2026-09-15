@@ -1,0 +1,330 @@
+/* ============================================================================
+   TSN Talks — /analytics
+   The private register. The public pages are brand: Bodoni, big numbers, air.
+   This is the other thing entirely — a product, a dashboard, familiar controls,
+   dense where dense is useful.
+
+   Layered on the tokens in site.css, which is never edited from here.
+
+   Three rules this file exists to enforce:
+     1. Hanken Grotesk throughout. Bodoni belongs in artifacts.css, where the
+        brand is the point, and nowhere in the dashboard chrome.
+     2. tabular-nums on every number, everywhere. Columns of digits line up or
+        the table is decoration.
+     3. 2px between surfaces. Not 16px of air — this is a working screen.
+   ========================================================================= */
+
+/* --- tokens this page adds ------------------------------------------------ */
+
+:root {
+  /* Direction, not judgement. Position, not deficit — PRODUCT.md principle 1.
+     Green and red are the classic colour-blind trap, so a delta is NEVER
+     colour alone: it always carries a sign and an arrow glyph. The colour is
+     the third channel, not the first. */
+  --up: #63C08C;
+  --down: #F2705F;
+
+  /* Health thresholds. Amber reuses the brand's gold so the dashboard does not
+     acquire a fourth yellow. The numbers behind these are printed on the Health
+     tab in words, never implied by the colour. */
+  --ok: var(--up);
+  --warn: #E0B040;
+  --bad: var(--down);
+
+  --grid: rgba(242, 228, 204, .10);   /* hairline, solid, never dashed */
+  --panel: #150B09;                    /* = --bg2, named for what it is here */
+  --panel-hi: #1E1008;
+
+  --gap: 2px;
+  --row: 34px;
+  --mono-num: "tnum" 1, "lnum" 1;
+}
+
+/* --- chrome -------------------------------------------------------------- */
+
+/* The UA sheet's `[hidden] { display: none }` is a type-less selector and loses
+   to any class that sets display — .a-shell is flex, .a-gate is grid. Without
+   this the gate and the shell are both on screen at once. */
+[hidden] { display: none !important; }
+
+html { font-size: 15px; }
+
+/* The 2px gaps are the ground showing between panels, so the ground stays the
+   brand's near-black and every surface is a panel sitting on it. */
+body { background: var(--bg); overflow-x: hidden; }
+
+/* Bodoni is loaded by the public pages and by artifacts.css. It must not
+   appear here, so headings are reset to the text face rather than left to
+   inherit --display from site.css. */
+h1, h2, h3, h4 {
+  font-family: var(--text);
+  font-weight: 600;
+  letter-spacing: -.01em;
+  line-height: 1.2;
+}
+
+h1 { font-size: 19px; }
+h2 { font-size: 15px; }
+h3 { font-size: 13px; }
+
+/* Rule 2. Applied at the root so a number added later cannot opt out by
+   accident; the few places that want proportional figures say so. */
+.a-shell,
+.a-gate {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: var(--mono-num);
+}
+
+.a-shell { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* --- header -------------------------------------------------------------- */
+
+.a-head {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--grid);
+}
+
+.a-head .mark { font-weight: 700; font-size: 15px; letter-spacing: -.01em; }
+.a-head .mark em { font-style: italic; color: var(--gold2); }
+.a-head .spacer { flex: 1 1 auto; }
+
+.a-fresh {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--cream-dim);
+}
+
+.a-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--ok); flex: none;
+}
+.a-fresh[data-state="unknown"] .a-dot,
+.a-fresh[data-state="stale"] .a-dot { background: none; box-shadow: inset 0 0 0 1px var(--muted); }
+.a-fresh[data-state="unknown"],
+.a-fresh[data-state="stale"] { color: var(--muted); }
+.a-fresh[data-state="failed"] .a-dot { background: var(--bad); }
+.a-fresh[data-state="failed"] { color: var(--down); }
+
+.a-who { font-size: 12px; color: var(--muted); }
+
+/* --- buttons ------------------------------------------------------------- */
+
+.a-btn {
+  font: inherit; font-size: 12px; font-weight: 600;
+  color: var(--cream); background: var(--panel-hi);
+  border: 1px solid var(--grid); border-radius: 2px;
+  padding: 6px 11px; cursor: pointer;
+  min-height: 30px;
+}
+.a-btn:hover { background: var(--bg4); color: var(--cream); }
+.a-btn[aria-pressed="true"],
+.a-btn[aria-current="true"] {
+  background: var(--saffron); border-color: var(--saffron); color: var(--bg);
+}
+.a-btn.primary { background: var(--saffron); border-color: var(--saffron); color: var(--bg); }
+.a-btn.primary:hover { background: var(--saffron2); border-color: var(--saffron2); color: var(--bg); }
+.a-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* --- controls row -------------------------------------------------------- */
+
+.a-controls {
+  position: sticky; top: 45px; z-index: 19;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 8px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--grid);
+}
+
+.a-group { display: flex; align-items: center; gap: 8px; }
+
+.a-group > .label {
+  font-size: 11px; letter-spacing: .10em; text-transform: uppercase;
+  color: var(--muted); font-weight: 700;
+}
+
+.a-seg { display: flex; }
+.a-seg .a-btn { border-radius: 0; margin-left: -1px; }
+.a-seg .a-btn:first-child { border-radius: 2px 0 0 2px; margin-left: 0; }
+.a-seg .a-btn:last-child { border-radius: 0 2px 2px 0; }
+.a-seg .a-btn[aria-pressed="true"] { position: relative; z-index: 1; }
+
+.a-custom { display: flex; align-items: center; gap: 6px; }
+.a-custom[hidden] { display: none; }
+
+.a-date {
+  font: inherit; font-size: 12px;
+  color: var(--cream); background: var(--panel-hi);
+  border: 1px solid var(--grid); border-radius: 2px;
+  padding: 5px 8px; min-height: 30px;
+  color-scheme: dark;
+}
+
+.a-check {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--cream-dim); cursor: pointer;
+}
+.a-check input { accent-color: var(--saffron); width: 14px; height: 14px; }
+
+/* --- tab strip ----------------------------------------------------------- */
+
+.a-tabs {
+  display: flex; gap: 0; overflow-x: auto;
+  padding: 0 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--grid);
+}
+
+.a-tab {
+  font: inherit; font-size: 13px; font-weight: 600;
+  color: var(--cream-dim); background: none; border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 10px 14px; cursor: pointer; white-space: nowrap;
+}
+.a-tab:hover { color: var(--cream); }
+.a-tab[aria-selected="true"] { color: var(--saffron2); border-bottom-color: var(--saffron); }
+
+/* --- the view ------------------------------------------------------------ */
+
+.a-view {
+  flex: 1 1 auto;
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: repeat(12, 1fr);
+  align-content: start;
+  padding: var(--gap);
+}
+
+.a-panel {
+  grid-column: span 12;
+  background: var(--panel);
+  padding: 14px 16px 16px;
+  min-width: 0;                       /* so a wide table scrolls instead of pushing */
+}
+.a-panel.half { grid-column: span 6; }
+.a-panel.third { grid-column: span 4; }
+.a-panel.quarter { grid-column: span 3; }
+
+.a-panel > header { margin-bottom: 12px; }
+.a-panel > header .sub {
+  display: block; margin-top: 3px;
+  font-size: 11px; color: var(--muted); font-weight: 500;
+}
+
+/* Rule from the spec: every panel that shows a window names it. The subtitle is
+   not optional decoration, so it is styled as part of the header, not below it. */
+.a-window { color: var(--gold2); }
+
+/* --- headline figures ---------------------------------------------------- */
+
+.a-fig { display: flex; flex-direction: column; gap: 2px; }
+.a-fig .n {
+  font-size: clamp(26px, 3.4vw, 40px); font-weight: 600;
+  line-height: 1; letter-spacing: -.02em;
+}
+.a-fig .k { font-size: 11px; letter-spacing: .10em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+
+/* Deltas as position, never as a bar toward a target and never as a countdown. */
+.a-delta { font-size: 12px; font-weight: 600; display: inline-flex; gap: 4px; align-items: baseline; }
+.a-delta[data-dir="up"] { color: var(--up); }
+.a-delta[data-dir="down"] { color: var(--down); }
+.a-delta[data-dir="flat"] { color: var(--muted); }
+.a-delta .arrow { font-size: 10px; }
+.a-delta .since { color: var(--muted); font-weight: 500; }
+
+/* --- tables -------------------------------------------------------------- */
+
+.a-tablewrap { overflow-x: auto; }
+
+table.a-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.a-table th, .a-table td {
+  padding: 6px 10px; text-align: left; white-space: nowrap;
+  border-bottom: 1px solid var(--grid);
+}
+.a-table th {
+  font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--muted); font-weight: 700; position: sticky; top: 0;
+  background: var(--panel);
+}
+.a-table td.num, .a-table th.num { text-align: right; }
+.a-table td.wide { white-space: normal; max-width: 44ch; }
+.a-table tbody tr:hover { background: var(--panel-hi); }
+.a-table .neg { color: var(--down); }
+.a-table .none { color: var(--muted); font-style: italic; }
+
+/* --- the table twin ------------------------------------------------------ */
+
+details.a-twin { margin-top: 10px; }
+details.a-twin > summary {
+  font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--muted); font-weight: 700; cursor: pointer; padding: 4px 0;
+  list-style: none;
+}
+details.a-twin > summary::-webkit-details-marker { display: none; }
+details.a-twin > summary::before { content: "▸ "; }
+details.a-twin[open] > summary::before { content: "▾ "; }
+details.a-twin > summary:hover { color: var(--cream-dim); }
+
+/* --- states -------------------------------------------------------------- */
+
+.a-empty, .a-error, .a-note {
+  font-size: 12.5px; padding: 14px 0; color: var(--cream-dim);
+}
+.a-empty { color: var(--muted); }
+.a-error { color: var(--down); }
+.a-note { color: var(--muted); }
+
+.a-skel {
+  height: 60px; background: var(--panel-hi);
+  animation: a-pulse 1.4s ease-in-out infinite;
+}
+@keyframes a-pulse { 0%, 100% { opacity: .5 } 50% { opacity: .85 } }
+@media (prefers-reduced-motion: reduce) { .a-skel { animation: none; opacity: .6 } }
+
+/* --- the gate ------------------------------------------------------------ */
+
+.a-gate {
+  min-height: 100vh;
+  display: grid; place-items: center; padding: 40px 20px;
+}
+.a-gate .card {
+  width: min(420px, 100%);
+  background: var(--panel); padding: 30px 28px;
+  border: 1px solid var(--grid);
+}
+.a-gate h1 { font-size: 22px; margin-bottom: 6px; }
+.a-gate p { font-size: 13px; color: var(--cream-dim); margin-bottom: 18px; }
+.a-gate label { display: block; font-size: 11px; letter-spacing: .10em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 6px; }
+.a-gate input[type="email"] {
+  font: inherit; font-size: 14px; width: 100%;
+  color: var(--cream); background: var(--bg); border: 1px solid var(--grid);
+  border-radius: 2px; padding: 10px 12px; margin-bottom: 14px;
+}
+.a-gate .msg { font-size: 12.5px; margin-top: 14px; min-height: 1.2em; }
+.a-gate .msg[data-kind="error"] { color: var(--down); }
+.a-gate .msg[data-kind="sent"] { color: var(--up); }
+.a-gate .fine { font-size: 11px; color: var(--muted); margin-top: 18px; margin-bottom: 0; }
+
+/* --- blocked / misconfigured --------------------------------------------- */
+
+.a-block {
+  min-height: 100vh; display: grid; place-items: center; padding: 40px 20px;
+}
+.a-block .card { width: min(560px, 100%); background: var(--panel); padding: 30px 28px; border: 1px solid var(--grid); }
+.a-block h1 { margin-bottom: 8px; }
+.a-block p { font-size: 13px; color: var(--cream-dim); margin-bottom: 12px; }
+.a-block code { font-size: 12px; color: var(--gold2); }
+
+/* --- phone --------------------------------------------------------------- */
+
+@media (max-width: 860px) {
+  .a-panel.half, .a-panel.third, .a-panel.quarter { grid-column: span 12; }
+  .a-controls { top: 0; position: static; }
+  .a-head { position: static; }
+  .a-group { flex: 1 1 100%; }
+}
