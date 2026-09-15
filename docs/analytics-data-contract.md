@@ -552,6 +552,27 @@ zero rows by design, so the smoke was run with `request.jwt.claims` set to the
 allowed address: 32 episodes, 218 posts, real follower and engagement rows, and
 no earlier demographic window yet (the collector is two days old).
 
+### 7.2a The rollups had to be rewritten for speed on first live open
+
+On the first real open of the dashboard (2026-09-16) `rollup_views` and
+`rollup_engagement` both hit Supabase's 8 s `statement_timeout` for
+`authenticated` on a 30-day frame by day. Both built a `snaps` CTE and read it
+twice per post per period; a CTE referenced twice is materialised and has no
+index, so each of those 13,000 lookups was a sequential scan. `db/006_rollup_performance.sql`
+replaces both with the same lookups against `post_snapshots` itself (a primary
+key probe each), and moves `rollup_views` to `security definer` with the
+`is_allowed()` guard like every other rollup — as the caller, RLS was
+re-evaluated on every probe and the index rewrite alone was *slower*. Measured
+as the allowed user: views 30 d/day 0.31 s (was 3.35 s as invoker, 0.7 s
+before), 365 d/day 0.73 s, engagement 30 d/day 0.36 s (was 3.9 s). A signed-in
+address not on the allow list still gets zero rows.
+
+The same file changes one thing in `rollup_followers`: **`followers` is NULL
+for a period before the platform's first snapshot**, not 0. The collector
+started on 14 September; a 30-day chart drew a month at zero and then a cliff
+to 6,000 — the fabricated zero line rule 1.2 forbids. The charts break a line
+on NULL. `gained` and `lost` stay 0 in those periods, as §3.2 says.
+
 ### 7.3 `posts.title` carries the platform caption, not a clean title
 
 For Instagram and TikTok, `title` is the first 500 characters of the caption —
