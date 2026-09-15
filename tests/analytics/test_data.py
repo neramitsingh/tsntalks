@@ -10,7 +10,6 @@ from pathlib import Path
 
 import pytest
 
-from conftest import ANALYTICS, sign_in
 
 FIX = Path(__file__).parent / "fixtures"
 
@@ -394,10 +393,10 @@ def test_the_header_shows_the_last_collector_run(dashboard):
     assert "collected" in dashboard.inner_text("#fresh")
 
 
-def test_a_collector_that_has_not_run_for_hours_reads_stale(page, base_url, stub):
+def test_a_collector_that_has_not_run_for_hours_reads_stale(page, stub, analytics_url, signin):
     stub.last_run_minutes_ago = 200          # past the two-hour threshold
-    sign_in(page)
-    page.goto(base_url + ANALYTICS)
+    signin(page)
+    page.goto(analytics_url)
     page.wait_for_function(
         "document.getElementById('fresh').dataset.state !== 'unknown'")
     assert page.get_attribute("#fresh", "data-state") == "stale"

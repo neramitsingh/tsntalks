@@ -8,7 +8,6 @@ from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
-from conftest import ANALYTICS, sign_in
 
 
 def query(page):
@@ -95,9 +94,9 @@ def test_control_state_survives_a_reload(dashboard):
     assert dashboard.is_checked("#compare")
 
 
-def test_a_linked_view_opens_on_the_same_controls(page, base_url, stub):
-    sign_in(page)
-    page.goto(base_url + ANALYTICS + "?tab=posts&frame=custom&from=2026-09-09&to=2026-09-15&g=hour&p=youtube&cmp=1")
+def test_a_linked_view_opens_on_the_same_controls(page, stub, analytics_url, signin):
+    signin(page)
+    page.goto(analytics_url + "?tab=posts&frame=custom&from=2026-09-09&to=2026-09-15&g=hour&p=youtube&cmp=1")
     page.wait_for_selector("#shell:not([hidden])")
 
     assert pressed(page, "frame") == "Custom"
@@ -109,9 +108,9 @@ def test_a_linked_view_opens_on_the_same_controls(page, base_url, stub):
     assert page.get_attribute("#tab-posts", "aria-selected") == "true"
 
 
-def test_a_hand_edited_url_falls_back_instead_of_white_screening(page, base_url, stub):
-    sign_in(page)
-    page.goto(base_url + ANALYTICS + "?tab=nonsense&frame=fortnight&g=decade&p=myspace&cmp=yes")
+def test_a_hand_edited_url_falls_back_instead_of_white_screening(page, stub, analytics_url, signin):
+    signin(page)
+    page.goto(analytics_url + "?tab=nonsense&frame=fortnight&g=decade&p=myspace&cmp=yes")
     page.wait_for_selector("#shell:not([hidden])")
 
     assert pressed(page, "frame") == "30 days"
@@ -121,9 +120,9 @@ def test_a_hand_edited_url_falls_back_instead_of_white_screening(page, base_url,
     assert page.get_attribute("#tab-overview", "aria-selected") == "true"
 
 
-def test_a_custom_frame_with_no_dates_is_not_a_custom_frame(page, base_url, stub):
-    sign_in(page)
-    page.goto(base_url + ANALYTICS + "?frame=custom")
+def test_a_custom_frame_with_no_dates_is_not_a_custom_frame(page, stub, analytics_url, signin):
+    signin(page)
+    page.goto(analytics_url + "?frame=custom")
     page.wait_for_selector("#shell:not([hidden])")
     assert pressed(page, "frame") == "30 days"
 

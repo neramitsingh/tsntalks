@@ -8,35 +8,34 @@ zeroes that reads as "the show has no numbers".
 import re
 from pathlib import Path
 
-from conftest import ALLOWED_EMAIL, ANALYTICS, sign_in
 
 ROOT = Path(__file__).resolve().parents[2]
 SITE = ROOT / "site"
 
 
-def test_signed_out_shows_the_gate(page, base_url):
-    page.goto(base_url + ANALYTICS)
+def test_signed_out_shows_the_gate(page, analytics_url):
+    page.goto(analytics_url)
     page.wait_for_selector("#gate:not([hidden])")
     assert page.is_hidden("#shell")
     assert page.is_hidden("#noaccess")
     assert page.is_visible("#email")
 
 
-def test_signed_in_and_allowed_shows_the_shell(page, base_url, stub):
-    sign_in(page)
-    page.goto(base_url + ANALYTICS)
+def test_signed_in_and_allowed_shows_the_shell(page, stub, analytics_url, signin, allowed_email):
+    signin(page)
+    page.goto(analytics_url)
     page.wait_for_selector("#shell:not([hidden])")
     assert page.is_hidden("#gate")
-    assert page.inner_text("#who").strip() == ALLOWED_EMAIL
+    assert page.inner_text("#who").strip() == allowed_email
     assert page.locator(".a-tab").count() == 6
 
 
-def test_signed_in_but_not_allowed_gets_a_named_panel(page, base_url, stub):
+def test_signed_in_but_not_allowed_gets_a_named_panel(page, stub, analytics_url, signin):
     """Zero rows from allowed_users is a permissions answer, not an empty
     dataset. The panel has to say so."""
     stub.allowed = False
-    sign_in(page, "stranger@example.test")
-    page.goto(base_url + ANALYTICS)
+    signin(page, "stranger@example.test")
+    page.goto(analytics_url)
     page.wait_for_selector("#noaccess:not([hidden])")
     assert page.is_hidden("#shell")
     assert page.is_hidden("#gate")
@@ -45,19 +44,19 @@ def test_signed_in_but_not_allowed_gets_a_named_panel(page, base_url, stub):
     assert "stranger@example.test" in text
 
 
-def test_a_database_that_cannot_be_reached_is_not_reported_as_no_access(page, base_url, stub):
+def test_a_database_that_cannot_be_reached_is_not_reported_as_no_access(page, stub, analytics_url, signin):
     """An error from allowed_users means we do not know whether the user is
     allowed. Saying "no access" would be a guess, and the wrong one."""
     stub.fail("allowed_users", status=503, message="service unavailable")
-    sign_in(page)
-    page.goto(base_url + ANALYTICS)
+    signin(page)
+    page.goto(analytics_url)
     page.wait_for_selector("#shell:not([hidden])")
     assert page.is_hidden("#noaccess")
     assert "Could not reach the database" in page.inner_text("#view")
 
 
-def test_the_gate_never_says_whether_an_address_is_known(page, base_url, stub):
-    page.goto(base_url + ANALYTICS)
+def test_the_gate_never_says_whether_an_address_is_known(page, stub, analytics_url):
+    page.goto(analytics_url)
     page.wait_for_selector("#gate:not([hidden])")
     page.fill("#email", "someone@example.test")
     page.click("#gate-send")
@@ -69,8 +68,8 @@ def test_the_gate_never_says_whether_an_address_is_known(page, base_url, stub):
     assert [c for c in stub.calls if c[0] == "auth" and "otp" in c[1]]
 
 
-def test_a_malformed_address_never_reaches_the_network(page, base_url, stub):
-    page.goto(base_url + ANALYTICS)
+def test_a_malformed_address_never_reaches_the_network(page, stub, analytics_url):
+    page.goto(analytics_url)
     page.wait_for_selector("#gate:not([hidden])")
     page.fill("#email", "not-an-address")
     page.click("#gate-send")
@@ -79,9 +78,9 @@ def test_a_malformed_address_never_reaches_the_network(page, base_url, stub):
     assert [c for c in stub.calls if c[0] == "auth"] == []
 
 
-def test_a_failed_send_shows_the_reason_and_re_enables_the_button(page, base_url, stub):
+def test_a_failed_send_shows_the_reason_and_re_enables_the_button(page, stub, analytics_url):
     stub.fail("otp", status=429, message="email rate limit exceeded")
-    page.goto(base_url + ANALYTICS)
+    page.goto(analytics_url)
     page.wait_for_selector("#gate:not([hidden])")
     page.fill("#email", "someone@example.test")
     page.click("#gate-send")
@@ -96,7 +95,7 @@ def test_sign_out_returns_to_the_gate(dashboard):
     assert dashboard.is_hidden("#shell")
 
 
-def test_a_missing_anon_key_shows_a_named_panel_not_a_broken_form(page, base_url, stub):
+def test_a_missing_anon_key_shows_a_named_panel_not_a_broken_form(page, stub, analytics_url, signin):
     """The worktree that wrote this page had no anon key. Until Nav pastes it in,
     the page must say which one line is missing rather than fail at a fetch."""
     src = (SITE / "js" / "analytics" / "supa.js").read_text(encoding="utf-8")
@@ -104,17 +103,17 @@ def test_a_missing_anon_key_shows_a_named_panel_not_a_broken_form(page, base_url
     page.route("**/js/analytics/supa.js", lambda r: r.fulfill(
         status=200, content_type="application/javascript", body=unpatched))
 
-    sign_in(page)
-    page.goto(base_url + ANALYTICS)
+    signin(page)
+    page.goto(analytics_url)
     page.wait_for_selector("#unconfigured:not([hidden])")
     assert "anon key is missing" in page.inner_text("#unconfigured-why")
     assert page.is_hidden("#gate") and page.is_hidden("#shell")
 
 
-def test_the_page_loads_without_a_console_or_page_error(page, base_url, errors):
+def test_the_page_loads_without_a_console_or_page_error(page, errors, analytics_url, signin):
     found = errors(page)
-    sign_in(page)
-    page.goto(base_url + ANALYTICS, wait_until="networkidle")
+    signin(page)
+    page.goto(analytics_url, wait_until="networkidle")
     page.wait_for_selector("#shell:not([hidden])")
     page.wait_for_timeout(400)
     assert found == []

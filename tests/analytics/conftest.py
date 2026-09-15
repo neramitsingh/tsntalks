@@ -276,6 +276,26 @@ def stub():
     return Supabase()
 
 
+# The test modules reach these through fixtures rather than `from conftest
+# import …`: tests/analytics is a package (see __init__.py), so its directory is
+# not on sys.path and a plain import would not resolve.
+
+@pytest.fixture
+def analytics_url(base_url):
+    return base_url + ANALYTICS
+
+
+@pytest.fixture
+def signin():
+    """`signin(page)` for the allowed user, `signin(page, addr)` for anyone."""
+    return sign_in
+
+
+@pytest.fixture
+def allowed_email():
+    return ALLOWED_EMAIL
+
+
 def _context(browser, width, height):
     return browser.new_context(viewport={"width": width, "height": height})
 

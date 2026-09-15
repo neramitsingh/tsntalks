@@ -257,6 +257,63 @@ table.a-table {
 .a-table .neg { color: var(--down); }
 .a-table .none { color: var(--muted); font-style: italic; }
 
+/* --- charts -------------------------------------------------------------- */
+
+.a-figure { position: relative; margin: 0; }
+
+svg.a-chart { display: block; width: 100%; height: auto; overflow: visible; }
+
+/* Thin marks. A 1.5px line at this scale is a mark; a 4px line is a shape. */
+.a-line { fill: none; stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+.a-dotmark { pointer-events: none; }
+.a-bar { shape-rendering: crispEdges; }
+
+/* Hairline, SOLID. A dashed gridline at this weight reads as a series. */
+.a-gridline { stroke: var(--grid); stroke-width: 1; }
+.a-zeroline { stroke: rgba(242, 228, 204, .28); stroke-width: 1; }
+
+text.a-axis {
+  fill: var(--muted); font-size: 11px; font-family: var(--text);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+text.a-peak {
+  fill: var(--cream); font-size: 12px; font-weight: 600; font-family: var(--text);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+text.a-barval {
+  fill: var(--cream-dim); font-size: 11px; font-family: var(--text);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* The hit target is generous and invisible; the visible dot stays small. */
+.a-hit { fill: transparent; }
+.a-point { cursor: default; }
+.a-point:focus { outline: none; }
+.a-point:focus-visible .a-hit,
+.a-point:hover .a-hit { fill: rgba(242, 228, 204, .12); }
+.a-point:focus-visible .a-hit { stroke: var(--saffron2); stroke-width: 1.5; }
+
+.a-tip {
+  position: absolute; transform: translate(-50%, -100%);
+  background: var(--bg4); color: var(--cream);
+  border: 1px solid var(--rule-hi); border-radius: 2px;
+  padding: 5px 9px; font-size: 12px; white-space: nowrap;
+  pointer-events: none; z-index: 5;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.a-tip[hidden] { display: none; }
+
+svg.a-spark { width: 90px; height: 22px; vertical-align: middle; }
+.a-sparkline { fill: none; stroke: var(--cream-dim); stroke-width: 1.2; }
+
+/* A legend, and only when there are two or more series. */
+ul.a-legend {
+  display: flex; flex-wrap: wrap; gap: 4px 16px;
+  margin-bottom: 8px; font-size: 11.5px; color: var(--cream-dim);
+}
+ul.a-legend li { display: inline-flex; align-items: center; gap: 6px; }
+ul.a-legend i { width: 9px; height: 9px; flex: none; border-radius: 1px; }
+
 /* --- the table twin ------------------------------------------------------ */
 
 details.a-twin { margin-top: 10px; }
