@@ -225,6 +225,13 @@ h3 { font-size: 13px; }
 }
 .a-fig .k { font-size: 11px; letter-spacing: .10em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
 
+/* Four figures across, wrapping to two and then one. The row is the answer;
+   everything under it is the evidence. */
+.a-figrow {
+  display: grid; gap: 18px 28px;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
 /* Deltas as position, never as a bar toward a target and never as a countdown. */
 .a-delta { font-size: 12px; font-weight: 600; display: inline-flex; gap: 4px; align-items: baseline; }
 .a-delta[data-dir="up"] { color: var(--up); }
@@ -232,6 +239,11 @@ h3 { font-size: 13px; }
 .a-delta[data-dir="flat"] { color: var(--muted); }
 .a-delta .arrow { font-size: 10px; }
 .a-delta .since { color: var(--muted); font-weight: 500; }
+.a-fig .since { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+/* A platform name never appears without its colour, and never as colour alone. */
+.a-plat { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.a-plat i { width: 8px; height: 8px; flex: none; border-radius: 1px; }
 
 /* --- tables -------------------------------------------------------------- */
 

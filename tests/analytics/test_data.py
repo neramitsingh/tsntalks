@@ -373,6 +373,7 @@ def test_a_failure_is_never_cached(d, stub):
 
 
 def test_repeating_a_call_hits_the_cache_rather_than_the_database(d, stub):
+    stub.calls.clear()          # the Overview tab has already drawn by now
     js(d, """
       const w = await data.windowFor({ frame: '7d', granularity: 'day' });
       data.clearCache();

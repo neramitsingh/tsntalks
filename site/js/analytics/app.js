@@ -11,6 +11,7 @@ import {
   readState, toSearch, withChange, renderControls, renderTabs, TAB_NAME,
 } from './controls.js';
 import { access, lastRun, clearCache, windowFor } from './data.js';
+import { TAB_RENDERERS } from './tabs/index.js';
 import { ago, bkkStamp } from './format.js';
 
 const $ = (id) => document.getElementById(id);
@@ -40,11 +41,9 @@ function setState(next, { replace = true } = {}) {
 
 /* --- the shell ----------------------------------------------------------- */
 
-/* Tabs register themselves here. Task 3 ships the shell; tasks 6 to 11 fill the
-   six entries in. A tab that has not been built yet renders a named placeholder
-   rather than an empty <main> — there is no state of this page in which the
-   view area is blank and unexplained. */
-export const TAB_RENDERERS = {};
+/* A tab that is not in the registry yet renders a named placeholder rather than
+   an empty <main> — there is no state of this page in which the view area is
+   blank and unexplained. */
 
 let drawToken = 0;
 
