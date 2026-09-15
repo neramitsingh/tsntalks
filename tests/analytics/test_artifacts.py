@@ -70,7 +70,7 @@ def test_registering_an_artifact_that_does_not_exist_fails_loudly(a):
 
 
 def test_running_an_unbuilt_artifact_returns_a_reason_rather_than_throwing(a):
-    got = js(a, "return await artifacts.run('monthly-review', {});")
+    got = js(a, "return await artifacts.run('guest-card', {});")
     assert got["ok"] is False
     assert "not built yet" in got["reason"]
 
@@ -648,6 +648,181 @@ def test_exporting_an_empty_table_says_what_to_do_about_it(dashboard):
     message = dashboard.inner_text("#view .a-artifact .a-error")
     assert "no rows to export" in message
     assert "clear the filter" in message
+
+
+# --- the monthly review -----------------------------------------------------
+
+@pytest.fixture
+def review(browser, stub, base_url, signin, halve_previous):
+    """September against August, with August made half the size so the two
+    months are actually different numbers."""
+    # Mid-August: September's window starts 2026-08-31T17:00Z (Bangkok
+    # midnight on the 1st) and August's starts a month earlier, so this cutoff
+    # falls between the two and only August is halved.
+    stub.rpc_hook = halve_previous("2026-08-15")
+    pg, ctx, errors = open_artifact(browser, stub, base_url, signin,
+                                    "monthly-review.html", "?month=2026-09")
+    pg.wait_for_selector("#sheet footer.colophon")
+    yield pg, errors
+    ctx.close()
+
+
+def test_the_monthly_review_draws_without_throwing(review):
+    pg, errors = review
+    assert errors == []
+    assert pg.inner_text("#sheet h1").strip() == "September 2026"
+    # The eyebrow is uppercased in CSS; the markup says "Against August 2026".
+    assert "AGAINST AUGUST 2026" in pg.inner_text("#sheet").upper()
+
+
+def test_the_review_leads_with_the_four_figures_and_their_change(review):
+    pg, _ = review
+    labels = pg.locator("#sheet .figs .fig .k").all_text_contents()
+    assert labels == ["Views", "Net followers", "Posts published", "Engagement rate"]
+    subs = pg.locator("#sheet .figs .fig .sub").all_text_contents()
+    # August was halved, so every figure roughly doubled.
+    assert all("August 2026" in s for s in subs)
+    assert any("+100.0%" in s for s in subs)
+
+
+def test_a_change_on_paper_carries_an_arrow_and_a_sign_not_a_colour(review):
+    """There is no hover on paper, and a monochrome print has no colour worth
+    relying on."""
+    pg, _ = review
+    subs = " ".join(pg.locator("#sheet .figs .fig .sub").all_text_contents())
+    assert "▲" in subs or "▼" in subs
+    assert "%" in subs
+
+
+def test_the_three_platform_comparisons_are_charts_with_their_tables(review):
+    pg, _ = review
+    headings = pg.locator("#sheet h2").all_text_contents()
+    assert headings[:3] == ["Views by platform", "Net followers by platform",
+                            "Posts published"]
+    assert pg.locator("#sheet svg.a-chart").count() == 3
+    assert pg.locator("#sheet details.a-twin").count() == 3
+
+
+def test_every_table_twin_is_open_on_paper(review):
+    """A collapsed <details> in a PDF is a table nobody can reach, and "every
+    chart has a table" is the contract."""
+    pg, _ = review
+    assert pg.locator("#sheet details.a-twin").count() == \
+        pg.locator("#sheet details.a-twin[open]").count()
+
+
+def test_a_comparison_table_names_both_months_and_the_change(review):
+    pg, _ = review
+    headers = pg.locator("#sheet details.a-twin").first.locator("thead th").all_text_contents()
+    assert headers == ["Platform", "September 2026", "August 2026", "Change"]
+
+
+def test_the_follower_panel_says_it_is_a_net_change_not_a_count(review):
+    """A follower count printed beside a month name reads as a monthly figure
+    when it is a lifetime one."""
+    pg, _ = review
+    text = pg.inner_text("#sheet")
+    assert "Gained minus lost inside the month" in text
+    assert "Not the follower count" in text
+
+
+def test_the_review_lists_the_five_posts_that_carried_the_month(review):
+    pg, _ = review
+    section = pg.locator("#sheet section", has_text="The five posts that carried")
+    rows = section.locator("tbody tr")
+    assert rows.count() == 5
+    gained = section.locator("tbody tr td:nth-child(4)").all_inner_texts()
+    numbers = [int(g.replace(",", "")) for g in gained]
+    assert numbers == sorted(numbers, reverse=True)
+
+
+def test_the_audience_shift_is_in_points_and_says_it_is_the_channel(review):
+    pg, _ = review
+    section = pg.locator("#sheet section", has_text="Where the audience is")
+    headers = section.locator("thead th").all_text_contents()
+    assert headers == ["Country", "Share", "Share before", "Shift", "Views"]
+    assert "pp" in section.inner_text()
+    assert "rolling 90-day window for the CHANNEL" in pg.inner_text("#sheet footer.colophon")
+
+
+def test_the_review_carries_its_source_note_and_filename(review):
+    pg, _ = review
+    assert "collector run" in pg.inner_text("#sheet footer.colophon")
+    assert pg.title() == "tsn-monthly-review-2026-09-" + \
+        __import__("datetime").datetime.now().astimezone().strftime("%Y-%m-%d")
+
+
+def test_a_month_that_has_not_happened_is_refused_by_name(browser, stub, base_url, signin):
+    pg, ctx, _ = open_artifact(browser, stub, base_url, signin,
+                               "monthly-review.html", "?month=2099-01")
+    assert "has not happened yet" in pg.inner_text("#sheet")
+    ctx.close()
+
+
+def test_a_month_that_is_not_a_month_says_so(browser, stub, base_url, signin):
+    pg, ctx, _ = open_artifact(browser, stub, base_url, signin,
+                               "monthly-review.html", "?month=last-tuesday")
+    assert "is not a month" in pg.inner_text("#sheet")
+    ctx.close()
+
+
+def test_the_workbook_carries_the_tables_under_the_charts(dashboard, scratch, stub):
+    openpyxl = pytest.importorskip(
+        "openpyxl", reason="pip install -r tests/requirements.txt to run this one")
+    if not sheetjs_available(dashboard):
+        pytest.skip("SheetJS is not available offline")
+
+    with dashboard.expect_download() as caught:
+        dashboard.click('#view .a-artifacts button[data-artifact="monthly-review"]'
+                        '[data-format="xlsx"]')
+    download = caught.value
+    path = scratch / download.suggested_filename
+    download.save_as(path)
+
+    assert download.suggested_filename.startswith("tsn-monthly-review-")
+    book = openpyxl.load_workbook(path)
+    assert book.sheetnames == ["Summary", "Views", "Followers", "Posts published",
+                               "Top posts", "Audience", "About"]
+    views = book["Views"]
+    assert [c.value for c in views[1]][0] == "Platform"
+    assert views.max_row == 4                      # three platforms plus the header
+
+    about = {}
+    for row in book["About"].iter_rows(min_row=2):
+        about.setdefault(row[0].value, []).append(row[1].value)
+    assert any("net change" in v.lower() for v in about["Note"])
+    assert "collector run" in about["Source"][0]
+
+
+def test_the_pdf_and_the_workbook_agree(dashboard, scratch, stub, browser, base_url,
+                                        signin):
+    """Both come out of monthly-review-data.js, so printing the review and
+    opening the spreadsheet beside it cannot show two answers."""
+    openpyxl = pytest.importorskip(
+        "openpyxl", reason="pip install -r tests/requirements.txt to run this one")
+    if not sheetjs_available(dashboard):
+        pytest.skip("SheetJS is not available offline")
+
+    with dashboard.expect_download() as caught:
+        dashboard.click('#view .a-artifacts button[data-artifact="monthly-review"]'
+                        '[data-format="xlsx"]')
+    path = scratch / caught.value.suggested_filename
+    caught.value.save_as(path)
+    sheet = openpyxl.load_workbook(path)["Views"]
+    from_workbook = {sheet.cell(row=r, column=1).value: sheet.cell(row=r, column=2).value
+                     for r in range(2, sheet.max_row + 1)}
+
+    month = caught.value.suggested_filename.split("tsn-monthly-review-")[1][:7]
+    pg, ctx, _ = open_artifact(browser, stub, base_url, signin,
+                               "monthly-review.html", f"?month={month}")
+    pg.wait_for_selector("#sheet footer.colophon")
+    from_page = pg.locator("#sheet details.a-twin").first.evaluate(
+        """(el) => Object.fromEntries([...el.querySelectorAll('tbody tr')].map(
+             (tr) => [tr.children[0].textContent,
+                      Number(tr.children[1].textContent.replace(/,/g, ''))]))""")
+    ctx.close()
+
+    assert from_page == from_workbook
 
 
 # --- the UI -----------------------------------------------------------------

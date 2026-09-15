@@ -162,6 +162,11 @@ class Supabase:
                        "account_health": 168}
         self.failures = {}
         self.calls = []
+        # The RPC stubs answer with the same fixture whatever window they are
+        # asked for, which is fine for one window and useless for two. A hook
+        # lets a test say what the PREVIOUS month looked like without teaching
+        # the stub to actually aggregate anything.
+        self.rpc_hook = None
         # Freshness is age, so a fixture with a fixed stamp in it would go stale
         # on its own next week and the suite would start failing for no reason.
         # The three time-relative tables are re-anchored on the way out: the
@@ -293,6 +298,8 @@ class Supabase:
         if name == "demographics_compare":
             # keyed by kind in the fixture, one array per kind on the wire
             data = data.get(args.get("kind"), [])
+        if self.rpc_hook:
+            data = self.rpc_hook(name, args, data)
         return route.fulfill(status=200, content_type="application/json",
                              body=json.dumps(data))
 
@@ -390,9 +397,37 @@ def stub():
 # import …`: tests/analytics is a package (see __init__.py), so its directory is
 # not on sys.path and a plain import would not resolve.
 
+def halve_before(cutoff_iso, fields=("views", "posts_published", "gained", "lost",
+                                     "likes", "comments", "shares", "views_gained",
+                                     "views_end", "views_start")):
+    """An rpc_hook that makes anything asked for before `cutoff` half the size.
+
+    Enough to give a month-on-month comparison two different numbers without
+    the stub having to understand windows.
+    """
+    def hook(name, args, data):
+        if not isinstance(data, list) or (args.get("from_ts") or "") >= cutoff_iso:
+            return data
+        out = []
+        for row in data:
+            copy = dict(row)
+            for field in fields:
+                if isinstance(copy.get(field), (int, float)):
+                    copy[field] = round(copy[field] / 2)
+            out.append(copy)
+        return out
+    return hook
+
+
 @pytest.fixture
 def analytics_url(base_url):
     return base_url + ANALYTICS
+
+
+@pytest.fixture
+def halve_previous():
+    """`stub.rpc_hook = halve_previous("2026-09-01")` — see halve_before()."""
+    return halve_before
 
 
 @pytest.fixture

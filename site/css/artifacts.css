@@ -205,10 +205,62 @@ td.none { color: var(--ink-faint); font-style: italic; }
 
 /* --- charts on paper ------------------------------------------------------ */
 
-svg.print-chart { width: 100%; height: auto; display: block; margin: 6pt 0; }
-.print-chart .a-gridline { stroke: var(--rule-print); stroke-width: .5; }
-.print-chart text { fill: var(--ink-faint); font-family: var(--text-print); font-size: 9px; }
-.print-chart text.a-peak { fill: var(--ink); font-weight: 600; }
+/* charts.js draws with the dashboard's token names — var(--yt), var(--grid),
+   var(--cream) — and those tokens live in site.css, which these pages do not
+   load. Rather than fork the chart code for print, the tokens are redefined
+   here in their paper weights. One block, and every primitive prints correctly
+   without knowing it is being printed. */
+:root {
+  --yt: var(--yt-print);
+  --tt: var(--tt-print);
+  --ig: var(--ig-print);
+  --saffron: var(--saffron-print);
+  --saffron2: var(--saffron-print);
+  --gold2: var(--gold-print);
+  --cream: var(--ink);
+  --cream-dim: var(--ink-dim);
+  --muted: var(--ink-faint);
+  --up: #1E6B3E;
+  --down: #9B2F1F;
+  --grid: var(--rule-print);
+  --rule-hi: var(--rule-print);
+  --text: var(--text-print);
+  --bg4: var(--paper2);
+  --panel: var(--paper);
+}
+
+svg.a-chart, svg.print-chart {
+  width: 100%; height: auto; display: block; margin: 6pt 0; overflow: visible;
+}
+svg.a-chart { max-height: 62mm; }
+.a-line { fill: none; stroke-width: 1.2; stroke-linejoin: round; stroke-linecap: round; }
+.a-gridline { stroke: var(--rule-print); stroke-width: .5; }
+.a-zeroline { stroke: var(--ink-dim); stroke-width: .75; }
+.a-hit { fill: transparent; }
+text.a-axis { fill: var(--ink-faint); font-family: var(--text-print); font-size: 10px; }
+text.a-peak { fill: var(--ink); font-weight: 600; font-family: var(--text-print); font-size: 11px; }
+text.a-barval { fill: var(--ink-dim); font-family: var(--text-print); font-size: 10px; }
+
+/* The tooltip belongs to the screen. On paper the table below carries the
+   values, which is why every chart has one. */
+.a-tip { display: none !important; }
+
+ul.a-legend {
+  display: flex; flex-wrap: wrap; gap: 3pt 14pt; list-style: none;
+  margin: 0 0 4pt; font-size: 8pt; color: var(--ink-dim);
+}
+ul.a-legend li { display: inline-flex; align-items: center; gap: 4pt; }
+ul.a-legend i { width: 7pt; height: 7pt; border: .4pt solid var(--ink-dim); }
+
+/* The table twin is open on paper. A collapsed <details> in a PDF is a table
+   nobody can reach — and "every chart has a table" is the contract. */
+details.a-twin > summary { display: none; }
+details.a-twin { margin-top: 2pt; }
+.a-figure { margin: 0 0 10pt; position: relative; }
+.a-tablewrap { overflow: visible; }
+table.a-table { width: 100%; }
+table.a-table th, table.a-table td { white-space: normal; }
+table.a-table td.num, table.a-table th.num { text-align: right; }
 
 /* --- the guest card ------------------------------------------------------- */
 

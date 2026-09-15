@@ -7,8 +7,10 @@
  *
  * app.js imports this once, for the side effect. */
 
-import { register, byId, openPage } from './index.js';
+import { register, byId, openPage, filename, sourceNote } from './index.js';
 import { buildPostsTable } from './posts-table.js';
+import { downloadXlsx } from './csv.js';
+import { gatherMonth, monthKey, workbookSheets } from './monthly-review-data.js';
 
 /** A print-designed page, opened in its own tab. */
 const printPage = (id, params) => {
@@ -22,3 +24,21 @@ register('episode-report', ({ episode }) => {
 });
 
 register('posts-table', buildPostsTable);
+
+/* Two formats, one set of numbers. The PDF is a page, the XLSX is the tables
+   underneath it, and both come out of monthly-review-data.js so that printing
+   the review and opening the spreadsheet beside it cannot show two answers. */
+register('monthly-review', async ({ window: w, format }) => {
+  const key = monthKey(w?.to ?? new Date());
+  if (format === 'xlsx') {
+    const data = await gatherMonth(key);
+    const note = await sourceNote({
+      platforms: 'all',
+      from: data.windows.current.from,
+      to: data.windows.current.to,
+    });
+    await downloadXlsx(workbookSheets(data, note), filename('monthly-review', key, 'xlsx'));
+    return;
+  }
+  printPage('monthly-review', { month: key });
+});
