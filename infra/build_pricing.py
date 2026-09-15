@@ -18,6 +18,7 @@ import json
 import sys
 from html import escape
 from pathlib import Path
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 PRICING = ROOT / "data" / "pricing.json"
@@ -30,9 +31,16 @@ BLOCKS = [
     ("site/index.html", "hero-floor", ""),
     ("site/index.html", "tiers-brief", "      "),
     ("site/index.html", "bundles-floor", ""),
+    ("site/partner/index.html", "fork-episode-floor", ""),
+    ("site/partner/index.html", "fork-campaign-floor", ""),
     ("site/partner/index.html", "tiers-full", "      "),
     ("site/partner/index.html", "bundles", "      "),
 ]
+
+# The reply address for the per-option "Ask about this" links. The rate card
+# is static on purpose, so the address is baked here rather than fetched; the
+# page's script upgrades the primary buttons to LINE when contact.json has it.
+CONTACT = ROOT / "site" / "data" / "contact.json"
 
 IND = "      "          # the rate-card blocks sit two levels in, as the hand markup did
 
@@ -76,6 +84,24 @@ def render_bundles_floor(p: dict) -> list[str]:
     return [f'{IND_OF["bundles-floor"]}<b id="bfloor">{baht(lo)}</b>']
 
 
+# The rate card opens on a fork — one episode, or a campaign — and each side
+# quotes its own floor so a reader picks a lane before reading ten prices.
+def render_fork_episode_floor(p: dict) -> list[str]:
+    return [f'<b>{baht(min(t["amount"] for t in p["tiers"]))}</b>']
+
+
+def render_fork_campaign_floor(p: dict) -> list[str]:
+    return [f'<b>{baht(min(b["amount"] for b in p["bundles"]))}</b>']
+
+
+def _ask(t: dict) -> str:
+    """A reply link with the option already named in the subject, so the
+    sponsor never has to describe what they are asking about."""
+    email = json.loads(CONTACT.read_text(encoding="utf-8"))["email"]
+    subject = quote(f'TSN Talks sponsorship: {t.get("short_name") or t["name"]}')
+    return f'<a class="ask" href="mailto:{email}?subject={subject}">Ask about this</a>'
+
+
 # The tiers lead with the price. It used to come fourth, at 18px, behind a 30px
 # roman numeral — and the numerals implied a rank the prices contradicted
 # (I=฿25,000, II=฿20,000, III=฿15,000). They are gone.
@@ -107,11 +133,18 @@ def render_tiers_full(p: dict) -> list[str]:
                 f'{IND}  <div class="d">',
                 f'{IND}    {escape(t["long"], quote=False)}',
                 *_bullets(lines, f"{IND}    "),
+                f'{IND}    {_ask(t)}',
                 f'{IND}  </div>',
                 f'{IND}</div>']
     return out
 
 
+# The campaigns are rows on the same wooden plate as the tiers, one line each,
+# so five offers can be compared down one column of prices. They used to be
+# five identical bordered cards named "Bundle A / B / C", which is the card
+# grammar the critique called the category default and a name that told a
+# reader nothing. The term leads (one week, one month, two months) because that
+# is what a sponsor actually chooses between; the kit's own tag follows it.
 def render_bundles(p: dict) -> list[str]:
     out = []
     for i, b in enumerate(p["bundles"]):
@@ -122,20 +155,19 @@ def render_bundles(p: dict) -> list[str]:
         saving = b["regular"] - b["amount"]
         if b.get("show_saving") and saving > 0:
             reach += f" · you save {baht(saving)}"
-        cls = "bundle flag" if b.get("flagship") else "bundle"
+        cls = "deal flag" if b.get("flagship") else "deal"
         was = f'Regular {baht(b["regular"])}'
-        # The tag used to be a tracked uppercase kicker sitting above the heading
-        # on each of five identical cards — five in one viewport. Folded into the
-        # heading, it distinguishes two cards that both said "One month".
-        heading = f'{b["term"]} · {b["tag"]}'
         out += [f'{IND}<div class="{cls}">',
-                f'{IND}  {_tag("h3", None, heading)}',
+                f'{IND}  {_tag("div", "n", b["term"])}',
+                f'{IND}  {_tag("div", "lab", b["tag"])}',
+                f'{IND}  <div class="d">',
                 *_bullets([*b["includes"], f'{baht(b["ad_budget"])} ad budget included'],
-                          f"{IND}  "),
-                f'{IND}  <div class="price">',
-                f'{IND}    {_tag("p", "was", was)}',
-                f'{IND}    {_tag("p", "now", baht(b["amount"]))}',
-                f'{IND}    {_tag("p", "reach", reach)}',
+                          f"{IND}    "),
+                f'{IND}  </div>',
+                f'{IND}  <div class="p">',
+                f'{IND}    {_tag("span", "was", was)}',
+                f'{IND}    {_tag("b", None, baht(b["amount"]))}',
+                f'{IND}    {_tag("small", None, reach)}',
                 f'{IND}  </div>',
                 f'{IND}</div>']
     return out
@@ -146,6 +178,8 @@ IND_OF = {name: ind for _, name, ind in BLOCKS}
 RENDER = {
     "hero-floor": render_hero_floor,
     "bundles-floor": render_bundles_floor,
+    "fork-episode-floor": render_fork_episode_floor,
+    "fork-campaign-floor": render_fork_campaign_floor,
     "tiers-brief": render_tiers_brief,
     "tiers-full": render_tiers_full,
     "bundles": render_bundles,

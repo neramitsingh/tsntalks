@@ -23,6 +23,29 @@ function stripLeadingSymbols(text) {
 const MONTH = (m) => new Date(`${m}-01T00:00:00Z`)
   .toLocaleDateString('en-GB', { month: 'short', year: '2-digit', timeZone: 'UTC' });
 
+/* --- position first: the last 90 days ------------------------------------ */
+
+/* PRODUCT.md's first principle is position, not deficit. A lifetime total
+   with a month chart under it reads as "peaked last November"; the platforms'
+   own rolling window says where the show is now, so it comes first, in the
+   same strap the home page uses for its totals. YouTube is the only platform
+   that reports a window in live.json, and the strap says so. */
+function renderStrap90(d) {
+  const f = freshness(d.fetched_at);
+  const y = d.yt_90d;
+  const net = y.subs_gained - y.subs_lost;
+  const strap = $('strap90');
+  strap.classList.toggle('stale', f.stale);
+  const flag = f.stale
+    ? `<span class="stale-flag">Last updated ${f.hours} hours ago</span>`
+    : '<span class="live">Live</span>';
+  strap.innerHTML = `${flag}
+    <span><b>${full(y.views)}</b> YouTube views in the last 90 days</span>
+    <span><b>${full(Math.round(y.minutes / 60))}</b> hours watched</span>
+    <span><b>${net >= 0 ? '+' : ''}${full(net)}</b> net subscribers</span>
+    <span>Updated ${f.stamp} Bangkok</span>`;
+}
+
 /* --- one number ---------------------------------------------------------- */
 
 function renderTotal(d) {
@@ -46,8 +69,10 @@ function renderTotal(d) {
 function renderLegend(d) {
   $('legend').innerHTML = STACK.map((k) => {
     const p = d.platforms[k];
+    // A platform name is a label on a legend, not a heading: as an <h3> under
+    // the page's <h1> it was a heading-level skip a screen reader announced.
     return `<div class="card" style="--plat:${PLATFORM_COLOR[k]}">
-      <h3>${PLATFORM_NAME[k]}</h3>
+      <p class="pn">${PLATFORM_NAME[k]}</p>
       <p class="h"><a href="${PLATFORM_URL[k]}" target="_blank" rel="noopener">${PLATFORM_HANDLE[k]}</a></p>
       <dl>
         <dt>Views</dt><dd>${full(p.views)}</dd>
@@ -109,6 +134,25 @@ function renderColumns(d) {
   $('colsleg').innerHTML = STACK.map((k) =>
     `<span><i style="background:${PLATFORM_COLOR[k]}"></i>${PLATFORM_NAME[k]}</span>`).join('');
 
+  /* The tallest column is usually one post. Saying so is the difference
+     between "the show peaked" and "one clip travelled": the same figures, the
+     honest reading. Only written when a platform's best post falls in the peak
+     month and carries more than half of it. */
+  const note = $('peaknote');
+  const carrier = Object.keys(d.platforms)
+    .map((k) => ({ k, t: d.platforms[k].top }))
+    .filter(({ t }) => t.date && t.date.slice(0, 7) === peak.m && t.views * 2 > peak.total)
+    .sort((a, b) => b.t.views - a.t.views)[0];
+  if (carrier) {
+    note.textContent = `${MONTH(peak.m)} is mostly one post: `
+      + `${full(carrier.t.views)} of its ${full(peak.total)} views are a single ${PLATFORM_NAME[carrier.k]} `
+      + `${carrier.k === 'youtube' ? 'video' : 'clip'}, published ${bkk(carrier.t.date)}.`;
+    note.hidden = false;
+  } else {
+    note.textContent = '';
+    note.hidden = true;
+  }
+
   $('monthstab').innerHTML =
     '<caption class="vh">Views by publish month and platform</caption>'
     + `<tr><th scope="col">Month</th>${STACK.map((k) => `<th scope="col" class="r">${PLATFORM_NAME[k]}</th>`).join('')}`
@@ -120,8 +164,11 @@ function renderColumns(d) {
 
 /* --- who is watching ------------------------------------------------------ */
 
-function barTable(el, caption, rows, { label, value, colour, share = true }) {
-  const total = rows.reduce((a, r) => a + r.value, 0);
+/* `total` is the whole list the platform reported, not the rows on show: a
+   share of the top six cities said Bangkok was 83% of Instagram when it is 67%
+   of everyone Instagram placed in a city. */
+function barTable(el, caption, rows, { label, value, colour, share = true, total = null }) {
+  total = total ?? rows.reduce((a, r) => a + r.value, 0);
   const max = Math.max(...rows.map((r) => r.value)) || 1;
   el.style.setProperty('--plat', colour);
   el.innerHTML = `<caption>${caption}</caption>`
@@ -133,16 +180,18 @@ function barTable(el, caption, rows, { label, value, colour, share = true }) {
       + (share ? `<td class="r">${pct(r.value, total)}%</td>` : '') + '</tr>').join('');
 }
 
+const sum = (rows) => rows.reduce((a, r) => a + r.value, 0);
+
 function renderAudience(d) {
   const cty = d.demographics.yt_country.slice(0, 6);
   barTable($('ctytab'), 'YouTube views by country · last 90 days',
     cty.map((c) => ({ label: COUNTRY[c.dimension] || c.dimension, value: c.value })),
-    { label: 'Country', value: 'Views', colour: 'var(--yt)' });
+    { label: 'Country', value: 'Views', colour: 'var(--yt)', total: sum(d.demographics.yt_country) });
 
   const city = d.demographics.ig_city.slice(0, 6);
   barTable($('igcitytab'), 'Instagram followers by city · last 30 days',
     city.map((c) => ({ label: c.dimension.split(',')[0], value: c.value })),
-    { label: 'City', value: 'Followers', colour: 'var(--ig)' });
+    { label: 'City', value: 'Followers', colour: 'var(--ig)', total: sum(d.demographics.ig_city) });
 
   const age = d.demographics.yt_age;
   barTable($('agetab'), 'YouTube views by age · last 90 days',
@@ -150,19 +199,22 @@ function renderAudience(d) {
     { label: 'Age', value: 'Share of views', colour: 'var(--yt)', share: false });
 }
 
-/* Four plain facts, each a sentence carrying its own window. */
+/* Plain facts about who is watching, each a sentence carrying its own window.
+   The momentum figures moved to the strap at the top of the page. */
 function renderFacts(d) {
   const y = d.yt_90d;
-  const net = y.subs_gained - y.subs_lost;
-  const hours = Math.round(y.minutes / 60);
   const male = d.demographics.yt_gender.find((g) => g.dimension === 'male')?.value ?? 0;
+  const cities = d.demographics.ig_city;
+  const bangkok = cities.find((c) => c.dimension.startsWith('Bangkok'));
+  const placed = sum(cities);
   $('facts').innerHTML = [
-    `<b>${full(y.views)}</b> YouTube views in the last 90 days.`,
-    `<b>${full(hours)}</b> hours watched on YouTube over the same window.`,
-    `<b>${net >= 0 ? '+' : ''}${full(net)}</b> net YouTube subscribers in 90 days: `
-      + `${full(y.subs_gained)} gained, ${full(y.subs_lost)} lost.`,
-    `<b>${male.toFixed(0)}%</b> of YouTube viewers are men.`,
-  ].map((t) => `<li>${t}</li>`).join('');
+    `<b>${male.toFixed(0)}%</b> of YouTube viewers in the last 90 days are men.`,
+    bangkok && placed
+      ? `<b>${pct(bangkok.value, placed)}%</b> of the Instagram followers Instagram places in a city are in Bangkok `
+        + `(${full(bangkok.value)} of ${full(placed)}).`
+      : '',
+    `<b>${full(y.subs_gained)}</b> YouTube subscribers gained in 90 days, ${full(y.subs_lost)} lost.`,
+  ].filter(Boolean).map((t) => `<li>${t}</li>`).join('');
 }
 
 /* --- now playing ---------------------------------------------------------- */
@@ -205,8 +257,10 @@ function renderTop(d) {
       img.alt = '';
       img.loading = 'lazy';
       img.decoding = 'async';
-      /* Instagram and TikTok CDN thumbs expire; the tile keeps its ground when they do. */
-      img.addEventListener('error', () => { img.removeAttribute('src'); });
+      /* Instagram and TikTok covers are signed URLs that expire. A tile that kept
+         an empty <img> shipped a 300px blank box above its caption; the caption
+         alone is the honest tile, so the image goes. */
+      img.addEventListener('error', () => { img.remove(); });
       img.src = t.thumb;
       a.appendChild(img);
     }
@@ -236,6 +290,7 @@ function renderFooter(d) {
 }
 
 load((d) => {
+  renderStrap90(d);
   renderTotal(d);
   renderLegend(d);
   renderColumns(d);

@@ -1,6 +1,7 @@
 import {
   load, full, compact, bkk, freshness, hasStill, stillUrl, faceImage,
 } from './live-data.js';
+import { wireContact } from './contact.js';
 
 const $ = (id) => document.getElementById(id);
 const BASE = import.meta.url;
@@ -131,38 +132,10 @@ async function renderSponsors() {
   } catch { /* no sponsors file: the section stays hidden */ }
 }
 
-/* The reply channel. The sponsor arrived from a LINE thread; a mail link inside
-   LINE's in-app browser is where the journey used to end. When contact.json
-   carries a LINE link it becomes the primary button and email steps back. */
-async function renderContact() {
-  try {
-    const r = await fetch(new URL('../data/contact.json', BASE).href, { cache: 'force-cache' });
-    if (!r.ok) return;
-    const c = await r.json();
-    const mail = `mailto:${c.email}?subject=${encodeURIComponent('TSN Talks sponsorship')}`;
-    for (const id of ['cta', 'cta2']) {
-      const a = $(id);
-      if (c.line) {
-        a.href = c.line;
-        a.textContent = 'Message us on LINE';
-        a.classList.add('line');
-        a.target = '_blank';
-        a.rel = 'noopener';
-      } else {
-        a.href = mail;
-      }
-    }
-    if (c.line) {
-      const n = $('navcta');
-      n.href = c.line; n.textContent = 'LINE'; n.classList.add('line'); n.target = '_blank'; n.rel = 'noopener';
-    }
-  } catch { /* the static mailto stays */ }
-}
-
 load((d) => {
   renderRoom(d);
   renderStrap(d);
   renderFaces(d);
 });
 renderSponsors();
-renderContact();
+wireContact({ buttons: ['cta', 'cta2'], nav: 'navcta', base: BASE });

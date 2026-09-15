@@ -7,6 +7,7 @@ PAGES = ["/", "/live/", "/partner/"]
 NAMES = {"/": "home", "/live/": "live", "/partner/": "partner"}
 SHOTS = Path(__file__).parent / "shots"
 ROOT = Path(__file__).resolve().parents[2]
+LIVE_JSON = ROOT / "data" / "live.json"
 
 # An element may legitimately stick out of the viewport when some ancestor scrolls
 # horizontally — the nav strip and the column chart both do. Walk up, do not stop
@@ -304,6 +305,181 @@ def test_partner_footnotes_the_guaranteed_reach(desktop, base_url):
     body = desktop.inner_text("body")
     assert "targets we underwrite, not" in body
     assert "measurements" in body
+
+
+def test_partner_opens_on_a_fork_quoting_both_floors(desktop, base_url, pricing):
+    """Ten prices in one column made every reader start at the wrong one. The
+    page opens on two plates, one episode or a campaign, each quoting the
+    cheapest price on its side, generated from pricing.json like every other
+    figure. Both must be in the first screen."""
+    desktop.goto(base_url + "/partner/", wait_until="networkidle")
+    ep = desktop.inner_text("#fork-ep")
+    camp = desktop.inner_text("#fork-camp")
+    assert _baht(min(t["amount"] for t in pricing["tiers"])) in ep
+    assert _baht(min(b["amount"] for b in pricing["bundles"])) in camp
+    assert desktop.locator("#fork-camp").bounding_box()["y"] < 900
+    assert desktop.get_attribute("#fork-ep", "href") == "#episode"
+    assert desktop.get_attribute("#fork-camp", "href") == "#campaign"
+
+
+def test_partner_reel_is_frames_from_the_room_not_thumbnails(desktop, base_url):
+    """Every photograph on the site is a frame from an episode. The rate card
+    used to show three YouTube thumbnails 'as published' — the one place the
+    system's rule was broken, on the money page."""
+    desktop.goto(base_url + "/partner/", wait_until="networkidle")
+    desktop.wait_for_timeout(600)
+    srcs = desktop.eval_on_selector_all(".reel img", "els => els.map(e => e.currentSrc)")
+    assert len(srcs) == 3
+    for s in srcs:
+        assert "/img/episodes/" in s and "ytimg" not in s, s
+    loaded = desktop.eval_on_selector_all(".reel img", "els => els.map(e => e.complete && e.naturalWidth > 3)")
+    assert all(loaded), loaded
+    caps = desktop.eval_on_selector_all(".reel figcaption b", "els => els.map(e => e.textContent.trim())")
+    assert all(caps)
+
+
+def test_partner_campaigns_are_rows_on_one_plate(desktop, base_url, pricing):
+    """Five identical bordered cards named Bundle A/B/C became rows on the same
+    wood as the tiers: one column of prices to compare down, the flagship marked
+    by a rule rather than a different card."""
+    desktop.goto(base_url + "/partner/", wait_until="networkidle")
+    rows = desktop.locator("#campaign .deal")
+    assert rows.count() == len(pricing["bundles"])
+    flags = desktop.locator("#campaign .deal.flag")
+    assert flags.count() == sum(1 for b in pricing["bundles"] if b.get("flagship"))
+    flagship = next(b for b in pricing["bundles"] if b.get("flagship"))
+    assert _baht(flagship["amount"]) in flags.first.inner_text()
+    terms = desktop.eval_on_selector_all("#campaign .deal .n", "els => els.map(e => e.textContent.trim())")
+    assert terms == [b["term"] for b in pricing["bundles"]]
+    # the tier rows carry a reply link that names the option in the subject
+    asks = desktop.eval_on_selector_all("#episode .tier a.ask", "els => els.map(e => e.href)")
+    assert len(asks) == len(pricing["tiers"])
+    assert all(a.startswith("mailto:") and "subject=" in a for a in asks)
+
+
+def test_the_reply_channel_becomes_line_on_every_page_when_the_link_exists(browser, base_url):
+    """The sponsor arrived from a LINE thread. Until Sunny sends his link the
+    buttons are mailto:; the moment contact.json carries it, every primary
+    button on home and the rate card is LINE, from one shared module."""
+    import json as _json
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    pg = ctx.new_page()
+    _stub = {"email": "x@example.com", "line": "https://lin.ee/abc123"}
+    pg.route("**/data/contact.json", lambda r: r.fulfill(
+        status=200, content_type="application/json", body=_json.dumps(_stub)))
+    pg.route("**/storage/v1/object/public/public/live.json", lambda r: r.abort())
+    for path in ("/", "/partner/"):
+        pg.goto(base_url + path, wait_until="networkidle")
+        pg.wait_for_timeout(500)
+        for sel in ("#cta", "#cta2", "#navcta"):
+            assert pg.get_attribute(sel, "href") == _stub["line"], f"{path} {sel}"
+            assert "line" in (pg.get_attribute(sel, "class") or ""), f"{path} {sel}"
+        # text_content, not inner_text: the button is uppercased by CSS
+        assert pg.text_content("#cta").strip() == "Message us on LINE"
+    ctx.close()
+
+
+def test_the_reply_channel_stays_email_until_then(desktop, base_url):
+    desktop.goto(base_url + "/partner/", wait_until="networkidle")
+    desktop.wait_for_timeout(500)
+    for sel in ("#cta", "#cta2", "#navcta"):
+        assert (desktop.get_attribute(sel, "href") or "").startswith("mailto:"), sel
+
+
+# --- /live in the same room ---------------------------------------------------
+
+def test_live_leads_with_the_90_day_position(desktop, base_url, live_data):
+    """Position, not deficit. The first figures on the page are the platform's
+    rolling 90 days, in the same strap the home page uses, above the lifetime
+    total — so the page says where the show is before what it has ever done."""
+    desktop.goto(base_url + "/live/", wait_until="networkidle")
+    desktop.wait_for_timeout(600)
+    y = live_data["yt_90d"]
+    strap = desktop.inner_text("#strap90")
+    assert f"{y['views']:,}" in strap
+    assert f"{round(y['minutes'] / 60):,}" in strap
+    net = y["subs_gained"] - y["subs_lost"]
+    assert f"{'+' if net >= 0 else ''}{net:,}" in strap
+    assert desktop.locator("#strap90").bounding_box()["y"] < desktop.locator("#total").bounding_box()["y"]
+
+
+def test_live_has_no_heading_level_skip(desktop, base_url):
+    """live.js used to inject <h3>TikTok</h3> straight under the <h1>."""
+    desktop.goto(base_url + "/live/", wait_until="networkidle")
+    desktop.wait_for_timeout(600)
+    levels = desktop.evaluate(
+        "[...document.querySelectorAll('h1,h2,h3,h4,h5,h6')].map(h => Number(h.tagName[1]))")
+    assert levels[0] == 1
+    for a, b in zip(levels, levels[1:]):
+        assert b <= a + 1, levels
+    assert desktop.locator("#legend h3").count() == 0
+
+
+def test_live_now_playing_is_the_second_section(desktop, base_url):
+    """Sunny checks the page after an episode drops; the episode was fourth."""
+    desktop.goto(base_url + "/live/", wait_until="networkidle")
+    heads = desktop.eval_on_selector_all("main > section .head h1, main > section .head h2",
+                                         "els => els.map(e => e.textContent.trim().toLowerCase())")
+    assert heads[1] == "now playing", heads
+
+
+def test_live_names_the_post_that_carries_the_peak_month(desktop, base_url, live_data):
+    """The tallest column reads as 'the show peaked' unless the page says it is
+    one clip. When a platform's best post falls in the peak month and carries
+    more than half of it, the note under the chart says so with the figures."""
+    from collections import defaultdict
+    totals = defaultdict(int)
+    for r in live_data["months"]:
+        totals[r["m"]] += r["views"]
+    peak = max(totals, key=totals.get)
+    carriers = [p["top"] for p in live_data["platforms"].values()
+                if p["top"]["date"][:7] == peak and p["top"]["views"] * 2 > totals[peak]]
+    desktop.goto(base_url + "/live/", wait_until="networkidle")
+    desktop.wait_for_timeout(600)
+    note = desktop.locator("#peaknote")
+    if carriers:
+        top = max(carriers, key=lambda t: t["views"])
+        assert note.is_visible()
+        text = note.inner_text()
+        assert f"{top['views']:,}" in text and f"{totals[peak]:,}" in text
+    else:
+        assert not note.is_visible()
+
+
+def test_live_now_playing_never_ships_a_blank_box_when_a_cover_expires(browser, base_url, live_data):
+    """Instagram and TikTok covers are signed URLs that expire. The tile used to
+    keep an empty <img> above its caption: a 300px blank box on desktop, 600px
+    on a phone. When a cover fails the image goes and the caption stands."""
+    covers = {p["top"]["thumb"] for p in live_data["platforms"].values() if p["top"].get("thumb")}
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    pg = ctx.new_page()
+    pg.route(lambda url: url in covers, lambda r: r.abort())
+    pg.route("**/storage/v1/object/public/public/live.json", lambda r: r.fulfill(
+        status=200, content_type="application/json", body=LIVE_JSON.read_text(encoding="utf-8")))
+    pg.goto(base_url + "/live/", wait_until="networkidle")
+    pg.wait_for_timeout(1200)
+    assert pg.locator("#top .po").count() == 4
+    blank = pg.evaluate("""() => [...document.querySelectorAll('#top .po img')]
+      .filter(i => i.complete && i.naturalWidth < 3).length""")
+    assert blank == 0
+    # every tile still carries its caption
+    assert pg.locator("#top .po .g").count() == 4
+    ctx.close()
+
+
+def test_live_shares_are_of_everyone_the_platform_placed(desktop, base_url, live_data):
+    """A share computed over the six rows on show said Bangkok was 83% of
+    Instagram; over everyone Instagram places in a city it is smaller, and that
+    is the honest figure."""
+    cities = live_data["demographics"]["ig_city"]
+    placed = sum(c["value"] for c in cities)
+    bkk = next(c for c in cities if c["dimension"].startswith("Bangkok"))
+    want = f"{round(bkk['value'] / placed * 100)}%"
+    desktop.goto(base_url + "/live/", wait_until="networkidle")
+    desktop.wait_for_timeout(600)
+    row = desktop.locator("#igcitytab tr", has_text="Bangkok").first.inner_text()
+    assert want in row, row
+    assert want in desktop.inner_text("#facts")
 
 
 # --- behaviour ---------------------------------------------------------------

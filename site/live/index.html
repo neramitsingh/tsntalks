@@ -8,7 +8,7 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="TSN Talks — the numbers, live">
 <meta property="og:description" content="Views, followers and audience across YouTube, Instagram and TikTok. Collected hourly, never typed by hand.">
-<meta property="og:image" content="https://i.ytimg.com/vi/AXukyl9hVp0/maxresdefault.jpg">
+<meta property="og:image" content="https://neramitsingh.github.io/tsntalks/img/episodes/AXukyl9hVp0.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../img/tsn-logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,7 +27,7 @@
   <ul>
     <li class="anchor"><a href="../#room">In the room</a></li>
     <li><a href="./" aria-current="page">Live numbers</a></li>
-    <li><a class="cta" href="../partner/">Partner</a></li>
+    <li><a class="cta" href="../partner/">Rate card</a></li>
   </ul>
 </nav>
 </div>
@@ -39,8 +39,9 @@
   <section class="one">
     <div class="head">
       <h1>The numbers</h1>
-      <p class="lede">Read from YouTube, Instagram and TikTok every hour. Nothing on this page is typed by hand.</p>
+      <p class="lede">Read from YouTube, Instagram and TikTok every hour. Nothing on this page is typed by hand. The last 90 days first, because that is where the show is now; the lifetime total under it.</p>
     </div>
+    <div class="strap in" id="strap90"><span>Reading the latest numbers…</span></div>
     <p class="bignum" id="total"></p>
     <p class="fine" id="totalnote">views across the three platforms, all time.</p>
     <div class="prop" id="prop"></div>
@@ -50,11 +51,20 @@
 
   <section>
     <div class="head">
+      <h2>Now playing</h2>
+      <p class="lede">The latest episode, and the best-performing post on each platform.</p>
+    </div>
+    <div class="wall now" id="top"></div>
+  </section>
+
+  <section>
+    <div class="head">
       <h2>When the hits happened</h2>
-      <p class="lede">Views by the month a post was published, stacked by platform. One episode can carry a month.</p>
+      <p class="lede">Views by the month a post was published, stacked by platform. One post can carry a month.</p>
     </div>
     <div class="cols-scroll"><div class="cols" id="cols"></div></div>
     <div class="prop-leg" id="colsleg"></div>
+    <p class="fine peaknote" id="peaknote"></p>
     <details class="twin">
       <summary>The same figures as a table</summary>
       <div class="scroll"><table class="rep" id="monthstab"></table></div>
@@ -64,7 +74,7 @@
   <section>
     <div class="head">
       <h2>Where they watch from</h2>
-      <p class="lede">YouTube and Instagram report audience over their own rolling windows. Each table names its own.</p>
+      <p class="lede">YouTube and Instagram report audience over their own rolling windows. Each table names its own, and a share is of everyone the platform placed, not of the rows shown.</p>
     </div>
     <div class="aud">
       <div>
@@ -76,14 +86,6 @@
         <ul class="facts" id="facts"></ul>
       </div>
     </div>
-  </section>
-
-  <section>
-    <div class="head">
-      <h2>Now playing</h2>
-      <p class="lede">The latest episode, and the best-performing post on each platform.</p>
-    </div>
-    <div class="wall now" id="top"></div>
   </section>
 
 </main>

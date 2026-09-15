@@ -268,3 +268,59 @@ extracted from the episodes now, Sunny's stills to replace them whenever they ar
 **Tests.** The suite follows the page: the hero test asserts the offer as `<h1>` and the room's photograph as
 the newest episode's still (it fails on purpose when a new episode drops without one); the wall tests became
 strip tests; a new test scrolls the page and asserts no face tile ships as an empty box.
+
+## Studio revision, part two — 2026-09-16, small hours: /partner and /live
+
+The home page was rebuilt as "the room" on the 15th and shipped that night; the other two pages
+followed in the same session, against the second critique's P1 and P2 items.
+
+**The rate card (`/partner`).**
+
+- **A fork before the prices.** The page opens on two plates cut from the same wood as the menu:
+  *Sponsor one episode, from ฿15,000* and *Run a campaign, from ฿29,000*. Both floors are generated
+  from `data/pricing.json` (`fork-episode-floor`, `fork-campaign-floor`), so a reader picks a lane
+  before meeting ten prices. Ten offers in one column had every reader starting on the wrong one.
+- **Frames, not thumbnails, on the money page.** The three-still reel stays, the one place the site
+  shows the thing being sold, but it is now three frames from `site/img/episodes/` with the guest
+  named underneath, and `site/img/partner/` (three YouTube thumbnails "as published") is gone. It is
+  hand-chosen because the page is static by design; swapping a still is a one-line edit.
+- **The tiers are the menu, in full.** The same `.menu` plate as home, each row carrying its long
+  description, its includes list, and an *Ask about this* link whose mail subject names the option.
+- **The campaigns are rows, not cards.** Five identical bordered cards named Bundle A/B/C became
+  rows on a second plate: the term first (one week, one month, two months) because that is what a
+  sponsor chooses between, the kit's own tag under it, one column of prices to compare down, the
+  flagship marked by a gold rule down its edge rather than a different card. The reach disclaimer
+  moved from 13px muted under the cards into the section's lede, in bold.
+- **The reply channel is one module.** `site/js/contact.js`, shared by home and the rate card:
+  with a LINE link in `site/data/contact.json` every primary button on both pages becomes
+  *Message us on LINE* and the nav button becomes LINE; without one the static `mailto:` in the
+  markup stands, so the page works with the script off. The nav's button on this page is the reply
+  channel, not a link to itself, which also gives phones a sticky call to action.
+
+**The numbers (`/live`).**
+
+- **Position first.** The page leads with the platform's rolling 90 days (YouTube views, hours
+  watched, net subscribers) in the same strap home uses for its totals, above the lifetime figure.
+  A lifetime total with a month chart under it read as "peaked last November".
+- **The peak month is named for what it is.** Under the column chart, when a platform's best post
+  falls in the peak month and carries more than half of it, one sentence says so with the figures:
+  *Nov 25 is mostly one post: 943,699 of its 1,248,662 views are a single TikTok clip.* The same
+  numbers, the honest reading.
+- **Now playing is second**, because Sunny opens the page after an episode drops and it was fourth.
+  The latest episode is its committed frame; the tiles lost their borders and sit on the ground
+  with captions underneath like every other photograph on the site.
+- **Shares are of everyone the platform placed**, not of the six rows on show: Bangkok was quoted as
+  83% of Instagram when it is 67% of the followers Instagram places in a city. `barTable` takes the
+  whole list's total; the lede says so.
+- **No heading skip.** The legend's platform names were `<h3>` under the `<h1>`; they are labels now.
+
+**Stills.** All 32 episodes have a frame and a face crop. `infra/still_picks.json` carries the hand
+picks the detector could not make: the guest sits on the right in the FORM studio episodes and the
+detector took the larger face; it read a guest's hands as a face once; it chose a group photograph
+from the b-roll. Every crop was checked against its episode thumbnail.
+
+**Tests.** 68 in `tests/site`: the fork quotes both floors; the reel is frames, not `ytimg`; the
+campaigns are rows with exactly one flagship; the reply channel becomes LINE on both pages from a
+stubbed `contact.json` and stays email without it; /live leads with the 90-day figures above the
+total, has no heading-level skip, puts *Now playing* second, names the post that carries the peak
+month, and computes shares over the whole list.

@@ -3,18 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TSN Talks — partner with us</title>
-<meta name="description" content="Five ways to sponsor TSN Talks, from a host-read mention at ฿15,000 to a flagship two-month signature package at ฿185,000, plus five bundles with Thai Sikh News.">
+<title>TSN Talks — the rate card</title>
+<meta name="description" content="Five ways to sponsor TSN Talks, from a host-read mention at ฿15,000 to a flagship two-month signature campaign at ฿185,000, plus five campaigns with Thai Sikh News advertising.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="TSN Talks — partner with us">
-<meta property="og:description" content="Five sponsorship options and five bundles with Thai Sikh News. Bangkok.">
-<meta property="og:image" content="https://i.ytimg.com/vi/AXukyl9hVp0/maxresdefault.jpg">
+<meta property="og:title" content="TSN Talks — the rate card">
+<meta property="og:description" content="Sponsor one episode from ฿15,000, or run a campaign with Thai Sikh News from ฿29,000. Bangkok.">
+<meta property="og:image" content="https://neramitsingh.github.io/tsntalks/img/episodes/AXukyl9hVp0.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../img/tsn-logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400..700&family=Bebas+Neue&family=Hanken+Grotesk:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/site.css">
+<script type="module" src="../js/partner.js"></script>
 </head>
 <body>
 
@@ -26,7 +27,7 @@
   <ul>
     <li class="anchor"><a href="../#room">In the room</a></li>
     <li><a href="../live/">Live numbers</a></li>
-    <li><a class="cta" href="./" aria-current="page">Partner</a></li>
+    <li><a class="cta" id="navcta" href="mailto:thaisikhnews@gmail.com?subject=TSN%20Talks%20sponsorship">Talk to us</a></li>
   </ul>
 </nav>
 </div>
@@ -35,18 +36,48 @@
 
   <section>
     <div class="head">
-      <h1>Five ways to partner</h1>
-      <p class="lede">From a host-read mention to a recurring segment named after your brand. Every option runs on a real episode with a real guest, in front of an audience you can check for yourself on the <a href="../live/">live numbers</a> page.</p>
+      <h1>The rate card</h1>
+      <p class="lede">Every option runs on a real episode with a real guest, in front of an audience you can check for yourself on the <a href="../live/">live numbers</a> page. Two ways in.</p>
     </div>
-
-    <div class="showreel">
-      <img src="../img/partner/ep-1.jpg" alt="Sunny Khurana, founder of Spark, mid-interview in the TSN Talks studio" width="960" height="540" loading="lazy" decoding="async">
-      <img src="../img/partner/ep-2.jpg" alt="Deepak Sajnani, president of the Thai Sindhi Association, across the studio table from the host" width="960" height="540" loading="lazy" decoding="async">
-      <img src="../img/partner/ep-3.jpg" alt="Angad Pasricha in conversation on TSN Talks" width="960" height="540" loading="lazy" decoding="async">
+    <div class="fork">
+      <a href="#episode" id="fork-ep">
+        <span class="lab">Sponsor one episode</span>
+        <span class="p">from <!-- pricing:fork-episode-floor --><b>฿15,000</b><!-- /pricing:fork-episode-floor --></span>
+        <span class="d">Five ways in, from a host-read mention to a segment named after your brand. Priced per episode.</span>
+      </a>
+      <a href="#campaign" id="fork-camp">
+        <span class="lab">Run a campaign</span>
+        <span class="p">from <!-- pricing:fork-campaign-floor --><b>฿29,000</b><!-- /pricing:fork-campaign-floor --></span>
+        <span class="d">Episodes plus Thai Sikh News advertising, for a reach milestone we underwrite. One week to two months.</span>
+      </a>
     </div>
-    <p class="fine showreel-cap">Three recent episodes, as published. Your branding sits in this frame — on screen through the episode, in the lower third, and on the end card.</p>
+  </section>
 
-    <div class="tiers">
+  <section class="reel-s">
+    <div class="reel">
+      <figure>
+        <img src="../img/episodes/AXukyl9hVp0.jpg" alt="Sunny Khurana in the TSN Talks studio" width="1600" height="900" loading="lazy" decoding="async">
+        <figcaption><b>Sunny Khurana</b><span class="ep">Season 2 · Episode 10</span></figcaption>
+      </figure>
+      <figure>
+        <img src="../img/episodes/hi-HFw1JIK8.jpg" alt="Angad Pasricha in the TSN Talks studio" width="1600" height="900" loading="lazy" decoding="async">
+        <figcaption><b>Angad Pasricha</b><span class="ep">Season 2 · Episode 8</span></figcaption>
+      </figure>
+      <figure>
+        <img src="../img/episodes/puiF1eGZ2LY.jpg" alt="Surasit (Sid) Sachdev in the TSN Talks studio" width="1600" height="900" loading="lazy" decoding="async">
+        <figcaption><b>Surasit (Sid) Sachdev</b><span class="ep">Season 2 · Episode 7</span></figcaption>
+      </figure>
+    </div>
+    <p class="fine reel-cap">Frames from three recent episodes. Your branding sits in this room: on screen through the episode, in the lower third at the key moments, and on the end card.</p>
+  </section>
+
+  <section id="episode">
+    <div class="head">
+      <h2>One episode</h2>
+      <p class="lede">Five ways in, cheapest first. Each is priced per episode unless it says otherwise, with what it includes written down beside the price.</p>
+    </div>
+    <div class="menu">
+      <div class="tiers">
       <!-- pricing:tiers-full -->
       <div class="tier">
         <div class="p">฿15,000<small>from, per episode</small></div>
@@ -59,6 +90,7 @@
             <li>Post-roll: closing thanks and a mention</li>
             <li>Your logo in the thumbnail and the video description</li>
           </ul>
+          <a class="ask" href="mailto:thaisikhnews@gmail.com?subject=TSN%20Talks%20sponsorship%3A%20Host-read%20mentions">Ask about this</a>
         </div>
       </div>
 
@@ -72,6 +104,7 @@
             <li>A dedicated branded experience segment</li>
             <li>Guest gifting acknowledged on air</li>
           </ul>
+          <a class="ask" href="mailto:thaisikhnews@gmail.com?subject=TSN%20Talks%20sponsorship%3A%20Product%20placement">Ask about this</a>
         </div>
       </div>
 
@@ -84,6 +117,7 @@
             <li>Basic, ฿20,000: a 30-minute interview, standard editing, all platforms, two social clips</li>
             <li>Standard, ฿45,000: 45 minutes with B-roll editing, all platforms plus thumbnail, five social clips, 1080p files handed to you</li>
           </ul>
+          <a class="ask" href="mailto:thaisikhnews@gmail.com?subject=TSN%20Talks%20sponsorship%3A%20Guest%20feature%20episode">Ask about this</a>
         </div>
       </div>
 
@@ -98,6 +132,7 @@
             <li>A three to five second branded end card on every episode</li>
             <li>Your logo in the thumbnail and the video description</li>
           </ul>
+          <a class="ask" href="mailto:thaisikhnews@gmail.com?subject=TSN%20Talks%20sponsorship%3A%20%E2%80%9CBrought%20to%20you%20by%E2%80%9D%20and%20on-screen%20branding">Ask about this</a>
         </div>
       </div>
 
@@ -112,108 +147,123 @@
             <li>A logo overlay for the length of the segment</li>
             <li>Every clip tagged and collaborated on social</li>
           </ul>
+          <a class="ask" href="mailto:thaisikhnews@gmail.com?subject=TSN%20Talks%20sponsorship%3A%20Signature%20segment">Ask about this</a>
         </div>
       </div>
       <!-- /pricing:tiers-full -->
+      </div>
+      <div class="menu-foot">
+        <a class="btn" id="cta" href="mailto:thaisikhnews@gmail.com?subject=TSN%20Talks%20sponsorship">Talk to us</a>
+        <span>Name the option you are asking about and the reply comes from Thai Sikh News, usually the same day.</span>
+      </div>
     </div>
   </section>
 
-  <section>
+  <section id="campaign">
     <div class="head">
-      <h2>Packages</h2>
-      <p class="lede">Combine TSN Talks sponsorship with Thai Sikh News advertising for a guaranteed reach milestone.</p>
+      <h2>A campaign</h2>
+      <p class="lede">TSN Talks sponsorship combined with Thai Sikh News advertising, for a reach milestone. <b>Guaranteed reach figures are targets we underwrite, not measurements.</b> Everything on the <a href="../live/">live numbers</a> page is measured.</p>
     </div>
-
-    <div class="bundles">
+    <div class="menu">
+      <div class="deals">
       <!-- pricing:bundles -->
-      <div class="bundle">
-        <h3>One week · Starter · Brand intro</h3>
-        <ul>
-          <li>One episode of TSN Talks sponsorship</li>
-          <li>A promo banner across social media</li>
-          <li>Three to five posts on Facebook, Instagram and TikTok</li>
-          <li>฿5,000 ad budget included</li>
-        </ul>
-        <div class="price">
-          <p class="was">Regular ฿40,000</p>
-          <p class="now">฿29,000</p>
-          <p class="reach">100,000 guaranteed reach</p>
+      <div class="deal">
+        <div class="n">One week</div>
+        <div class="lab">Starter · Brand intro</div>
+        <div class="d">
+          <ul>
+            <li>One episode of TSN Talks sponsorship</li>
+            <li>A promo banner across social media</li>
+            <li>Three to five posts on Facebook, Instagram and TikTok</li>
+            <li>฿5,000 ad budget included</li>
+          </ul>
+        </div>
+        <div class="p">
+          <span class="was">Regular ฿40,000</span>
+          <b>฿29,000</b>
+          <small>100,000 guaranteed reach</small>
         </div>
       </div>
 
-      <div class="bundle">
-        <h3>Two weeks · Growth · Visibility boost</h3>
-        <ul>
-          <li>Two episodes, verbal and visual branding</li>
-          <li>A promo banner across all social media</li>
-          <li>Five to seven posts on Facebook, Instagram and TikTok</li>
-          <li>฿7,000 ad budget included</li>
-        </ul>
-        <div class="price">
-          <p class="was">Regular ฿55,000</p>
-          <p class="now">฿39,000</p>
-          <p class="reach">200,000 guaranteed reach</p>
+      <div class="deal">
+        <div class="n">Two weeks</div>
+        <div class="lab">Growth · Visibility boost</div>
+        <div class="d">
+          <ul>
+            <li>Two episodes, verbal and visual branding</li>
+            <li>A promo banner across all social media</li>
+            <li>Five to seven posts on Facebook, Instagram and TikTok</li>
+            <li>฿7,000 ad budget included</li>
+          </ul>
+        </div>
+        <div class="p">
+          <span class="was">Regular ฿55,000</span>
+          <b>฿39,000</b>
+          <small>200,000 guaranteed reach</small>
         </div>
       </div>
 
-      <div class="bundle">
-        <h3>One month · Bundle A · Brand visibility</h3>
-        <ul>
-          <li>Four full episode sponsorships with on-screen branding</li>
-          <li>A promo banner across all social media</li>
-          <li>Ten posts on Facebook, Instagram and TikTok</li>
-          <li>฿10,000 ad budget included</li>
-        </ul>
-        <div class="price">
-          <p class="was">Regular ฿105,000</p>
-          <p class="now">฿69,000</p>
-          <p class="reach">350,000 guaranteed reach</p>
+      <div class="deal">
+        <div class="n">One month</div>
+        <div class="lab">Bundle A · Brand visibility</div>
+        <div class="d">
+          <ul>
+            <li>Four full episode sponsorships with on-screen branding</li>
+            <li>A promo banner across all social media</li>
+            <li>Ten posts on Facebook, Instagram and TikTok</li>
+            <li>฿10,000 ad budget included</li>
+          </ul>
+        </div>
+        <div class="p">
+          <span class="was">Regular ฿105,000</span>
+          <b>฿69,000</b>
+          <small>350,000 guaranteed reach</small>
         </div>
       </div>
 
-      <div class="bundle">
-        <h3>One month · Bundle B · Premium · Most popular</h3>
-        <ul>
-          <li>Four full episode sponsorships with on-screen branding</li>
-          <li>One guest feature episode for your brand</li>
-          <li>Four product placement episodes</li>
-          <li>Twelve posts on Thai Sikh News</li>
-          <li>฿15,000 ad budget included</li>
-        </ul>
-        <div class="price">
-          <p class="was">Regular ฿150,000</p>
-          <p class="now">฿109,000</p>
-          <p class="reach">500,000 guaranteed reach</p>
+      <div class="deal">
+        <div class="n">One month</div>
+        <div class="lab">Bundle B · Premium · Most popular</div>
+        <div class="d">
+          <ul>
+            <li>Four full episode sponsorships with on-screen branding</li>
+            <li>One guest feature episode for your brand</li>
+            <li>Four product placement episodes</li>
+            <li>Twelve posts on Thai Sikh News</li>
+            <li>฿15,000 ad budget included</li>
+          </ul>
+        </div>
+        <div class="p">
+          <span class="was">Regular ฿150,000</span>
+          <b>฿109,000</b>
+          <small>500,000 guaranteed reach</small>
         </div>
       </div>
 
-      <div class="bundle flag">
-        <h3>Two months · Bundle C · Flagship · Signature sponsor</h3>
-        <ul>
-          <li>Eight full episode sponsorships with on-screen branding</li>
-          <li>One guest feature episode</li>
-          <li>Eight signature segments carrying your brand name</li>
-          <li>Twenty or more posts on Thai Sikh News</li>
-          <li>฿25,000 ad budget included</li>
-        </ul>
-        <div class="price">
-          <p class="was">Regular ฿355,000</p>
-          <p class="now">฿185,000</p>
-          <p class="reach">1,000,000 guaranteed reach · you save ฿170,000</p>
+      <div class="deal flag">
+        <div class="n">Two months</div>
+        <div class="lab">Bundle C · Flagship · Signature sponsor</div>
+        <div class="d">
+          <ul>
+            <li>Eight full episode sponsorships with on-screen branding</li>
+            <li>One guest feature episode</li>
+            <li>Eight signature segments carrying your brand name</li>
+            <li>Twenty or more posts on Thai Sikh News</li>
+            <li>฿25,000 ad budget included</li>
+          </ul>
+        </div>
+        <div class="p">
+          <span class="was">Regular ฿355,000</span>
+          <b>฿185,000</b>
+          <small>1,000,000 guaranteed reach · you save ฿170,000</small>
         </div>
       </div>
       <!-- /pricing:bundles -->
-    </div>
-
-    <p class="fine" style="margin-top:22px;max-width:70ch">
-      Guaranteed reach figures are commitments we make for a campaign, combining TSN Talks and
-      Thai Sikh News placements. They are targets we underwrite, not measurements. Everything on
-      the <a href="../live/">live numbers</a> page is measured.
-    </p>
-
-    <div class="cta-row">
-      <a class="btn" href="mailto:thaisikhnews@gmail.com?subject=TSN%20Talks%20sponsorship">Talk to us</a>
-      <a class="btn ghost" href="../live/">See the live numbers</a>
+      </div>
+      <div class="menu-foot">
+        <a class="btn" id="cta2" href="mailto:thaisikhnews@gmail.com?subject=TSN%20Talks%20sponsorship">Talk to us</a>
+        <a class="btn ghost" href="../live/">See the live numbers</a>
+      </div>
     </div>
   </section>
 
