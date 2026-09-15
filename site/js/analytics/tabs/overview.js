@@ -141,8 +141,8 @@ function followersPanel(result, w, series) {
     section.appendChild(el('p', 'a-note',
       `${full(current.gained)} gained and ${full(current.lost)} lost across the window. `
       + 'A period with no snapshot repeats the previous value rather than dropping '
-      + 'to zero; the first period attributes no change, because there is nothing '
-      + 'earlier to compare it with.'));
+      + 'to zero, and before the first snapshot the line is simply absent; the first '
+      + 'period attributes no change, because there is nothing earlier to compare it with.'));
     return true;
   });
 }

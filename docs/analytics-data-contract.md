@@ -211,6 +211,12 @@ The first period of any `all` frame therefore reads `gained: 0, lost: 0`. We do
 not know those followers arrived then; we know only that it is the first time we
 looked. Do not present that as a flat start — it is an absence.
 
+**`followers` is `null` for a period before the platform's first snapshot**
+(`db/006`, 2026-09-16), and `data.js` passes that null through rather than
+coercing it to 0, so the growth chart's line begins on 14 September 2026 where
+the record does. It used to draw a month at zero and then a cliff — the
+fabricated zero line rule 1.2 forbids.
+
 ### 3.3 `rollup_engagement(from_ts, to_ts, granularity, platform_filter)`
 
 ```json

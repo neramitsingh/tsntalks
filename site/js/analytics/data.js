@@ -316,7 +316,10 @@ export async function followers(w) {
     const series = rows.map((r) => ({
       period: new Date(r.period),
       platform: r.platform,
-      followers: num(r.followers),
+      /* NULL before the platform's first snapshot (db/006): the chart breaks
+         the line there instead of drawing a floor at zero for the weeks
+         before the collector existed. num() would have turned it into 0. */
+      followers: r.followers == null ? null : num(r.followers),
       gained: num(r.gained),
       lost: num(r.lost),
     }));
@@ -333,7 +336,7 @@ export async function followers(w) {
     return ok({
       series,
       latest: byPlatform,
-      total: Object.values(byPlatform).reduce((a, n) => a + n, 0),
+      total: Object.values(byPlatform).reduce((a, n) => a + (n ?? 0), 0),
       gained: series.reduce((a, r) => a + r.gained, 0),
       lost: series.reduce((a, r) => a + r.lost, 0),
     });

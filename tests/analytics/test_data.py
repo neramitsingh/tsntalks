@@ -191,6 +191,22 @@ def test_followers_reports_the_last_value_not_the_sum(d, win):
     assert got["lost"] > 0, "the fixture has Instagram losing followers; do not lose that"
 
 
+def test_followers_before_the_first_snapshot_are_absent_not_zero(d, stub, win):
+    """db/006 returns NULL followers for a period before the platform's first
+    snapshot. num() used to turn that into 0, so the growth chart drew a month
+    at zero and then a cliff to the real figure — the fabricated zero line the
+    contract's rule 1.2 forbids. The null passes through; the window total and
+    the latest figure ignore it."""
+    rows = load("rollup_followers")
+    earlier = {**rows[0], "period": "2026-08-01T17:00:00+00:00",
+               "followers": None, "gained": 0, "lost": 0}
+    stub.rpc["rollup_followers"] = [earlier, *rows]
+    got = js(d, f"const r = await data.followers({win}); return r.ok && r.current;")
+    assert got["series"][0]["followers"] is None
+    assert got["latest"] == {"youtube": 4080, "instagram": 3080, "tiktok": 2100}
+    assert got["total"] == 4080 + 3080 + 2100
+
+
 def test_engagement_rate_is_interactions_over_views_for_the_window(d, win):
     got = js(d, f"const r = await data.engagement({win}); return r.ok && r.current;")
     eng = load("rollup_engagement")
