@@ -1,0 +1,19 @@
+# Line endings are pinned here, not left to each machine's core.autocrlf.
+# The laptop checks out with autocrlf=true and the desktop with false; a
+# worker on the desktop committed every file it touched as CRLF (2026-09-15,
+# worker/tsn-p3), which turned a three-line edit into a whole-file diff. Text
+# is LF in the repository, whatever the box; Git converts on checkout where
+# the box wants CRLF.
+* text=auto eol=lf
+
+*.jpg  binary
+*.jpeg binary
+*.png  binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.woff binary
+*.woff2 binary
+*.mp4  binary
+*.pdf  binary
+*.xlsx binary

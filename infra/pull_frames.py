@@ -1,11 +1,16 @@
 """Pull candidate stills from every TSN Talks episode.
 
-    python infra/pull_frames.py <frames_dir> [video_id ...]
+    python infra/pull_frames.py <frames_dir> [video_id ...] [--fracs 0.12,0.30,...] [--from N]
     python infra/pick_stills.py <frames_dir>
 
 Five short sections per video, one representative frame each, newest episode
 first, into <frames_dir>/<video_id>-<n>.jpg. pick_stills.py then chooses one
 per episode and writes site/img/episodes and site/img/faces.
+
+When the five default samples all miss the guest (a long host monologue, or
+b-roll at every sample point), pull a second round at other points into the
+next indices: `--fracs 0.2,0.4,0.55,0.75,0.92 --from 5` writes <id>-5 to <id>-9
+alongside the first five, and pick_stills.py considers them all.
 
 Needs yt-dlp >= 2026.08 with yt-dlp-ejs (pip install -U "yt-dlp[default]"),
 Node on PATH as the JS runtime, and ffmpeg. HLS through yt-dlp's native
@@ -16,12 +21,23 @@ Windows note: the section download is a child process tree. With captured
 pipes, a timeout kills yt-dlp but an orphaned ffmpeg keeps the pipe open and
 subprocess.run() blocks forever. So: no pipes, and taskkill /T on timeout.
 """
-import json, subprocess, sys, pathlib, time
+import argparse, json, subprocess, sys, pathlib, time
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-OUT = pathlib.Path(sys.argv[1]); OUT.mkdir(parents=True, exist_ok=True)
-FRACS = [0.12, 0.30, 0.48, 0.66, 0.84]
-only = set(sys.argv[2:])
+
+ap = argparse.ArgumentParser(description="pull candidate frames from TSN Talks episodes")
+ap.add_argument("frames_dir")
+ap.add_argument("video_ids", nargs="*", help="only these video ids (default: every episode)")
+ap.add_argument("--fracs", default="0.12,0.30,0.48,0.66,0.84",
+                help="where in the video to sample, as fractions of its length")
+ap.add_argument("--from", dest="start", type=int, default=0,
+                help="index of the first frame written (<id>-<N>.jpg); use 5 for a second round")
+args = ap.parse_args()
+
+OUT = pathlib.Path(args.frames_dir); OUT.mkdir(parents=True, exist_ok=True)
+FRACS = [float(f) for f in args.fracs.split(",")]
+KS = list(range(args.start, args.start + len(FRACS)))
+only = set(args.video_ids)
 SECTION_TIMEOUT = 70
 FMT = "bv*[height<=1080][protocol^=m3u8]/b[height<=1080][protocol^=m3u8]/bv*[height<=1080][ext=mp4][protocol=https]"
 YT = ["yt-dlp", "--js-runtimes", "node", "--no-update", "--no-playlist"]
@@ -60,13 +76,13 @@ for e in eps:
     vid = e["youtube_video_id"]
     if only and vid not in only:
         continue
-    if all((OUT / f"{vid}-{k}.jpg").exists() for k in range(len(FRACS))):
+    if all((OUT / f"{vid}-{k}.jpg").exists() for k in KS):
         continue
     url = f"https://www.youtube.com/watch?v={vid}"
     dur = probe_duration(url)
     if not dur:
         note(f"{vid} duration probe failed  S{e['season']}E{e['number']} {e['guest']}"); continue
-    for k, f in enumerate(FRACS):
+    for k, f in zip(KS, FRACS):
         jpg = OUT / f"{vid}-{k}.jpg"
         if jpg.exists():
             continue

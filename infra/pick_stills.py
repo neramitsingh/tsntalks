@@ -16,9 +16,20 @@ sharpest. A video with no detectable face in any candidate still gets an
 episode still (the sharpest frame) but no face crop; the strip falls back to the
 thumbnail for that one. Both folders are manifested by the Pages workflow, so
 committing the files is the whole change.
+
+**Hand picks.** The detector cannot tell the guest from the host, and a group
+photograph in the b-roll has the most faces of all. `infra/still_picks.json`
+overrides it per video: `{"frame": 3}` pins the candidate, `{"face": "right"}`
+takes the rightmost face in a two-shot (the guest sits on the right in the
+FORM studio episodes), `"left"` the leftmost, `"upper"` ignores anything found
+below the middle of the frame (hands on a table read as a face once), and an
+explicit `[x, y, w, h]` box in frame pixels skips detection altogether. When a
+side is asked for, frames showing at least two faces win over single shots, so
+a host monologue never becomes the guest's tile.
 """
 from __future__ import annotations
 
+import json
 import re
 import sys
 from collections import defaultdict
@@ -30,6 +41,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 EPISODES = ROOT / "site" / "img" / "episodes"
 FACES = ROOT / "site" / "img" / "faces"
+PICKS = ROOT / "infra" / "still_picks.json"
 STILL_W = 1600
 FACE_W, FACE_H = 800, 1000
 
@@ -44,17 +56,42 @@ def faces_in(gray):
     return [tuple(int(v) for v in b) for b in boxes]
 
 
-def score(path: Path):
+def area(b):
+    return b[2] * b[3]
+
+
+def choose_face(boxes, hint, height):
+    """Which detected face is the guest, given the hint from still_picks.json."""
+    if not boxes:
+        return None
+    if hint == "left":
+        return min(boxes, key=lambda b: b[0] + b[2] / 2)
+    if hint == "right":
+        return max(boxes, key=lambda b: b[0] + b[2] / 2)
+    if hint == "upper":
+        upper = [b for b in boxes if b[1] + b[3] / 2 < height * 0.6]
+        return max(upper, key=area) if upper else None
+    return max(boxes, key=area)
+
+
+def score(path: Path, hint):
     im = cv2.imread(str(path))
     if im is None:
         return None
+    h, w = im.shape[:2]
     g = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-    boxes = faces_in(g)
     sharp = cv2.Laplacian(g, cv2.CV_64F).var()
-    face = max(boxes, key=lambda b: b[2] * b[3]) if boxes else None
-    # a face is worth more than any amount of sharpness; among faces, bigger then sharper
-    key = ((face[2] if face else 0), sharp)
-    return key, face, im.shape[1], im.shape[0]
+    if isinstance(hint, list):
+        face = tuple(int(v) for v in hint)
+        return (face[2], 1, sharp), face, w, h
+    boxes = faces_in(g)
+    face = choose_face(boxes, hint, h)
+    # a face is worth more than any amount of sharpness; among faces, bigger then
+    # sharper. With a side hint, a two-shot (two faces found) outranks a single
+    # shot, which is how a host monologue loses to the frame with the guest in it.
+    two = 1 if (hint in ("left", "right") and len(boxes) >= 2) else 0
+    key = ((face[2] if face else 0), two, sharp)
+    return key, face, w, h
 
 
 def save_still(src: Path, dst: Path):
@@ -86,7 +123,15 @@ def save_face(src: Path, face, dst: Path):
     crop.save(dst, "JPEG", quality=84, optimize=True, progressive=True)
 
 
+def load_picks() -> dict:
+    if not PICKS.exists():
+        return {}
+    data = json.loads(PICKS.read_text(encoding="utf-8"))
+    return {k: v for k, v in data.items() if not k.startswith("_")}
+
+
 def main(frames_dir: Path) -> int:
+    picks = load_picks()
     groups: dict[str, list[Path]] = defaultdict(list)
     for p in sorted(frames_dir.glob("*.jpg")):
         m = re.fullmatch(r"([A-Za-z0-9_-]{11})-(\d+)", p.stem)
@@ -96,14 +141,26 @@ def main(frames_dir: Path) -> int:
         print(f"no <id>-<n>.jpg frames in {frames_dir}")
         return 1
     for vid, paths in groups.items():
-        scored = [(s, p) for p in paths if (s := score(p))]
+        pick = picks.get(vid, {})
+        if "frame" in pick:
+            want = f"{vid}-{pick['frame']}"
+            pinned = [p for p in paths if p.stem == want]
+            if not pinned:
+                print(f"{vid}: still_picks.json pins {want}.jpg but it is not in {frames_dir}; skipped")
+                continue
+            paths = pinned
+        hint = pick.get("face", "largest")
+        scored = [(s, p) for p in paths if (s := score(p, hint))]
         if not scored:
             print(f"{vid}: unreadable"); continue
         (key, face, w, h), best = max(scored, key=lambda t: t[0][0])
         save_still(best, EPISODES / f"{vid}.jpg")
         if face:
             save_face(best, face, FACES / f"{vid}.jpg")
-        print(f"{vid}: {best.name}  face={'yes' if face else 'no'}  sharp={key[1]:.0f}  {w}x{h}")
+        else:
+            (FACES / f"{vid}.jpg").unlink(missing_ok=True)
+        how = f"pinned frame {pick['frame']}" if "frame" in pick else "auto"
+        print(f"{vid}: {best.name}  face={'yes' if face else 'no'} ({hint})  sharp={key[2]:.0f}  {w}x{h}  [{how}]")
     return 0
 
 

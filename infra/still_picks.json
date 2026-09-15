@@ -1,0 +1,12 @@
+{
+  "_comment": "Hand picks for infra/pick_stills.py, keyed by YouTube video id. `frame` pins a candidate (<id>-<frame>.jpg); `face` is `largest` (default), `left`, `right`, `upper`, or an explicit [x, y, w, h] box in frame pixels. Reviewed 2026-09-15 against the episode thumbnails: in the FORM studio episodes (S2E2, S2E3, S2E5) the guest sits on the right and the beige-jacketed host on the left; S2E8's five frames all show the guest alone but the detector once read his hands as a face; S1E19 samples a group photograph and a parade in the b-roll; S2E4's frame 4 is the guest alone where frame 3 is a two-shot.",
+
+  "Y1hustM4MM4": { "frame": 7, "face": [880, 190, 240, 240] },
+  "hi-HFw1JIK8": { "frame": 3, "face": [575, 215, 225, 225] },
+  "lyyPtfjVnXQ": { "frame": 1 },
+  "6Dnssyxg-8w": { "frame": 4 },
+  "En9wEJNj2u4": { "frame": 2 },
+  "Q_IY5BALpgY": { "face": "right" },
+  "OwqzzlZ0PGw": { "face": "right" },
+  "J71XCFlxwts": { "face": "right" }
+}
