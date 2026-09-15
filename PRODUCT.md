@@ -24,10 +24,15 @@ Warm, cinematic, trusted. The house voice is "unheard stories, authentic voices"
 ## Anti-references
 
 - **The current site itself** (Sep 2026): centered hero with glowing orbs, a pill badge, a strip of four identical stat boxes, a small tracked uppercase eyebrow above every section, the "Unheard stories. *Authentic voices.*" italic-serif headline formula, 29 identical episode cards with hover play buttons, Playfair Display and Plus Jakarta Sans. Ney's verdict 2026-09-15: "rework the whole design to make it look less AI generated". Keep the palette, replace everything else.
+- **The second build (15 Sep 2026, Archivo condensed on near-black).** Every lint-level tell removed and still guessable: black ground, heavy condensed caps, hairline rules, one accent, sixteen-by-nine thumbnails in bordered boxes, split hero, the same headline-left lede-right grammar on every section. The streaming-platform press-kit lane. Its display face sat 300px from the artwork's Bebas-lineage capitals as a near-miss. Ney's verdict: still not it. The lesson recorded in the spec: designing by prohibition lands in the next-nearest template; start from the room, not from a rule list.
 - A generic SaaS analytics dashboard: grey cards, one accent, a KPI row with sparklines, "hero metric" template.
 - YouTube Studio or a Google Analytics clone re-skinned. Familiar but placeless.
 - Vanity framing: rounded-up follower counts, cumulative-only totals with no time window, numbers with no source.
 - Cream or beige grounds, glass cards, gradient text. The brand is dark and saffron; stay there.
+
+## The visual world (decided 15 Sep 2026: "the studio")
+
+The site is set in the room the show is recorded in: dark wood, amber light under the bookshelves, a warm rim on the guest. Ground colour from that room, never black. Photographs are frames from the episodes themselves (`site/img/episodes/`, `site/img/faces/`), never YouTube thumbnails, which carry a headline and the guest's name baked in. Display type is Antonio in capitals, the closest free match to the artwork's own condensed face; Bebas Neue for tracked labels; Hanken Grotesk for text. The show's mark is the gold mic logo, not a typed logotype. The home page is a sales surface first: the offer is the hero, the guests are proof, the rate card is the product. Sketches for the three directions that were weighed live in `sketches/home-S*.html`.
 
 ## Existing identity to build from (not the website)
 

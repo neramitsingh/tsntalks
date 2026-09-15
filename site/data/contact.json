@@ -1,0 +1,5 @@
+{
+  "_comment": "The reply channel. Put Sunny's LINE link in `line` (a line.me/ti/p/... or lin.ee/... URL) and the site's primary button becomes LINE; leave it null and the button stays email.",
+  "email": "thaisikhnews@gmail.com",
+  "line": null
+}

@@ -218,3 +218,53 @@ Three things follow from looking at the real assets rather than assuming:
 
 Headings: nine across three pages, no two sharing a construction, and the `h1 em, h2 em, h3 em` italic-gold
 rule is deleted. Gold italic survives in exactly one place, the wordmark.
+
+## Studio revision — 2026-09-15, afternoon
+
+Ney's verdict on the Archivo build: *"I am still not happy with it, maybe needs a discussion of the whole rework."*
+A second two-agent critique (`.impeccable/critique/2026-09-15T08-13-51Z__site-index-html.md`, 26/40, up from 21)
+found the lint-level tells gone and the **system itself** guessable: black ground, condensed caps, hairline rules,
+one accent, thumbnails in boxes, split hero, one section grammar everywhere — the streaming-platform press-kit
+lane. Archivo at 70% width sat beside the artwork's Bebas-lineage capitals as a near-miss. The show's own
+identity (mic logo, portraits, the warm-lit studio, the news brand's mark) appeared nowhere except inside
+thumbnails. Verdict: **direction, not polish.** Two reworks in one day had both operated at stylesheet level,
+and designing by prohibition lands in the next-nearest template every time.
+
+**The decision.** Three lanes were named — the studio, the community front page, the rate card as the object —
+and three throwaway home-page sketches built from real frames (`sketches/home-S1-poster.html`, `-S2-room`,
+`-S3-onebyone`), each betting on a different belief. Ney chose **S2 "The Room"**: *the sponsor is buying the
+room; the guests are proof; the rate card is the product.* Scope: home first, then propagate. Imagery: frames
+extracted from the episodes now, Sunny's stills to replace them whenever they arrive.
+
+**What changed on the home page.**
+
+- **The room is the hero.** A frame from the newest episode that has one, full-bleed behind the offer on
+  desktop, in flow at 16:9 above it on a phone. The `<h1>` is the offer: *Put your brand in this room.* The
+  guest is named in the caption at the foot of the room, never re-set in the page's type over their artwork.
+  If no episode has a frame, the room is the ground colour alone; the page never falls back to a thumbnail
+  there, because a thumbnail carries a headline and the copy would collide with it.
+- **Frames, not thumbnails.** `infra/pick_stills.py` chooses one frame per episode from candidates pulled
+  with yt-dlp (face first, then sharpness), writes `site/img/episodes/<id>.jpg` at 1600px with the top tenth
+  cropped (the show burns its logo there, under the nav) and `site/img/faces/<id>.jpg` as a 4:5 crop. Both
+  folders are manifested by the Pages workflow. YouTube throttles ranged reads on some videos, so coverage
+  arrives episode by episode; the tiles fall back to the thumbnail framed on the guest, then to the name on wood.
+- **Who has been in the room.** Season two as a strip of faces, newest first; season one as a packed grid of
+  the same tiles. No view counts on any tile. The wall of thumbnails, and the collapsed text index, are gone.
+- **Who has been on the wall.** A sponsors section rendered from `site/data/sponsors.json`, hidden while the
+  list is empty. Season-one artwork carries SPARQ, SF Cinema and Talad Thai India; Sunny confirms which were
+  paid before any is listed.
+- **The rate card as a menu**, on a plate of the table's wood, priced per line, cheapest first. The JSON
+  order in `data/pricing.json` is the display order, so the first row a reader meets agrees with the hero's
+  floor. A generated `bundles-floor` block quotes the cheapest package under it.
+- **The reply channel.** `site/data/contact.json` carries the email and, once known, Sunny's LINE link; with a
+  LINE link present every primary button becomes *Message us on LINE* and email steps back. Until then the
+  static `mailto:` stands.
+- **Type and colour.** Antonio 700 caps for display (the font comparison against the artwork is in
+  `sketches/shots/`), Bebas Neue for tracked labels, Hanken Grotesk for text, Noto Sans Thai behind all three.
+  Ground `#140D09`, wood `#33200F`, amber `#F0A040`, gold `#E6B54A`. The nav carries the show's mark
+  (`site/img/tsn-talks-mark.png`), not a logotype. `/live` and `/partner` inherit tokens, type and the mark and
+  keep their layouts until their own turn.
+
+**Tests.** The suite follows the page: the hero test asserts the offer as `<h1>` and the room's photograph as
+the newest episode's still (it fails on purpose when a new episode drops without one); the wall tests became
+strip tests; a new test scrolls the page and asserts no face tile ships as an empty box.

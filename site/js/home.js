@@ -1,36 +1,56 @@
 import {
-  load, full, compact, pct, bkk, freshness, stillImage, ageBand,
-  STACK, PLATFORM_NAME, PLATFORM_COLOR, COUNTRY,
+  load, full, compact, bkk, freshness, hasStill, stillUrl, faceImage,
 } from './live-data.js';
 
 const $ = (id) => document.getElementById(id);
 const BASE = import.meta.url;
 
 const episodeLabel = (e) => (e.number === '0' ? 'Kickoff' : `S${e.season} · E${e.number}`);
+const initials = (name) => name.replace(/^(Mr\.|Dr\.|Major)\s+/, '').split(/\s+/).map((w) => w[0]).slice(0, 2).join('');
 
-/* The hero shows the episode's own artwork whole and says, in the page's own
-   voice, what the artwork cannot: what this show is and what it costs to be in
-   it. The <h1> is the show, not the week's guest — a heading that changed every
-   episode meant a screen reader announced a stranger's name as the page title,
-   and a sponsor arriving cold never learned what they had opened. */
-function renderHero(d) {
-  const e = d.episodes[0];
-  const img = stillImage(e.youtube_video_id, `TSN Talks ${episodeLabel(e)} — ${e.guest}`, BASE, { eager: true });
-  img.id = 'heroimg';
-  $('heroimg').replaceWith(img);
+/* The room. The photograph is a frame from the newest episode that has one —
+   never a thumbnail, because a thumbnail carries a headline and the offer would
+   collide with it. The caption names the guest; the page's type never re-sets a
+   name the artwork already carries. If no episode has a frame yet, the room is
+   the ground colour and the caption is the show. */
+function renderRoom(d) {
+  const newest = d.episodes[0];
+  const shown = d.episodes.find((e) => hasStill(e.youtube_video_id)) || null;
 
-  const num = e.number === '0' ? 'Season kickoff' : `Episode ${e.number}`;
-  $('herolink').href = e.url;
-  $('herocap').innerHTML = '<b></b><span></span><span></span>';
-  const [g, role, when] = $('herocap').children;
-  g.textContent = e.guest;
-  role.textContent = e.role || '';
-  when.textContent = `Season ${e.season} · ${num} · ${bkk(e.published_at)}`;
+  const art = $('roomart');
+  art.replaceChildren();
+  if (shown) {
+    const img = new Image();
+    img.src = stillUrl(shown.youtube_video_id, BASE);
+    img.alt = '';
+    img.decoding = 'async';
+    img.fetchPriority = 'high';
+    art.appendChild(img);
+  }
 
-  $('watch').href = e.url;
-  $('watch').setAttribute('aria-label', `Watch ${e.guest} on YouTube`);
+  const cap = $('herocap');
+  cap.replaceChildren();
+  const who = shown || newest;
+  const b = document.createElement('b');
+  b.textContent = who.guest;
+  const role = document.createTextNode(who.role || '');
+  const ep = document.createElement('span');
+  ep.className = 'ep';
+  const num = who.number === '0' ? 'Season kickoff' : `Episode ${who.number}`;
+  ep.textContent = `Season ${who.season} · ${num} · ${bkk(who.published_at)} · `;
+  const watch = document.createElement('a');
+  watch.id = 'watch';
+  watch.className = 'watch';
+  watch.href = newest.url;
+  watch.target = '_blank';
+  watch.rel = 'noopener';
+  watch.textContent = shown && shown !== newest ? 'Watch the latest' : 'Watch on YouTube';
+  watch.setAttribute('aria-label', `Watch ${newest.guest} on YouTube`);
+  ep.appendChild(watch);
+  cap.append(b, role, ep);
+
   $('reach').textContent =
-    `in front of ${compact(d.total_views)} views across YouTube, Instagram and TikTok`;
+    `The audience is ${compact(d.total_views)} views across YouTube, Instagram and TikTok, read live.`;
 }
 
 function renderStrap(d) {
@@ -38,8 +58,6 @@ function renderStrap(d) {
   const strap = $('strap');
   strap.classList.toggle('stale', f.stale);
   const eps = d.episodes.length;
-  /* Say it in words. Dimming the text was the only stale signal, and nobody
-     notices the absence of a dot they never saw in the first place. */
   const flag = f.stale
     ? `<span class="stale-flag">Last updated ${f.hours} hours ago</span>`
     : '<span class="live">Live</span>';
@@ -50,111 +68,101 @@ function renderStrap(d) {
     <span>Updated ${f.stamp} Bangkok</span>`;
 }
 
-/* The episode wall. Every tile shows its thumbnail whole, with the caption
-   underneath rather than printed over it.
+/* One face tile. The image walks its own chain — face crop, episode still,
+   thumbnail — and the tile falls back to the initials on wood only when every
+   image source has failed, so a slow network never shows an empty box. */
+function faceTile(e, { small = false } = {}) {
+  const a = document.createElement('a');
+  a.className = 'face';
+  a.href = e.url;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.setAttribute('aria-label', `${e.guest}, ${episodeLabel(e)} — watch on YouTube`);
 
-   Two things changed here and both were substantive. The tiles used to be
-   ranked by view count, which guaranteed the biggest tile carried the biggest
-   number and every tile after it visibly decayed — a deficit gradient, and the
-   one shape PRODUCT.md's first principle rules out. They run newest first now,
-   which is also what a visitor expects from a show. And the view count has come
-   off the tile: season two's numbers are four and three digits, so a wall of
-   them argued against the 2.37M figure in the strap directly above it. The
-   tiles say who was on; the audience section says how many watched. */
-function renderWall(d) {
-  const eps = d.episodes
-    .filter((e) => e.season === 2)
-    .sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
+  const sq = document.createElement('div');
+  sq.className = 'sq';
+  sq.dataset.init = initials(e.guest);
+  const img = faceImage(e.youtube_video_id, '', BASE);
+  img.addEventListener('exhausted', () => { a.classList.add('nopic'); img.remove(); });
+  sq.appendChild(img);
 
-  $('wall').replaceChildren(...eps.map((e, i) => {
-    const a = document.createElement('a');
-    a.className = i === 0 ? 'po lead' : 'po';
-    a.href = e.url;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.appendChild(stillImage(e.youtube_video_id, '', BASE));
+  const t = document.createElement('div');
+  t.className = 't';
+  t.innerHTML = '<div class="g"></div><div class="v"></div><div class="n"></div>';
+  t.querySelector('.g').textContent = e.guest;
+  t.querySelector('.v').textContent = small ? '' : (e.role || '');
+  t.querySelector('.n').textContent = episodeLabel(e);
 
-    const t = document.createElement('div');
-    t.className = 't';
-    t.innerHTML = '<div class="n"></div><div class="g"></div><div class="v"></div>';
-    t.querySelector('.n').textContent = i === 0 ? `Latest · ${episodeLabel(e)}` : episodeLabel(e);
-    t.querySelector('.g').textContent = e.guest;
-    t.querySelector('.v').textContent = e.role || '';
-    a.appendChild(t);
-
-    a.setAttribute('aria-label', `${e.guest}, ${episodeLabel(e)} — watch on YouTube`);
-    return a;
-  }));
+  a.append(sq, t);
+  return a;
 }
 
-function renderIndex(d) {
-  const s1 = d.episodes.filter((e) => e.season === 1);
-  $('s1').replaceChildren(...s1.map((e) => {
-    const li = document.createElement('li');
-    li.innerHTML = '<b></b><div><a target="_blank" rel="noopener"></a><small></small></div>';
-    li.querySelector('b').textContent = String(e.number).padStart(2, '0');
-    const a = li.querySelector('a');
-    a.textContent = e.guest;
-    a.href = e.url;
-    li.querySelector('small').textContent = e.role || '';
-    return li;
-  }));
-  $('s1count').textContent = `${s1.length} episodes`;
+function renderFaces(d) {
+  const byDate = (a, b) => new Date(b.published_at) - new Date(a.published_at);
+  const s2 = d.episodes.filter((e) => e.season === 2).sort(byDate);
+  const s1 = d.episodes.filter((e) => e.season === 1).sort(byDate);
+  $('faces').replaceChildren(...s2.map((e) => faceTile(e)));
+  $('s1').replaceChildren(...s1.map((e) => faceTile(e, { small: true })));
+  $('s1count').textContent = `${s1.length} episodes · 2024 to 2025`;
 }
 
-function renderAudience(d) {
-  const male = d.demographics.yt_gender.find((g) => g.dimension === 'male')?.value ?? 0;
-  const topAge = d.demographics.yt_age[0];
-  const cty = d.demographics.yt_country;
-  const ctot = cty.reduce((a, c) => a + c.value, 0);
-  const inShare = pct(cty.find((c) => c.dimension === 'IN')?.value ?? 0, ctot);
-  const thShare = pct(cty.find((c) => c.dimension === 'TH')?.value ?? 0, ctot);
-  const posts = Object.values(d.platforms).reduce((a, p) => a + p.posts, 0);
+/* Sponsors come from site/data/sponsors.json and the section stays hidden
+   until that file names someone. Until Sunny confirms which season-one logos
+   were paid placements, the page makes no claim. */
+async function renderSponsors() {
+  try {
+    const r = await fetch(new URL('../data/sponsors.json', BASE).href, { cache: 'no-store' });
+    if (!r.ok) return;
+    const list = await r.json();
+    if (!Array.isArray(list) || list.length === 0) return;
+    $('wallof').replaceChildren(...list.map((s) => {
+      if (s.logo) {
+        const img = new Image();
+        img.src = new URL(`../img/sponsors/${s.logo}`, BASE).href;
+        img.alt = s.name;
+        img.height = 40;
+        return img;
+      }
+      const b = document.createElement('b');
+      b.textContent = s.name;
+      return b;
+    }), Object.assign(document.createElement('b'), { className: 'you', textContent: 'Your brand here' }));
+    $('sponsors').hidden = false;
+  } catch { /* no sponsors file: the section stays hidden */ }
+}
 
-  /* Lifetime total, then a 90-day window. YouTube and Instagram only report
-     demographics over a rolling window, so the window is named rather than
-     quietly presented as if it described the lifetime figure above it. */
-  $('bignum').innerHTML = `${(d.total_views / 1e6).toFixed(2)}<i>M</i>`;
-  $('audp').innerHTML =
-    `views on ${full(posts)} episodes and clips across the three platforms, all time. `
-    + `Over the last 90 days, <b>${male.toFixed(0)}%</b> of YouTube viewers are men and `
-    + `<b>${topAge.value.toFixed(0)}%</b> are ${topAge.dimension}; `
-    + `<b>${thShare}%</b> of views came from Thailand and <b>${inShare}%</b> from India. `
-    + `On Instagram the audience is Bangkok first.`;
-
-  $('prop').replaceChildren(...STACK.map((k) => {
-    const i = document.createElement('i');
-    i.style.width = `${(d.platforms[k].views / d.total_views) * 100}%`;
-    i.style.background = PLATFORM_COLOR[k];
-    i.title = `${PLATFORM_NAME[k]}: ${full(d.platforms[k].views)} views`;
-    return i;
-  }));
-
-  $('propleg').innerHTML = STACK.map((k) =>
-    `<span><i style="background:${PLATFORM_COLOR[k]}"></i>${PLATFORM_NAME[k]} `
-    + `${pct(d.platforms[k].views, d.total_views)}% · ${compact(d.platforms[k].views)}</span>`).join('');
-
-  const age = d.demographics.yt_age;
-  const amax = Math.max(...age.map((a) => a.value));
-  $('agetab').innerHTML =
-    '<caption>YouTube viewers by age · last 90 days</caption>'
-    + '<tr><th scope="col">Age</th><th scope="col"><span class="vh">Share, as a bar</span></th>'
-    + '<th scope="col" class="r">Share of views</th></tr>'
-    + age.map((a) => `<tr><th scope="row">${ageBand(a.dimension)}</th>`
-      + `<td class="bar"><i style="width:${(a.value / amax) * 100}%"></i></td>`
-      + `<td class="r">${a.value.toFixed(1)}%</td></tr>`).join('');
-
-  $('ctytab').innerHTML =
-    '<caption>YouTube views by country · last 90 days</caption>'
-    + '<tr><th scope="col">Country</th><th scope="col" class="r">Views</th><th scope="col" class="r">Share</th></tr>'
-    + cty.slice(0, 5).map((c) => `<tr><th scope="row">${COUNTRY[c.dimension] || c.dimension}</th>`
-      + `<td class="r">${full(c.value)}</td><td class="r">${pct(c.value, ctot)}%</td></tr>`).join('');
+/* The reply channel. The sponsor arrived from a LINE thread; a mail link inside
+   LINE's in-app browser is where the journey used to end. When contact.json
+   carries a LINE link it becomes the primary button and email steps back. */
+async function renderContact() {
+  try {
+    const r = await fetch(new URL('../data/contact.json', BASE).href, { cache: 'force-cache' });
+    if (!r.ok) return;
+    const c = await r.json();
+    const mail = `mailto:${c.email}?subject=${encodeURIComponent('TSN Talks sponsorship')}`;
+    for (const id of ['cta', 'cta2']) {
+      const a = $(id);
+      if (c.line) {
+        a.href = c.line;
+        a.textContent = 'Message us on LINE';
+        a.classList.add('line');
+        a.target = '_blank';
+        a.rel = 'noopener';
+      } else {
+        a.href = mail;
+      }
+    }
+    if (c.line) {
+      const n = $('navcta');
+      n.href = c.line; n.textContent = 'LINE'; n.classList.add('line'); n.target = '_blank'; n.rel = 'noopener';
+    }
+  } catch { /* the static mailto stays */ }
 }
 
 load((d) => {
-  renderHero(d);
+  renderRoom(d);
   renderStrap(d);
-  renderWall(d);
-  renderIndex(d);
-  renderAudience(d);
+  renderFaces(d);
 });
+renderSponsors();
+renderContact();

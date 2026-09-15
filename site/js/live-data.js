@@ -76,6 +76,10 @@ export function freshness(fetchedAt) {
    so dropping a .jpg in there is still the whole change. Without the manifest
    every tile would fire a 404 probing for a file that is usually absent. */
 let OVERRIDES = new Set();
+let FACES = new Set();
+
+export const hasStill = (videoId) => OVERRIDES.has(videoId);
+export const stillUrl = (videoId, baseUrl) => new URL(`../img/episodes/${videoId}.jpg`, baseUrl).href;
 
 /* Episode still: a committed override wins, then YouTube's maxres image, then
    hqdefault, which always exists. */
@@ -106,6 +110,30 @@ export function stillImage(videoId, alt, baseUrl, { eager = false } = {}) {
   return img;
 }
 
+/* A face tile: the 4:5 crop from the episode's own footage first, then the
+   episode still, then the thumbnails. The <img> carries class "crop" while it
+   shows a face crop and "thumb" once it has fallen back to artwork, so the CSS
+   can frame a thumbnail on the guest. It dispatches "exhausted" when nothing loads. */
+export function faceImage(videoId, alt, baseUrl) {
+  const chain = [];
+  if (FACES.has(videoId)) chain.push(new URL(`../img/faces/${videoId}.jpg`, baseUrl).href);
+  chain.push(...stills(videoId, baseUrl));
+  const img = new Image();
+  img.alt = alt;
+  img.decoding = 'async';
+  img.loading = 'lazy';
+  let step = 0;
+  const cls = () => { img.className = chain[step].includes('/img/faces/') ? 'crop' : 'thumb'; };
+  img.addEventListener('error', () => {
+    step += 1;
+    if (step < chain.length) { cls(); img.src = chain[step]; }
+    else img.dispatchEvent(new Event('exhausted'));
+  });
+  cls();
+  img.src = chain[0];
+  return img;
+}
+
 async function fetchJson(url, init) {
   const r = await fetch(url, init);
   if (!r.ok) throw new Error(`${url} -> ${r.status}`);
@@ -124,6 +152,12 @@ export async function load(render) {
                                         { cache: 'force-cache' }));
   } catch {
     OVERRIDES = new Set();          // no manifest: every still comes from YouTube
+  }
+  try {
+    FACES = new Set(await fetchJson(new URL('../img/faces/index.json', import.meta.url).href,
+                                    { cache: 'force-cache' }));
+  } catch {
+    FACES = new Set();
   }
 
   let baked = null;

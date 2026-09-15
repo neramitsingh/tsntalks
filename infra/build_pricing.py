@@ -27,8 +27,9 @@ PRICING = ROOT / "data" / "pricing.json"
 # container. The indent is per block because the hero's floor price sits one
 # level shallower than the rate-card blocks.
 BLOCKS = [
-    ("site/index.html", "hero-floor", "    "),
+    ("site/index.html", "hero-floor", ""),
     ("site/index.html", "tiers-brief", "      "),
+    ("site/index.html", "bundles-floor", ""),
     ("site/partner/index.html", "tiers-full", "      "),
     ("site/partner/index.html", "bundles", "      "),
 ]
@@ -66,6 +67,13 @@ def render_hero_floor(p: dict) -> list[str]:
     generated here so it can never drift from the rate card below it."""
     lo = min(t["amount"] for t in p["tiers"])
     return [f'{IND_OF["hero-floor"]}<b id="floor">{baht(lo)}</b>']
+
+
+def render_bundles_floor(p: dict) -> list[str]:
+    """The cheapest package, quoted under the home rate card. Generated for the
+    same reason as the hero floor: a typed figure drifts."""
+    lo = min(b["amount"] for b in p["bundles"])
+    return [f'{IND_OF["bundles-floor"]}<b id="bfloor">{baht(lo)}</b>']
 
 
 # The tiers lead with the price. It used to come fourth, at 18px, behind a 30px
@@ -137,6 +145,7 @@ IND_OF = {name: ind for _, name, ind in BLOCKS}
 
 RENDER = {
     "hero-floor": render_hero_floor,
+    "bundles-floor": render_bundles_floor,
     "tiers-brief": render_tiers_brief,
     "tiers-full": render_tiers_full,
     "bundles": render_bundles,
@@ -160,6 +169,10 @@ def replace_block(text: str, name: str, body: list[str], where: str) -> str:
     if i < 0 or j < 0:
         sys.exit(f"{where}: missing {open_m} … {close_m}")
     head = text[: i + len(open_m)]
+    # A block with no indent is inline: it sits inside a sentence, and a newline
+    # on either side of it would render as a space before the full stop.
+    if IND_OF[name] == "":
+        return head + "".join(s.strip() for s in body) + text[j:]
     return head + LF + LF.join(body) + LF + IND_OF[name] + text[j:]
 
 

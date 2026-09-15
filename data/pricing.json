@@ -3,36 +3,6 @@
   "currency": "THB",
   "tiers": [
     {
-      "id": "branding",
-      "numeral": "I",
-      "name": "“Brought to you by” and on-screen branding",
-      "short": "Your logo on screen throughout the episode, lower-third banners at the key moments, and a branded end card.",
-      "long": "Full episode ownership. The premium tier for a brand that wants to own the conversation.",
-      "includes": [
-        "Your logo on screen throughout the full episode",
-        "Lower-third banners at the key discussion moments",
-        "A three to five second branded end card on every episode",
-        "Your logo in the thumbnail and the video description"
-      ],
-      "amount": 25000,
-      "unit": "from, per episode"
-    },
-    {
-      "id": "placement",
-      "numeral": "II",
-      "name": "Content integration and product placement",
-      "short_name": "Product placement",
-      "short": "Your product in the studio, a dedicated segment, guest gifting acknowledged on air.",
-      "long": "Natural placement inside the studio set-up, acknowledged on air in a way that feels authentic rather than forced.",
-      "includes": [
-        "On-set product or logo placement seen by every viewer",
-        "A dedicated branded experience segment",
-        "Guest gifting acknowledged on air"
-      ],
-      "amount": 20000,
-      "unit": "from, per episode"
-    },
-    {
       "id": "host-read",
       "numeral": "III",
       "name": "“Brought to you by”: verbal mentions",
@@ -49,19 +19,19 @@
       "unit": "from, per episode"
     },
     {
-      "id": "segment",
-      "numeral": "IV",
-      "name": "Signature segment",
-      "short": "A recurring segment named after your brand, asked of every guest, introduced by the host with your logo on screen.",
-      "long": "A recurring, branded segment named after your brand, asked of every guest, every episode. Consistency builds recall. One-month minimum.",
+      "id": "placement",
+      "numeral": "II",
+      "name": "Content integration and product placement",
+      "short_name": "Product placement",
+      "short": "Your product in the studio, a dedicated segment, guest gifting acknowledged on air.",
+      "long": "Natural placement inside the studio set-up, acknowledged on air in a way that feels authentic rather than forced.",
       "includes": [
-        "“The [Brand] Segment”, your name on every episode",
-        "Three signature quick-fire questions per guest",
-        "A logo overlay for the length of the segment",
-        "Every clip tagged and collaborated on social"
+        "On-set product or logo placement seen by every viewer",
+        "A dedicated branded experience segment",
+        "Guest gifting acknowledged on air"
       ],
-      "amount": 70000,
-      "unit": "from, per month · 4 episodes"
+      "amount": 20000,
+      "unit": "from, per episode"
     },
     {
       "id": "feature",
@@ -83,6 +53,36 @@
       ],
       "amount": 20000,
       "unit": "from, per episode"
+    },
+    {
+      "id": "branding",
+      "numeral": "I",
+      "name": "“Brought to you by” and on-screen branding",
+      "short": "Your logo on screen throughout the episode, lower-third banners at the key moments, and a branded end card.",
+      "long": "Full episode ownership. The premium tier for a brand that wants to own the conversation.",
+      "includes": [
+        "Your logo on screen throughout the full episode",
+        "Lower-third banners at the key discussion moments",
+        "A three to five second branded end card on every episode",
+        "Your logo in the thumbnail and the video description"
+      ],
+      "amount": 25000,
+      "unit": "from, per episode"
+    },
+    {
+      "id": "segment",
+      "numeral": "IV",
+      "name": "Signature segment",
+      "short": "A recurring segment named after your brand, asked of every guest, introduced by the host with your logo on screen.",
+      "long": "A recurring, branded segment named after your brand, asked of every guest, every episode. Consistency builds recall. One-month minimum.",
+      "includes": [
+        "“The [Brand] Segment”, your name on every episode",
+        "Three signature quick-fire questions per guest",
+        "A logo overlay for the length of the segment",
+        "Every clip tagged and collaborated on social"
+      ],
+      "amount": 70000,
+      "unit": "from, per month · 4 episodes"
     }
   ],
   "bundles": [

@@ -1,0 +1,4 @@
+{
+  "_comment": "Brands that have sponsored TSN Talks. The home page shows the section only when this list is non-empty. Season-one artwork carries SPARQ, SF Cinema and Talad Thai India; confirm with Sunny which were paid before listing them. Each entry: {\"name\": ..., \"logo\": \"file.png\" (optional, in site/img/sponsors/)}.",
+  "sponsors": []
+}

@@ -56,7 +56,7 @@ def test_display_and_text_fonts_load(page, base_url, path):
     page.wait_for_timeout(700)
     loaded = page.evaluate(
         "[...document.fonts].filter(f => f.status === 'loaded').map(f => f.family)")
-    assert "Archivo" in loaded, f"display face did not load: {sorted(set(loaded))}"
+    assert "Antonio" in loaded, f"display face did not load: {sorted(set(loaded))}"
     assert "Hanken Grotesk" in loaded, f"text face did not load: {sorted(set(loaded))}"
 
     # And it is actually in use: a condensed 800 heading must not be measuring
@@ -64,7 +64,7 @@ def test_display_and_text_fonts_load(page, base_url, path):
     assert page.evaluate("""() => {
       const h = document.querySelector('h1, h2');
       const cs = getComputedStyle(h);
-      return cs.fontFamily.includes('Archivo')
+      return cs.fontFamily.includes('Antonio')
           && cs.textTransform === 'uppercase'
           && Number(cs.fontWeight) >= 700;
     }""")
@@ -72,17 +72,20 @@ def test_display_and_text_fonts_load(page, base_url, path):
 
 # --- the numbers on the page are the numbers in live.json --------------------
 
-def test_home_hero_is_the_newest_episode(desktop, base_url, live_data):
-    """The <h1> is the show, not the week's guest — a heading that changed every
-    episode announced a stranger's name as the page title. The guest belongs in
-    the artwork's caption, and both links still point at the newest episode."""
+def test_home_hero_is_the_offer_and_the_room_shows_the_newest_episode(desktop, base_url, live_data):
+    """The <h1> is the offer, not the week's guest — a heading that changed every
+    episode announced a stranger's name as the page title. The room's photograph
+    is a frame from the newest episode that has one in site/img/episodes/, and
+    the caption names that guest. This assumes the newest episode has a still;
+    when a new episode drops without one, this fails on purpose: extract it."""
     desktop.goto(base_url + "/", wait_until="networkidle")
     desktop.wait_for_timeout(600)
     newest = max(live_data["episodes"], key=lambda e: e["published_at"])
-    assert desktop.inner_text("h1").strip().lower() == "thai-indian stories, told at length"
+    assert desktop.inner_text("h1").strip().lower() == "put your brand in this room"
     assert newest["guest"] in desktop.inner_text("#herocap")
     assert desktop.get_attribute("#watch", "href") == newest["url"]
-    assert desktop.get_attribute("#herolink", "href") == newest["url"]
+    src = desktop.get_attribute("#roomart img", "src") or ""
+    assert src.endswith(f"/img/episodes/{newest['youtube_video_id']}.jpg"), src
 
 
 def test_hero_quotes_the_entry_price_in_the_first_screen(desktop, base_url):
@@ -106,10 +109,13 @@ def test_no_text_is_printed_over_a_photograph(desktop, base_url):
     desktop.wait_for_timeout(600)
     overlapping = desktop.evaluate("""() => {
       const bad = [];
-      for (const po of document.querySelectorAll('.po')) {
+      for (const po of document.querySelectorAll('.po, .face')) {
         const img = po.querySelector('img'), cap = po.querySelector('.t');
         if (!img || !cap) continue;
-        const a = img.getBoundingClientRect(), b = cap.getBoundingClientRect();
+        // a face tile zooms a fallback thumbnail inside an overflow-hidden box:
+        // the visible photograph is that box, not the transformed <img>
+        const frame = po.querySelector('.sq') || img;
+        const a = frame.getBoundingClientRect(), b = cap.getBoundingClientRect();
         if (b.top < a.bottom - 1) bad.push(po.className);
       }
       return bad;
@@ -142,9 +148,9 @@ def test_episodes_arrive_newest_first(live_data):
 def test_season_one_index_is_complete(desktop, base_url, live_data):
     desktop.goto(base_url + "/", wait_until="networkidle")
     desktop.wait_for_timeout(600)
-    roles = desktop.eval_on_selector_all("#s1 li small", "els => els.map(e => e.textContent.trim())")
-    assert len(roles) == sum(1 for e in live_data["episodes"] if e["season"] == 1)
-    assert all(roles)
+    names = desktop.eval_on_selector_all("#s1 .face .g", "els => els.map(e => e.textContent.trim())")
+    assert len(names) == sum(1 for e in live_data["episodes"] if e["season"] == 1)
+    assert all(names)
 
 
 @pytest.mark.parametrize("path", PAGES)
@@ -186,22 +192,38 @@ def test_no_image_is_stretched_out_of_its_own_aspect_ratio(desktop, base_url, pa
     assert bad == [], f"images not rendering at their true aspect ratio: {bad}"
 
 
-def test_poster_wall_leads_with_the_newest_not_the_most_watched(desktop, base_url, live_data):
+def test_the_room_strip_is_every_season_two_guest_newest_first(desktop, base_url, live_data):
     """Ranking tiles by view count guaranteed the biggest tile carried the biggest
     number and every tile after it visibly decayed — a deficit gradient, which is
-    the one shape PRODUCT.md's first principle rules out. Newest first."""
+    the one shape PRODUCT.md's first principle rules out. Newest first, no view
+    counts on the tiles, and never a thumbnail with text printed over it."""
     desktop.goto(base_url + "/", wait_until="networkidle")
     desktop.wait_for_timeout(600)
     s2 = [e for e in live_data["episodes"] if e["season"] == 2]
-    assert desktop.locator("#wall .po").count() == len(s2)
-    assert desktop.locator("#wall .po.lead").count() == 1
-
-    order = desktop.eval_on_selector_all("#wall .po .g", "els => els.map(e => e.textContent)")
+    assert desktop.locator("#faces .face").count() == len(s2)
+    order = desktop.eval_on_selector_all("#faces .face .g", "els => els.map(e => e.textContent)")
     by_date = [e["guest"] for e in sorted(s2, key=lambda e: e["published_at"], reverse=True)]
     assert order == by_date
 
-    first = desktop.locator("#wall .po").first
-    assert "lead" in (first.get_attribute("class") or "")
+
+def test_a_face_tile_never_ships_as_an_empty_box(desktop, base_url):
+    """Each tile walks a chain — face crop, episode still, thumbnail — and only
+    when every source has failed does it fall back to the initials on wood.
+    Either way a visitor sees a face or a name, never a blank rectangle."""
+    desktop.goto(base_url + "/", wait_until="networkidle")
+    desktop.evaluate("""async () => {
+      for (let y = 0; y < document.body.scrollHeight; y += 600) {
+        window.scrollTo(0, y); await new Promise(r => setTimeout(r, 80));
+      }
+      await Promise.all([...document.images].filter(i => !i.complete)
+        .map(i => new Promise(r => { i.onload = i.onerror = r; })));
+    }""")
+    desktop.wait_for_timeout(800)
+    blank = desktop.evaluate("""() => [...document.querySelectorAll('#faces .face, #s1 .face')]
+      .filter(f => !f.classList.contains('nopic'))
+      .filter(f => { const i = f.querySelector('img'); return !i || !i.complete || i.naturalWidth < 3; })
+      .map(f => f.querySelector('.g').textContent)""")
+    assert blank == [], blank
 
 
 def test_live_chart_has_a_table_twin_with_the_same_months(desktop, base_url, live_data):
@@ -306,7 +328,7 @@ def test_page_still_renders_when_storage_is_down(browser, base_url, live_data):
     pg.goto(base_url + "/", wait_until="networkidle")
     pg.wait_for_timeout(800)
     assert pg.inner_text("#herocap").strip() != ""
-    assert pg.locator("#wall .po").count() > 0
+    assert pg.locator("#faces .face").count() > 0
     assert f"{live_data['total_views']:,}" in pg.inner_text("#strap")
     ctx.close()
 

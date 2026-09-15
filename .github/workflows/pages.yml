@@ -49,10 +49,11 @@ jobs:
         run: |
           python - <<'PY'
           import json, pathlib
-          d = pathlib.Path("site/img/episodes")
-          ids = sorted(p.stem for p in d.glob("*.jpg"))
-          (d / "index.json").write_text(json.dumps(ids))
-          print("overrides:", ids)
+          for d in (pathlib.Path("site/img/episodes"), pathlib.Path("site/img/faces")):
+              d.mkdir(exist_ok=True)
+              ids = sorted(p.stem for p in d.glob("*.jpg"))
+              (d / "index.json").write_text(json.dumps(ids))
+              print(d.name, "overrides:", ids)
           PY
 
       - uses: actions/configure-pages@v5

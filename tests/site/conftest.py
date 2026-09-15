@@ -30,8 +30,10 @@ def base_url():
     # The Pages workflow bakes these two; a local run has to do it itself.
     (SITE / "data").mkdir(exist_ok=True)
     (SITE / "data" / "live.json").write_bytes(LIVE_JSON.read_bytes())
-    eps = SITE / "img" / "episodes"
-    (eps / "index.json").write_text(json.dumps(sorted(p.stem for p in eps.glob("*.jpg"))), encoding="utf-8")
+    for folder in ("episodes", "faces"):
+        d = SITE / "img" / folder
+        d.mkdir(exist_ok=True)
+        (d / "index.json").write_text(json.dumps(sorted(p.stem for p in d.glob("*.jpg"))), encoding="utf-8")
 
     s = socket.socket()
     s.bind(("127.0.0.1", 0))

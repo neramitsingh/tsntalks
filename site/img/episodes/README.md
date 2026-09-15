@@ -1,21 +1,24 @@
-# Episode still overrides
+# Episode stills
 
-Drop a file here named `<youtube_video_id>.jpg` and the site uses it instead of
-the YouTube thumbnail for that episode — on the hero and on the poster wall.
+`<youtube_video_id>.jpg` here is the clean frame the site uses for that episode:
+on the home page's room (the newest episode that has one) and anywhere a wide
+still is wanted. `site/img/faces/<id>.jpg` is the matching 4:5 crop around the
+guest, used by the "who has been in the room" strip.
 
-Example: `puiF1eGZ2LY.jpg` overrides the still for S2 E7.
+Both are frames from the episode itself, never the YouTube thumbnail: the
+thumbnail carries the headline and the guest's name baked in, and the site sets
+those in its own type.
 
-**Why:** YouTube thumbnails have the guest's name and "TSN TALKS" baked into the
-image, so they fight the page's own typography. The hero scrim is heavy to cope
-with that. Clean studio stills from Sunny replace them one at a time, with no
-code change.
+**Producing them:** pull five candidate frames per episode (a `frames/` folder
+of `<id>-<n>.jpg`), then
 
-**Sizing:** 1920×1080 or larger, JPEG, under 400 KB. The hero crops to
-`object-position: 70% 30%`, so keep the guest right of centre and high in frame.
+    python infra/pick_stills.py <frames_dir>
 
-## index.json
+picks the best frame per episode (a detected face first, then sharpness), writes
+the still at 1600px wide (whole: the show's burned-in logo stays and the page
+dims it with a vignette) and the face crop. A clean
+studio still or portrait from Sunny drops in under the same name and wins.
 
-`index.json` lists the ids that have an override. The Pages workflow regenerates
-it from this folder on every deploy, so you do not edit it by hand — but the
-committed copy keeps local previews honest. Without it the page would fire a 404
-for every episode, probing for files that are usually absent.
+`index.json` in each folder lists the ids present. The Pages workflow regenerates
+both manifests from the folders on every deploy, so you do not edit them by hand;
+the committed copies keep local previews and the test suite honest.
