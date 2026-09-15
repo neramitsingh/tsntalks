@@ -39,6 +39,14 @@ VENDOR = Path(__file__).parent / "stubs" / "vendor"
 BANGKOK = dt.timezone(dt.timedelta(hours=7))
 
 ANALYTICS = "/analytics/"
+# Booting the shell means loading a dozen modules and awaiting the access probe
+# before anything is visible. Playwright's 30s default is plenty on an idle box
+# and can be tight on a busy one — a second test run, or a CI box doing three
+# things at once — and when it is tight it fails in fixture SETUP, which reads
+# as a broken test rather than a slow one. Waiting longer costs nothing when it
+# passes.
+BOOT_TIMEOUT = 90_000
+
 TEST_ANON_KEY = "test-anon-key-not-a-real-one"
 ALLOWED_EMAIL = "ney@example.test"
 
@@ -432,7 +440,7 @@ def dashboard(browser, base_url, stub):
     stub.install(pg)
     sign_in(pg)
     pg.goto(base_url + ANALYTICS)
-    pg.wait_for_selector("#shell:not([hidden])")
+    pg.wait_for_selector("#shell:not([hidden])", timeout=BOOT_TIMEOUT)
     yield pg
     ctx.close()
 
@@ -445,7 +453,7 @@ def phone(browser, base_url, stub):
     stub.install(pg)
     sign_in(pg)
     pg.goto(base_url + ANALYTICS)
-    pg.wait_for_selector("#shell:not([hidden])")
+    pg.wait_for_selector("#shell:not([hidden])", timeout=BOOT_TIMEOUT)
     yield pg
     ctx.close()
 

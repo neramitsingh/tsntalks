@@ -379,7 +379,8 @@ tr.a-expanded svg.a-chart { max-height: 220px; }
    point is that there is no generic "export this view", and the UI should make
    that visible rather than merely true. */
 .a-artifacts { display: flex; gap: 12px 28px; flex-wrap: wrap; margin: 14px 0; }
-.a-artifact { display: flex; align-items: center; gap: 10px; }
+.a-artifact { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.a-artifact-buttons { display: flex; gap: 2px; }
 .a-artifact-meta { display: flex; flex-direction: column; gap: 1px; }
 .a-recipient { font-size: 11.5px; color: var(--gold2); font-weight: 600; }
 .a-why { font-size: 11.5px; color: var(--muted); max-width: 44ch; }

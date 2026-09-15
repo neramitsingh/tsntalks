@@ -521,6 +521,135 @@ def test_an_external_link_prints_its_url(report):
     assert "attr(href)" in css
 
 
+# --- the posts table, downloaded for real -----------------------------------
+
+def export_posts(dashboard, scratch, fmt, *, search=None, sort=None):
+    """Drive the Posts tab and click its export, catching the real download."""
+    dashboard.click("#tab-posts")
+    dashboard.wait_for_selector('#view[data-tab="posts"][data-state="ready"]')
+    if sort:
+        dashboard.click(f'#view thead th button.a-sort:has-text("{sort}")')
+    if search is not None:
+        dashboard.fill("#posts-search", search)
+        dashboard.wait_for_function(
+            "document.getElementById('posts-count').textContent.includes(' of ')")
+
+    with dashboard.expect_download() as caught:
+        dashboard.click(f'#view .a-artifacts button[data-format="{fmt}"]')
+    download = caught.value
+    path = scratch / download.suggested_filename
+    download.save_as(path)
+    return download.suggested_filename, path
+
+
+def test_the_csv_is_named_for_the_artifact_its_scope_and_the_date(dashboard, scratch):
+    name, _ = export_posts(dashboard, scratch, "csv")
+    assert name.startswith("tsn-posts-table-all-platforms-")
+    assert name.endswith(".csv")
+
+
+def test_a_filtered_export_says_so_in_its_filename(dashboard, scratch):
+    name, _ = export_posts(dashboard, scratch, "csv", search="Placeholder")
+    assert "filtered" in name
+
+
+def test_the_csv_is_the_rows_that_were_on_screen_in_the_order_they_were_in(
+        dashboard, scratch):
+    """Same rows, same order. A fresh unsorted query would be technically the
+    same data and practically the wrong file."""
+    _, path = export_posts(dashboard, scratch, "csv", sort="Likes")
+    on_screen = dashboard.locator(
+        "#view table.a-sortable tbody tr:not(.a-expanded)").evaluate_all(
+        "els => els.map(e => e.dataset.postId)")
+
+    rows = list(csvmod.DictReader(path.read_text(encoding="utf-8-sig").splitlines()))
+    assert [r["Post ID"] for r in rows] == on_screen
+
+
+def test_a_filtered_csv_carries_only_the_filtered_rows(dashboard, scratch):
+    _, path = export_posts(dashboard, scratch, "csv", search="Placeholder")
+    rows = list(csvmod.DictReader(path.read_text(encoding="utf-8-sig").splitlines()))
+    assert len(rows) == 3
+    assert all("Placeholder" in r["Title"] or "FIXCLIP02" in r["Post ID"] for r in rows)
+
+
+def test_the_csv_carries_the_full_title_not_the_clipped_one(dashboard, scratch):
+    _, path = export_posts(dashboard, scratch, "csv")
+    rows = list(csvmod.DictReader(path.read_text(encoding="utf-8-sig").splitlines()))
+    titles = {r["Post ID"]: r["Title"] for r in rows}
+    assert titles["yt:FIXTUREVID01"] == \
+        "TSN Talks S2 E10: Testy McFixture, Founder & CEO, Example Co"
+    assert "…" not in "".join(titles.values())
+
+
+def test_the_csv_carries_raw_numbers_not_the_screen_s_rounding(dashboard, scratch):
+    _, path = export_posts(dashboard, scratch, "csv")
+    rows = {r["Post ID"]: r for r in
+            csvmod.DictReader(path.read_text(encoding="utf-8-sig").splitlines())}
+    assert rows["ig:FIXCLIP01"]["Views"] == "18000"
+    assert rows["ig:FIXCLIP01"]["Engagement rate (fraction)"] == "0.088333"
+    assert "Engagement rate (fraction)" in rows["ig:FIXCLIP01"]
+
+
+def test_a_reach_that_is_not_reported_is_an_empty_cell_not_a_zero(dashboard, scratch):
+    _, path = export_posts(dashboard, scratch, "csv")
+    rows = {r["Post ID"]: r for r in
+            csvmod.DictReader(path.read_text(encoding="utf-8-sig").splitlines())}
+    assert rows["yt:FIXTUREVID01"]["Reach"] == ""
+    assert rows["ig:FIXCLIP01"]["Reach"] == "11160"
+
+
+def test_the_workbook_has_the_rows_and_a_sheet_saying_where_they_came_from(
+        xlsx, scratch):
+    openpyxl = pytest.importorskip(
+        "openpyxl", reason="pip install -r tests/requirements.txt to run this one")
+    name, path = export_posts(xlsx, scratch, "xlsx", search="Placeholder")
+    assert name.endswith(".xlsx")
+
+    book = openpyxl.load_workbook(path)
+    assert book.sheetnames == ["Posts", "About"]
+
+    posts = book["Posts"]
+    headers = [c.value for c in posts[1]]
+    assert headers[:4] == ["Platform", "Post ID", "Published", "Title"]
+    assert posts.max_row == 4                      # three rows plus the header
+
+    # Numbers are numbers, so the column can be summed. That is the only reason
+    # anybody asked for XLSX rather than CSV.
+    views = headers.index("Views") + 1
+    assert all(isinstance(posts.cell(row=r, column=views).value, int)
+               for r in range(2, posts.max_row + 1))
+
+    about = {r[0].value: r[1].value for r in book["About"].iter_rows(min_row=2)}
+    assert about["Title filter"] == "Placeholder"
+    assert about["Rows"] == 3
+    assert "descending" in about["Sorted by"]
+    assert "collector run" in about["Source"]
+
+
+def test_the_workbook_keeps_dates_as_dates(xlsx, scratch):
+    openpyxl = pytest.importorskip(
+        "openpyxl", reason="pip install -r tests/requirements.txt to run this one")
+    import datetime as dt
+    _, path = export_posts(xlsx, scratch, "xlsx")
+    book = openpyxl.load_workbook(path)
+    posts = book["Posts"]
+    column = [c.value for c in posts[1]].index("Published") + 1
+    assert isinstance(posts.cell(row=2, column=column).value, dt.datetime)
+
+
+def test_exporting_an_empty_table_says_what_to_do_about_it(dashboard):
+    dashboard.click("#tab-posts")
+    dashboard.wait_for_selector('#view[data-tab="posts"][data-state="ready"]')
+    dashboard.fill("#posts-search", "zzzz-no-such-post")
+    dashboard.wait_for_selector("#view .a-empty")
+    dashboard.click('#view .a-artifacts button[data-format="csv"]')
+    dashboard.wait_for_selector("#view .a-artifact .a-error")
+    message = dashboard.inner_text("#view .a-artifact .a-error")
+    assert "no rows to export" in message
+    assert "clear the filter" in message
+
+
 # --- the UI -----------------------------------------------------------------
 
 def test_the_recipient_and_the_reason_are_on_screen_next_to_the_button(dashboard):
@@ -541,16 +670,19 @@ def test_the_recipient_and_the_reason_are_on_screen_next_to_the_button(dashboard
 def test_the_overview_offers_the_two_artifacts_that_are_not_row_scoped(dashboard):
     dashboard.wait_for_selector("#view .a-artifacts")
     ids = dashboard.locator("#view .a-artifacts button").evaluate_all(
-        "els => els.map(e => e.dataset.artifact)")
-    assert ids == ["monthly-review", "numbers-today"]
+        "els => els.map(e => [e.dataset.artifact, e.dataset.format])")
+    # One button per format, not a dropdown that has to be opened to discover
+    # that XLSX exists.
+    assert ids == [["monthly-review", "pdf"], ["monthly-review", "xlsx"],
+                   ["numbers-today", "pdf"]]
 
 
 def test_the_posts_tab_offers_its_spreadsheet_below_the_table(dashboard):
     dashboard.click("#tab-posts")
     dashboard.wait_for_selector('#view[data-tab="posts"][data-state="ready"]')
     ids = dashboard.locator("#view .a-artifacts button").evaluate_all(
-        "els => els.map(e => e.dataset.artifact)")
-    assert ids == ["posts-table"]
+        "els => els.map(e => [e.dataset.artifact, e.dataset.format])")
+    assert ids == [["posts-table", "csv"], ["posts-table", "xlsx"]]
     order = dashboard.evaluate("""() => {
       const table = document.querySelector('#view table.a-sortable');
       const bar = document.querySelector('#view .a-artifacts');

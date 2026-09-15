@@ -8,6 +8,7 @@
  * app.js imports this once, for the side effect. */
 
 import { register, byId, openPage } from './index.js';
+import { buildPostsTable } from './posts-table.js';
 
 /** A print-designed page, opened in its own tab. */
 const printPage = (id, params) => {
@@ -19,3 +20,5 @@ register('episode-report', ({ episode }) => {
   if (!episode) throw new Error('No episode was chosen.');
   printPage('episode-report', { episode: episode.episodeId });
 });
+
+register('posts-table', buildPostsTable);

@@ -46,7 +46,32 @@ const COLUMNS = [
   { key: 'viewsGained', name: 'Gained here', num: true, format: full },
 ];
 
-export const POSTS_COLUMNS = COLUMNS;
+/**
+ * The spreadsheet's columns.
+ *
+ * Deliberately not the screen's. A sheet gets the FULL title rather than the
+ * clipped one, the URL as its own column, the raw fraction rather than "6.5%",
+ * and real Date objects so Excel treats them as dates. Everything the screen
+ * rounds for space, this hands over whole — a spreadsheet is for arithmetic.
+ */
+export const EXPORT_COLUMNS = [
+  { name: 'Platform', raw: (r) => PLATFORM_NAME[r.platform] ?? r.platform },
+  { name: 'Post ID', raw: (r) => r.postId },
+  { name: 'Published', raw: (r) => r.publishedAt },
+  { name: 'Title', raw: (r) => r.title },
+  { name: 'URL', raw: (r) => r.url },
+  { name: 'Views', raw: (r) => r.viewsEnd },
+  { name: 'Views at window start', raw: (r) => r.viewsStart },
+  { name: 'Views gained in window', raw: (r) => r.viewsGained },
+  { name: 'Likes', raw: (r) => r.likes },
+  { name: 'Comments', raw: (r) => r.comments },
+  { name: 'Shares', raw: (r) => r.shares },
+  { name: 'Reach', raw: (r) => r.reach },
+  /* A fraction, as everywhere else. The header says so, because 0.065 in a
+     column called "Engagement rate" is otherwise read as 0.065%. */
+  { name: 'Engagement rate (fraction)', raw: (r) => r.rate },
+  { name: 'Episode', raw: (r) => r.episodeId },
+];
 
 export async function postsTab(mount, { state, window: w }) {
   const result = await posts(w);
@@ -71,7 +96,8 @@ export async function postsTab(mount, { state, window: w }) {
     /* The export sits below the table, not above it: what it produces is what
        the table currently shows, and putting it after makes that order the
        obvious one. */
-    section.appendChild(artifactBar(forScope('posts'), () => ({ view: postsView, window: w })));
+    section.appendChild(artifactBar(forScope('posts'),
+      () => ({ view: postsView, columns: EXPORT_COLUMNS })));
     return true;
   }));
 }

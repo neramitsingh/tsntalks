@@ -506,9 +506,9 @@ def test_a_row_offers_the_two_artifacts_and_names_their_recipients(ep):
     person, and the UI says so rather than merely being true."""
     episode_rows(ep).first.locator("button.a-expand").click()
     ep.wait_for_selector("#view .a-artifacts")
+    # One button per format: the guest card is offered as both a PDF and a PNG.
     labels = ep.locator("#view .a-artifacts button").all_text_contents()
-    # Multi-format artifacts name their formats on the button.
-    assert labels == ["Episode report", "Guest card (PDF, PNG)"]
+    assert labels == ["Episode report", "Guest card · PDF", "Guest card · PNG"]
     recipients = ep.locator("#view .a-recipient").all_text_contents()
     assert recipients == ["to the episode’s sponsor", "to the guest"]
 

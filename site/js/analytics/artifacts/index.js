@@ -210,13 +210,45 @@ export function artifactButton(artifact, getParams, { onDone } = {}) {
   const wrap = document.createElement('div');
   wrap.className = 'a-artifact';
 
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'a-btn primary';
-  button.textContent = artifact.formats.length > 1
-    ? `${artifact.name} (${artifact.formats.join(', ').toUpperCase()})`
-    : artifact.name;
-  button.dataset.artifact = artifact.id;
+  const buttons = document.createElement('div');
+  buttons.className = 'a-artifact-buttons';
+
+  /* One button per format, not a dropdown. Two formats is two clicks' worth of
+     choice, and a select that has to be opened to discover that XLSX exists is
+     a worse answer than two buttons. */
+  for (const format of artifact.formats) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'a-btn primary';
+    button.textContent = artifact.formats.length > 1
+      ? `${artifact.name} · ${format.toUpperCase()}`
+      : artifact.name;
+    button.dataset.artifact = artifact.id;
+    button.dataset.format = format;
+
+    if (!has(artifact.id)) {
+      button.disabled = true;
+      button.title = 'Not built yet — this artifact lands in a later commit.';
+    } else {
+      button.addEventListener('click', async () => {
+        const label = button.textContent;
+        button.disabled = true;
+        button.textContent = 'Producing…';
+        const result = await run(artifact.id, { ...getParams(), format });
+        button.disabled = false;
+        button.textContent = label;
+        wrap.querySelector('.a-error')?.remove();
+        if (!result.ok) {
+          const err = document.createElement('p');
+          err.className = 'a-error';
+          err.textContent = result.reason;
+          wrap.appendChild(err);
+        }
+        onDone?.(result);
+      });
+    }
+    buttons.appendChild(button);
+  }
 
   const meta = document.createElement('div');
   meta.className = 'a-artifact-meta';
@@ -228,28 +260,7 @@ export function artifactButton(artifact, getParams, { onDone } = {}) {
   why.textContent = artifact.why;
   meta.append(to, why);
 
-  if (!has(artifact.id)) {
-    button.disabled = true;
-    button.title = 'Not built yet — this artifact lands in a later commit.';
-  } else {
-    button.addEventListener('click', async () => {
-      const label = button.textContent;
-      button.disabled = true;
-      button.textContent = 'Producing…';
-      const result = await run(artifact.id, getParams());
-      button.disabled = false;
-      button.textContent = label;
-      if (!result.ok) {
-        const err = document.createElement('p');
-        err.className = 'a-error';
-        err.textContent = result.reason;
-        wrap.appendChild(err);
-      }
-      onDone?.(result);
-    });
-  }
-
-  wrap.append(button, meta);
+  wrap.append(buttons, meta);
   return wrap;
 }
 
