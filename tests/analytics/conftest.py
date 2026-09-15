@@ -33,6 +33,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SITE = ROOT / "site"
 FIX = Path(__file__).parent / "fixtures"
 SHIM = Path(__file__).parent / "stubs" / "supabase-shim.js"
+VENDOR = Path(__file__).parent / "stubs" / "vendor"
 
 BANGKOK = dt.timezone(dt.timedelta(hours=7))
 
@@ -40,7 +41,15 @@ ANALYTICS = "/analytics/"
 TEST_ANON_KEY = "test-anon-key-not-a-real-one"
 ALLOWED_EMAIL = "ney@example.test"
 
-CDN_SUPABASE = "**/cdnjs.cloudflare.com/**/supabase*.js"
+# supabase-js is served from jsDelivr (cdnjs does not host it at all); SheetJS
+# from cdnjs. Both are matched loosely so a version bump does not silently let
+# the real library through and turn a stubbed test into a live one.
+# A regex, not a glob: the dashboard is opened with a query string as often as
+# without one, and a glob would match only the bare path.
+DASHBOARD_PAGE = re.compile(r"/analytics/(index\.html)?(\?|$)")
+
+CDN_SUPABASE = "**/supabase*.js"
+CDN_SHEETJS = "**/xlsx.full.min.js"
 REST = "**/rest/v1/**"
 AUTH = "**/auth/v1/**"
 
@@ -48,8 +57,45 @@ RPCS = ("rollup_views", "rollup_followers", "rollup_engagement",
         "post_deltas", "episode_rollup", "demographics_compare")
 
 
+# SheetJS, pinned and hashed exactly as site/js/analytics/artifacts/csv.js pins
+# it. Unlike supabase-js, this one is stubbed with THE REAL LIBRARY: the plan
+# asks that an exported workbook open as a valid one, and a hand-written stand-in
+# could not prove that. Fetched once and cached under stubs/vendor/ (gitignored),
+# so the suite is hermetic from the second run onward.
+SHEETJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
+SHEETJS_SRI = "sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw"
+
+
 def fixture(name):
     return json.loads((FIX / f"{name}.json").read_text(encoding="utf-8"))
+
+
+def sheetjs_bytes():
+    """The real SheetJS, or None if it has never been fetched and cannot be now.
+
+    Verified against the same SRI hash the page uses, so the cache cannot drift
+    from what a browser would actually accept.
+    """
+    cached = VENDOR / "xlsx.full.min.js"
+    if cached.exists():
+        return cached.read_bytes()
+    try:
+        import base64
+        import hashlib
+        import urllib.request
+        with urllib.request.urlopen(SHEETJS_URL, timeout=30) as response:
+            data = response.read()
+        digest = "sha384-" + base64.b64encode(hashlib.sha384(data).digest()).decode()
+        if digest != SHEETJS_SRI:
+            raise AssertionError(
+                f"SheetJS at {SHEETJS_URL} no longer matches the pinned hash: {digest}")
+        VENDOR.mkdir(parents=True, exist_ok=True)
+        cached.write_bytes(data)
+        return data
+    except AssertionError:
+        raise
+    except Exception:
+        return None
 
 
 class QuietHandler(SimpleHTTPRequestHandler):
@@ -110,6 +156,8 @@ class Supabase:
     # --- keeping the clock out of the fixtures ---------------------------
 
     def _anchored(self, table, rows):
+        if not rows:
+            return rows
         if table == "collector_runs":
             target = _now() - dt.timedelta(minutes=self.last_run_minutes_ago)
             return _shift(rows, ("started_at", "finished_at"),
@@ -132,14 +180,43 @@ class Supabase:
     # --- routing ---------------------------------------------------------
 
     def install(self, page):
+        page.route(DASHBOARD_PAGE, self._index)
         page.route(CDN_SUPABASE, self._shim)
+        page.route(CDN_SHEETJS, self._sheetjs)
         page.route("**/js/analytics/supa.js", self._supa_js)
         page.route(REST, self._rest)
         page.route(AUTH, self._auth)
 
+    def _index(self, route):
+        """The dashboard page, with the supabase-js integrity attribute removed.
+
+        Subresource integrity is checked against whatever body arrives, and the
+        body that arrives here is the shim rather than the real library — so the
+        browser blocks it and the page never boots. Stripping the attribute is
+        the same kind of honest substitution as patching the anon key into
+        supa.js, and test_auth.py asserts separately that the real file still
+        carries a well-formed hash.
+
+        SheetJS is NOT stripped: that one is served with its real bytes, so its
+        integrity attribute is genuinely exercised.
+        """
+        src = (SITE / "analytics" / "index.html").read_text(encoding="utf-8")
+        patched, n = re.subn(r'\s*integrity="sha384-[^"]+"', "", src, count=1)
+        assert n == 1, "site/analytics/index.html no longer pins supabase-js with an SRI hash"
+        route.fulfill(status=200, content_type="text/html; charset=utf-8", body=patched)
+
     def _shim(self, route):
         route.fulfill(status=200, content_type="application/javascript",
                       body=SHIM.read_text(encoding="utf-8"))
+
+    def _sheetjs(self, route):
+        """The real library, served locally. The page's integrity hash is checked
+        against these exact bytes, so SRI is exercised rather than bypassed."""
+        data = sheetjs_bytes()
+        if data is None:
+            return route.fulfill(status=503, content_type="text/plain",
+                                 body="SheetJS unavailable offline")
+        route.fulfill(status=200, content_type="application/javascript", body=data)
 
     def _supa_js(self, route):
         """Serve supa.js with a key in it.

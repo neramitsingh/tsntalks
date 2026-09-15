@@ -14,12 +14,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/site.css">
 <link rel="stylesheet" href="../css/analytics.css">
-<!-- Pinned exactly, from cdnjs. No @latest: this page is the only thing that
-     can read the database, and it should not change because a CDN shipped a
-     minor. -->
-<!-- No integrity hash: it cannot be computed from a worktree with no network.
-     Worth adding on review — `curl <url> | openssl dgst -sha384 -binary | openssl base64 -A`. -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.39.3/umd/supabase.min.js"
+<!-- supabase-js, pinned exactly, with an integrity hash.
+     NOT from cdnjs: cdnjs does not host @supabase/supabase-js at all
+     (api.cdnjs.com/libraries?search=supabase returns zero results, checked
+     2026-09-15). jsDelivr is the nearest equivalent that serves the published
+     UMD bundle at an immutable version. This is the ORIGINAL dist file, not
+     jsDelivr's `.min.js`, because that one is generated on the fly and its
+     hash can change — which would break SRI. SheetJS, which cdnjs does host,
+     is loaded from cdnjs on demand in artifacts/csv.js. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"
+        integrity="sha384-KX6Y/AMIv9qA8TLCDul2JatZWeyrJVgj3Xu/0r30Nr05xO8md1+wHAgtdsRV9LoE"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script type="module" src="../js/analytics/app.js"></script>
 </head>

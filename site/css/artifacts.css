@@ -1,0 +1,245 @@
+/* ============================================================================
+   TSN Talks — the print artifacts.
+
+   Five pages that leave the building: an episode report to a sponsor, a guest
+   card to a guest, a monthly review to Sunny, the numbers frozen at a date, and
+   a spreadsheet. Four of them are printed, and this is what they are printed
+   with.
+
+   Two things make this stylesheet different from analytics.css:
+
+   1. BODONI RETURNS. The dashboard is a product and uses Hanken Grotesk for
+      everything. These pages are the brand leaving the building with the show's
+      name on them, and the display face is the point.
+
+   2. THE DARK GROUND GOES AWAY. #0D0706 across an A4 page is about four
+      millilitres of ink and a sponsor who cannot read it on the train. The
+      palette below is the same hues re-weighted for paper: saffron and gold
+      hold, the ground becomes paper, and the cream becomes near-black.
+
+   The layout targets A4 portrait at the browser's print-to-PDF. It is also
+   readable on screen, because that is how it is checked before it is sent.
+   ========================================================================= */
+
+/* --- the ink-safe palette ------------------------------------------------- */
+
+:root {
+  --paper: #FFFFFF;
+  --paper2: #FAF6EF;          /* the faintest warm tint, for banded tables */
+  --rule-print: #D8CDBC;
+
+  --ink: #1A1411;             /* not pure black: warm, and kinder in body text */
+  --ink-dim: #4A4038;
+  --ink-faint: #736658;
+
+  /* The brand colours, kept but darkened enough to hold 4.5:1 on paper. The
+     screen values (#E8621A, #C8901E) are 3.0:1 and 2.3:1 on white — fine as a
+     swatch, not fine as text. */
+  --saffron-print: #B8460E;
+  --gold-print: #8A6310;
+
+  /* Platform colours. Same hues, weighted for white, and still separable for a
+     dichromat reader — the one rule that follows the palette everywhere. */
+  --yt-print: #C8500F;
+  --tt-print: #157A75;
+  --ig-print: #4B3BC4;
+
+  --display-print: 'Bodoni Moda', Georgia, 'Times New Roman', serif;
+  --text-print: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* --- page ----------------------------------------------------------------- */
+
+@page {
+  size: A4 portrait;
+  /* 14mm all round; the header and footer rules sit inside it. Smaller and a
+     home printer clips the source note, which is the one line that must
+     survive. */
+  margin: 14mm;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--text-print);
+  font-size: 10.5pt;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--paper);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* On screen the page is shown as a sheet on a grey desk, so what you check is
+   what prints. In print the sheet is the page. */
+.sheet {
+  width: 182mm;                       /* A4 less the 14mm margins */
+  min-height: 269mm;
+  margin: 24px auto;
+  padding: 0;
+  background: var(--paper);
+  box-shadow: 0 2px 24px rgba(0, 0, 0, .25);
+}
+
+@media print {
+  .sheet { width: auto; min-height: 0; margin: 0; box-shadow: none; }
+  .no-print { display: none !important; }
+  a { text-decoration: none; color: inherit; }
+  /* The link target, spelled out: a PDF that says "watch the episode" with no
+     URL is a dead end on paper. */
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 7.5pt; color: var(--ink-faint); }
+  a.bare::after { content: none; }
+}
+
+/* --- nothing is allowed to break across a page --------------------------- */
+
+.card, .fig, table, figure, .band, .clip-row, .note {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+h1, h2, h3 { break-after: avoid; page-break-after: avoid; }
+thead { display: table-header-group; }   /* repeat headers on a split table */
+tfoot { display: table-footer-group; }
+
+/* --- type ----------------------------------------------------------------- */
+
+h1, h2, h3 {
+  font-family: var(--display-print);
+  font-weight: 500;
+  letter-spacing: -.015em;
+  line-height: 1.05;
+  color: var(--ink);
+}
+h1 { font-size: 30pt; }
+h2 { font-size: 15pt; margin-bottom: 6pt; }
+h3 { font-size: 11.5pt; }
+h1 em, h2 em { font-style: italic; color: var(--gold-print); }
+
+.eyebrow {
+  font-family: var(--text-print);
+  font-size: 7.5pt; letter-spacing: .16em; text-transform: uppercase;
+  font-weight: 700; color: var(--saffron-print);
+}
+
+.lede { font-size: 11pt; color: var(--ink-dim); max-width: 60ch; }
+.fine { font-size: 8pt; color: var(--ink-faint); }
+
+/* --- masthead and colophon ----------------------------------------------- */
+
+.masthead {
+  display: flex; align-items: baseline; gap: 10pt;
+  padding-bottom: 6pt; margin-bottom: 14pt;
+  border-bottom: 1.5pt solid var(--ink);
+}
+.masthead .mark { font-family: var(--display-print); font-size: 13pt; font-weight: 600; }
+.masthead .mark em { font-style: italic; color: var(--gold-print); }
+.masthead .spacer { flex: 1 1 auto; }
+.masthead .when { font-size: 8pt; color: var(--ink-faint); }
+
+/* The source note. Every artifact carries one; it is the reason a sponsor never
+   has to ask "as of when?". */
+.colophon {
+  margin-top: 16pt; padding-top: 6pt;
+  border-top: .75pt solid var(--rule-print);
+  font-size: 7.5pt; color: var(--ink-faint);
+  line-height: 1.5;
+}
+
+/* --- figures -------------------------------------------------------------- */
+
+.figs {
+  display: grid; gap: 10pt;
+  grid-template-columns: repeat(auto-fit, minmax(38mm, 1fr));
+  margin: 12pt 0;
+}
+.fig .k {
+  display: block; font-size: 7.5pt; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--ink-faint); font-weight: 700;
+}
+.fig .n {
+  display: block; font-family: var(--display-print);
+  font-size: 22pt; line-height: 1.05; font-weight: 500;
+}
+.fig .sub { display: block; font-size: 8pt; color: var(--ink-dim); }
+
+.hero-number {
+  font-family: var(--display-print);
+  font-size: 58pt; line-height: .95; letter-spacing: -.02em;
+}
+.hero-number i { font-style: normal; font-size: .45em; color: var(--gold-print); }
+
+/* --- tables --------------------------------------------------------------- */
+
+table {
+  width: 100%; border-collapse: collapse;
+  font-size: 8.5pt; margin: 8pt 0;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+th, td { padding: 3.5pt 5pt; text-align: left; border-bottom: .5pt solid var(--rule-print); }
+th {
+  font-size: 7pt; letter-spacing: .08em; text-transform: uppercase;
+  font-weight: 700; color: var(--ink-faint);
+  border-bottom: .75pt solid var(--ink-dim);
+}
+td.num, th.num { text-align: right; }
+tbody tr:nth-child(even) { background: var(--paper2); }
+td.none { color: var(--ink-faint); font-style: italic; }
+
+/* --- proportion bar ------------------------------------------------------- */
+
+/* Hatched rather than merely coloured: a greyscale print of three saturated
+   swatches is three greys, and the legend below carries the numbers anyway. */
+.band { display: flex; height: 7pt; margin: 6pt 0; border: .5pt solid var(--ink-dim); }
+.band i { display: block; height: 100%; }
+.band i[data-platform="youtube"] { background: var(--yt-print); }
+.band i[data-platform="instagram"] { background: var(--ig-print); }
+.band i[data-platform="tiktok"] { background: var(--tt-print); }
+
+.band-legend { display: flex; flex-wrap: wrap; gap: 4pt 14pt; font-size: 8pt; }
+.band-legend span { display: inline-flex; align-items: center; gap: 4pt; }
+.band-legend i { width: 7pt; height: 7pt; border: .4pt solid var(--ink-dim); }
+
+/* --- charts on paper ------------------------------------------------------ */
+
+svg.print-chart { width: 100%; height: auto; display: block; margin: 6pt 0; }
+.print-chart .a-gridline { stroke: var(--rule-print); stroke-width: .5; }
+.print-chart text { fill: var(--ink-faint); font-family: var(--text-print); font-size: 9px; }
+.print-chart text.a-peak { fill: var(--ink); font-weight: 600; }
+
+/* --- the guest card ------------------------------------------------------- */
+
+/* Square, for LINE and Instagram, and the same markup the PNG renders from. */
+.card-square {
+  width: 150mm; height: 150mm;
+  margin: 0 auto; padding: 12mm;
+  background: var(--paper);
+  border: 1pt solid var(--ink);
+  display: flex; flex-direction: column; gap: 6pt;
+}
+
+/* --- the screen-only controls -------------------------------------------- */
+
+.toolbar {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  padding: 10px 16px;
+  background: #1A1411; color: #F2E4CC;
+  font-family: var(--text-print); font-size: 13px;
+}
+.toolbar button {
+  font: inherit; font-size: 12px; font-weight: 600;
+  background: #B8460E; color: #FFF; border: 0; border-radius: 2px;
+  padding: 7px 14px; cursor: pointer;
+}
+.toolbar button:hover { background: #D4540F; }
+.toolbar .hint { color: #A08468; font-size: 11.5px; }
+.toolbar .problem { color: #F2705F; }
+
+/* --- states --------------------------------------------------------------- */
+
+.empty { font-size: 9pt; color: var(--ink-faint); font-style: italic; padding: 6pt 0; }
+.problem { font-size: 9pt; color: #9B2F1F; padding: 6pt 0; }

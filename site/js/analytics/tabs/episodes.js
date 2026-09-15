@@ -15,21 +15,7 @@ import {
   full, compact, fmtRate, periodLabel, periodLong, el, empty, errorNote,
   PLATFORM_NAME, PLATFORM_ORDER,
 } from './shared.js';
-
-/**
- * Filled in by artifacts/index.js once the artifact framework exists.
- *
- * The buttons are drawn either way. A button that is missing is a feature
- * nobody knows about; a button that is disabled and says why is a promise with
- * a date on it.
- */
-export const EPISODE_ARTIFACTS = [
-  { id: 'episode-report', label: 'Episode report', recipient: 'the episode’s sponsor' },
-  { id: 'guest-card', label: 'Guest card', recipient: 'the guest' },
-];
-
-/** artifacts/index.js sets this. `run(id, params)` produces the artifact. */
-export const artifactRunner = { run: null, has: () => false };
+import { artifactBar as artifactButtons, forScope } from '../artifacts/index.js';
 
 export async function episodesTab(mount, { window: w }) {
   const [rollup, allPosts] = await Promise.all([episodes(), postsForUnassigned(w)]);
@@ -209,33 +195,11 @@ function splitChart(row) {
 }
 
 /**
- * The two artifacts a row produces.
- *
- * Each button carries its recipient, because the spec's whole point is that
- * there is no generic "export this view" — every artifact goes to a named
- * person for a named reason, and the UI should make that visible rather than
- * merely true.
+ * The artifacts an episode row produces: the report to its sponsor, the card to
+ * its guest. Both come out of the registry, which renders the recipient and the
+ * reason beside each button.
  */
-function artifactBar(row) {
-  const bar = el('div', 'a-artifacts');
-  for (const a of EPISODE_ARTIFACTS) {
-    const wrap = el('div', 'a-artifact');
-    const button = el('button', 'a-btn primary', a.label);
-    button.type = 'button';
-    button.dataset.artifact = a.id;
-    button.dataset.episodeId = String(row.episodeId);
-
-    if (artifactRunner.has(a.id)) {
-      button.addEventListener('click', () => artifactRunner.run(a.id, { episode: row }));
-    } else {
-      button.disabled = true;
-      button.title = 'Not built yet — the artifact framework lands in a later commit.';
-    }
-    wrap.append(button, el('span', 'a-recipient', `to ${a.recipient}`));
-    bar.appendChild(wrap);
-  }
-  return bar;
-}
+const artifactBar = (row) => artifactButtons(forScope('episode'), () => ({ episode: row }));
 
 /* --- unassigned ------------------------------------------------------------ */
 

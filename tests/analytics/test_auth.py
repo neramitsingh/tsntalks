@@ -156,14 +156,55 @@ def test_the_dashboard_chrome_is_hanken_grotesk_and_never_bodoni(dashboard):
         assert "Bodoni" not in family
 
 
+# The plan says "from cdnjs". cdnjs does not host @supabase/supabase-js at all
+# — api.cdnjs.com/libraries?search=supabase returns zero results — so the one
+# dependency that cannot come from there comes from jsDelivr at an immutable
+# version instead, with an SRI hash cdnjs would not have given us either.
+# SheetJS, which cdnjs does host, comes from cdnjs. Nothing else is allowed.
+ALLOWED_CDNS = ("cdnjs.cloudflare.com", "cdn.jsdelivr.net")
+
+JS_SOURCES = ("analytics/index.html", "js/analytics/artifacts/csv.js")
+
+
+def cdn_urls():
+    urls = []
+    for rel in JS_SOURCES:
+        text = (SITE / rel).read_text(encoding="utf-8")
+        urls += re.findall(r"https://(?:cdn|unpkg|esm|jsdelivr)[^\s\"'<>]+\.js", text)
+    return urls
+
+
 def test_every_cdn_dependency_is_pinned_to_an_exact_version():
+    urls = cdn_urls()
+    assert urls, "the dashboard loads no CDN script at all"
+    for url in urls:
+        assert any(host in url for host in ALLOWED_CDNS), url
+        assert "@latest" not in url and "/latest/" not in url, url
+        assert re.search(r"[@/]\d+\.\d+\.\d+[/@]", url), f"{url} is not pinned exactly"
+
+
+def test_the_supabase_bundle_is_the_immutable_one_not_the_generated_minification():
+    """jsDelivr generates `.min.js` on the fly, and its bytes — and therefore its
+    hash — can change. The published dist file cannot."""
     html = (SITE / "analytics" / "index.html").read_text(encoding="utf-8")
-    srcs = re.findall(r'<script[^>]+src="(https://[^"]+)"', html)
-    assert srcs, "the dashboard loads no CDN script at all"
-    for src in srcs:
-        assert "cdnjs.cloudflare.com" in src, src
-        assert "@latest" not in src and "/latest/" not in src, src
-        assert re.search(r"/\d+\.\d+\.\d+/", src), f"{src} is not pinned to an exact version"
+    src = re.search(r'src="(https://cdn\.jsdelivr\.net[^"]+)"', html).group(1)
+    assert src.endswith("/dist/umd/supabase.js"), src
+    assert ".min.js" not in src, src
+
+
+def test_every_cdn_script_carries_a_subresource_integrity_hash():
+    """A private dashboard that can read the whole database should not execute
+    whatever a CDN happens to serve tomorrow."""
+    html = (SITE / "analytics" / "index.html").read_text(encoding="utf-8")
+    tags = re.findall(r"<script[^>]+src=\"https://[^>]+>", html)
+    assert tags
+    for tag in tags:
+        assert re.search(r'integrity="sha384-[A-Za-z0-9+/=]{60,}"', tag), tag
+        assert 'crossorigin="anonymous"' in tag, tag
+
+    csv_js = (SITE / "js" / "analytics" / "artifacts" / "csv.js").read_text(encoding="utf-8")
+    assert re.search(r"SHEETJS_SRI = 'sha384-[A-Za-z0-9+/=]{60,}'", csv_js)
+    assert "script.integrity = SHEETJS_SRI" in csv_js
 
 
 def test_numbers_use_tabular_figures(dashboard):

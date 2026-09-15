@@ -15,6 +15,7 @@ import {
   fmtRate, periodLabel, periodLong, clip, el, empty, errorNote,
   PLATFORM_NAME,
 } from './shared.js';
+import { artifactBar, forScope } from '../artifacts/index.js';
 
 /** Read by artifacts/index.js. The tab's current view, not a query. */
 export const postsView = {
@@ -67,6 +68,10 @@ export async function postsTab(mount, { state, window: w }) {
     section.appendChild(searchRow(current.rows, section, w));
     section.appendChild(el('div', 'a-postsbody'));
     drawTable(section, current.rows, w);
+    /* The export sits below the table, not above it: what it produces is what
+       the table currently shows, and putting it after makes that order the
+       obvious one. */
+    section.appendChild(artifactBar(forScope('posts'), () => ({ view: postsView, window: w })));
     return true;
   }));
 }

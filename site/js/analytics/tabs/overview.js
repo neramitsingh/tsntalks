@@ -10,6 +10,7 @@ import {
   chart, panel, windowSub, resultPanel, figure, deltaEl, table, postLink,
   platformCell, seriesFor, pointsFor, full, compact, fmtRate, el, empty,
 } from './shared.js';
+import { artifactBar, forScope } from '../artifacts/index.js';
 
 const SINCE = {
   '7d': 'previous 7 days', '30d': 'previous 30 days', '90d': 'previous 90 days',
@@ -29,7 +30,32 @@ export async function overview(mount, { state, window: w }) {
     viewsPanel(viewSeries, w, series),
     followersPanel(followerSeries, w, series),
     topPostsPanel(postRows, w),
+    exportsPanel(w),
   );
+}
+
+/**
+ * The two artifacts that are not scoped to one episode or to the Posts table.
+ *
+ * They live here because the Overview is the tab someone is on when they decide
+ * to send something, and because an export nobody can find is an export that
+ * does not exist.
+ */
+function exportsPanel(w) {
+  const section = panel({
+    title: 'Send something',
+    sub: windowSub('Produced from the window above', w.from, w.to,
+                   'each one goes to a named person'),
+  });
+  section.appendChild(artifactBar(
+    [...forScope('month'), ...forScope('date')],
+    () => ({ window: w }),
+  ));
+  section.appendChild(el('p', 'a-note',
+    'There is no generic "export this view". Every artifact is a page designed '
+    + 'for whoever receives it, and it carries the platforms, the window and the '
+    + 'collector run it was built from.'));
+  return section;
 }
 
 /* --- the four figures ----------------------------------------------------- */
