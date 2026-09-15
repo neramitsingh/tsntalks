@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sketch S3 · One at a time</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400..700&family=Bebas+Neue&family=Hanken+Grotesk:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* THROWAWAY SKETCH. Bet: cinematic beats scannable. A sponsor should feel the show, one guest per screen, before reading a price. The offer never leaves the screen. */
+:root{--ground:#140d09;--ground2:#1e130c;--wood:#2b1a10;--amber:#F0A040;--saffron:#E8621A;--gold:#E6B54A;--cream:#F4E7D3;--dim:#CDB08A;--muted:#A8896A;--rule:rgba(244,231,211,.12);
+--disp:'Antonio','Noto Sans Thai',sans-serif;--name:'Bebas Neue','Noto Sans Thai',sans-serif;--text:'Hanken Grotesk','Noto Sans Thai',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--ground);color:var(--cream);font-family:var(--text);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;scroll-snap-type:y proximity}
+a{color:inherit;text-decoration:none}img{display:block;max-width:100%}
+nav{position:fixed;inset:0 0 auto 0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:16px clamp(20px,4vw,64px);background:linear-gradient(180deg,rgba(20,13,9,.85),transparent)}
+nav .logo{height:48px;}
+nav .count{font-family:var(--name);letter-spacing:.14em;color:var(--gold);font-size:18px}
+/* every screen */
+.s{position:relative;min-height:100vh;scroll-snap-align:start;display:grid;align-items:end;overflow:hidden}
+.s .bg{position:absolute;inset:0;background:#000 center 22%/cover no-repeat}
+.s .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(20,13,9,.96) 0%,rgba(20,13,9,.35) 45%,rgba(20,13,9,.05) 75%)}
+.s.nopic .bg{background:radial-gradient(120% 90% at 80% 20%,var(--wood) 0%,var(--ground) 70%)}
+.s.nopic .bg::before{content:attr(data-init);position:absolute;right:4vw;top:8vh;font-family:var(--disp);font-weight:700;font-size:44vh;line-height:1;color:var(--gold);opacity:.14}
+.in{position:relative;padding:0 clamp(20px,4vw,64px) 120px;max-width:1600px;margin:0 auto;width:100%}
+.ep{font-family:var(--name);letter-spacing:.18em;color:var(--gold);font-size:18px}
+.s h2{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:clamp(64px,11vw,176px);line-height:.86;color:var(--cream);margin:8px 0 12px;max-width:10ch;text-wrap:balance}
+.s .r{font-size:clamp(16px,1.5vw,22px);color:var(--dim);max-width:44ch}
+.s .t{font-family:var(--name);font-size:clamp(22px,2.4vw,38px);letter-spacing:.03em;color:var(--gold);margin-top:14px;max-width:26ch;line-height:1.05}
+/* screen 1: the show */
+.s.cover{align-items:center;text-align:center}
+.s.cover .in{padding-bottom:0;display:grid;justify-items:center;gap:18px}
+.s.cover img.mark{width:min(560px,80vw);}
+.s.cover h1{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:clamp(40px,6vw,96px);line-height:.92;max-width:14ch}
+.s.cover p{color:var(--dim);max-width:48ch;font-size:clamp(16px,1.4vw,20px)}
+.s.cover .hint{font-family:var(--name);letter-spacing:.2em;color:var(--gold);font-size:15px;margin-top:20px}
+/* rate screen */
+.s.rate{align-items:center}.s.rate .bg{background:linear-gradient(160deg,var(--wood),var(--ground))}
+.rates{position:relative;display:grid;gap:0;max-width:980px}
+.rate{display:grid;grid-template-columns:180px 1fr;gap:6px 28px;padding:18px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.rate .p{font-family:var(--disp);font-weight:700;font-size:clamp(30px,3vw,44px);color:var(--gold);line-height:1}
+.rate .n{font-family:var(--name);font-size:clamp(20px,2vw,28px);letter-spacing:.04em}
+.rate .d{grid-column:2;color:var(--dim);font-size:14px;max-width:60ch}
+/* persistent offer bar */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:rgba(20,13,9,.92);backdrop-filter:blur(6px);border-top:1px solid rgba(240,160,64,.25);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px;padding:12px clamp(20px,4vw,64px)}
+.bar p{font-size:14px;color:var(--dim)}.bar b{color:var(--cream)}
+.bar .live{color:var(--amber);font-weight:700;margin-right:10px}
+.btn{background:var(--saffron);color:#140d09;font-weight:700;padding:13px 20px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.line{background:#06C755;color:#fff}
+@media(max-width:820px){.s h2{font-size:clamp(56px,17vw,120px)}.in{padding-bottom:150px}.rate{grid-template-columns:1fr}.rate .d{grid-column:1}.bar p span.x{display:none}}
+</style>
+</head>
+<body>
+<nav><a href="#"><img class="logo" src="img/tsn-s2-logo.png" alt="TSN Talks"></a><span class="count" id="count">TSN Talks · Season 2</span></nav>
+
+<section class="s cover">
+  <div class="bg" style="background-image:url(img/studio/AXukyl9hVp0-0.jpg);opacity:.35"></div>
+  <div class="in">
+    <img class="mark" src="img/tsn-s2-logo.png" alt="TSN Talks, season two">
+    <h1>Thai-Indian stories, told at length</h1>
+    <p>One guest, one honest conversation, every week, from the Thai Sikh News studio in Bangkok. Thirty-two episodes across two seasons. Scroll to meet the room.</p>
+    <p class="hint">↓ Season two</p>
+  </div>
+</section>
+
+<div id="eps"></div>
+
+<section class="s rate">
+  <div class="bg"></div>
+  <div class="in">
+    <p class="ep">The rate card</p>
+    <h2 style="font-size:clamp(44px,6vw,96px)">Put your brand in the room</h2>
+    <div class="rates" style="margin-top:22px">
+      <div class="rate"><div class="p">฿15,000</div><div class="n">Host-read mentions</div><div class="d">Pre-roll, a 60-second mid-roll, closing thanks, your logo in the thumbnail and description. Per episode.</div></div>
+      <div class="rate"><div class="p">฿20,000</div><div class="n">Product placement</div><div class="d">Your product in the studio, a dedicated segment, guest gifting acknowledged on air. Per episode.</div></div>
+      <div class="rate"><div class="p">฿20,000</div><div class="n">Guest feature episode</div><div class="d">Your leader as the guest, a reusable asset for your own channels.</div></div>
+      <div class="rate"><div class="p">฿25,000</div><div class="n">On-screen branding</div><div class="d">Your logo on screen throughout, lower-thirds at the key moments, a branded end card. Per episode.</div></div>
+      <div class="rate"><div class="p">฿70,000</div><div class="n">Signature segment</div><div class="d">A recurring segment named after your brand, asked of every guest. Per month, four episodes.</div></div>
+    </div>
+    <p class="r" style="margin-top:18px">Packages with Thai Sikh News advertising from ฿29,000 · every audience figure read live from the platforms.</p>
+  </div>
+</section>
+
+<div class="bar">
+  <p><span class="live">● Live</span><b>2,366,212</b> views <span class="x">across YouTube, Instagram and TikTok</span> · <b>9,981</b> followers · <span class="x">updated 15 Sept, 14:40 Bangkok · </span><b>Sponsor an episode from ฿15,000</b></p>
+  <a class="btn line" href="#">Message us on LINE</a>
+</div>
+
+<script>
+const S2=[["10","AXukyl9hVp0","Sunny Khurana","Founder & CEO, Spark.love","I rebuilt it five times before it worked","23 Aug 2026"],
+["9","Y1hustM4MM4","Mr. Deepak Sajnani","President, Thai-Sindhi Association","Meet the President of the Thai Sindhi Association",""],
+["8","hi-HFw1JIK8","Angad Pasricha","Founder, Human Stories Thailand","Why I launched Human Stories Thailand",""],
+["7","puiF1eGZ2LY","Surasit (Sid) Sachdev","Founder & CEO, HungryHub","From near-shutdown to 5 million diners",""],
+["6","Ibofx3nd3Ds","Sakol Sachdev","Founder & CEO, Micro Greentech","A $1M deal offered to the first Thai-Indian in history",""],
+["5","Q_IY5BALpgY","Gagan Ajmani","Corporate, VC & Founder, WOWS Global","",""],
+["4","6Dnssyxg-8w","Sukhdev Sethi","Closed $1.5M, beat 6,000 founders in 151 countries","",""],
+["3","OwqzzlZ0PGw","Sunny Chawla","Sunnylogy","How AI can secretly manipulate you",""],
+["2","J71XCFlxwts","Sunny Chawla","Sunnylogy","Building a billion-dollar startup with AI",""],
+["0","0AFpRgf6w5o","Nikorn Sachdev","Advisor to the Minister of Tourism & Sports","Season two kickoff",""]];
+const init=n=>n.replace(/^(Mr\.|Dr\.)\s*/,'').split(/\s+/).map(w=>w[0]).slice(0,2).join('');
+document.getElementById('eps').innerHTML=S2.map(([n,id,g,r,t,d],i)=>`<section class="s" data-n="${n}">
+ <div class="bg" data-init="${init(g)}" style="background-image:url(img/studio/${id}.jpg)"></div>
+ <img src="img/studio/${id}.jpg" alt="" hidden onerror="this.closest('.s').classList.add('nopic')">
+ <div class="in"><p class="ep">${n==='0'?'Season 2 · Kickoff':'Season 2 · Episode '+n}${d?' · '+d:''}</p><h2>${g}</h2><p class="r">${r}</p>${t?`<p class="t">“${t}”</p>`:''}</div></section>`).join('');
+</script>
+</body>
+</html>
