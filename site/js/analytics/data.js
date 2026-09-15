@@ -494,6 +494,11 @@ export async function episodeClips(episodeId, w) {
  *
  * `shareDelta` is in PERCENTAGE POINTS. A relative change in a percentage
  * ("India is down 40%") is read as a share by almost everyone who sees it.
+ *
+ * `window.end` and `prevWindow.end` are EXCLUSIVE — the instant after the last
+ * day the window covers — because every other window in this dashboard is
+ * [from, to) and one that was not would eventually be labelled a day short.
+ * The database stores `window_end` as the inclusive last date.
  */
 export async function audience(kind, windowDays = 90) {
   return once(`audience|${kind}|${windowDays}`, async () => {
@@ -517,10 +522,12 @@ export async function audience(kind, windowDays = 90) {
         };
       }),
       window: first.window_start
-        ? { start: bangkokDate(first.window_start), end: bangkokDate(first.window_end) }
+        ? { start: bangkokDate(first.window_start),
+            end: addPeriods(bangkokDate(first.window_end), 'day', 1) }
         : null,
       prevWindow: first.prev_window_start
-        ? { start: bangkokDate(first.prev_window_start), end: bangkokDate(first.prev_window_end) }
+        ? { start: bangkokDate(first.prev_window_start),
+            end: addPeriods(bangkokDate(first.prev_window_end), 'day', 1) }
         : null,
       total,
     });

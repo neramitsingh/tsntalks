@@ -12,7 +12,7 @@ import pytest
 
 FIX = Path(__file__).parent / "fixtures"
 
-BUILT = ["overview", "growth", "posts", "episodes"]
+BUILT = ["overview", "growth", "posts", "episodes", "audience"]
 
 
 def load(name):
@@ -553,6 +553,124 @@ def test_the_unassigned_list_ignores_the_platform_control(browser, stub, analyti
     section = pg.locator("#view .a-panel").filter(
         has=pg.locator('h2:text-is("Unassigned clips")'))
     assert section.locator("tbody tr").count() == 1      # the TikTok one
+    ctx.close()
+
+
+# --- Audience ---------------------------------------------------------------
+
+@pytest.fixture
+def au(dashboard):
+    open_tab(dashboard, "audience")
+    return dashboard
+
+
+AUDIENCE_PANELS = ["YouTube · age", "YouTube · gender", "YouTube · country",
+                   "Instagram · age", "Instagram · city", "Instagram · country"]
+
+
+def test_the_six_panels_the_spec_lists(au):
+    assert au.locator("#view .a-panel h2").all_text_contents() == AUDIENCE_PANELS
+
+
+def test_every_audience_panel_names_its_own_window_in_its_subtitle(au):
+    """The exact thing that let the old media kit claim India 54%. A demographic
+    figure without its window is not a weak claim; it is a different claim."""
+    subs = au.locator("#view .a-panel header .a-window").all_text_contents()
+    assert len(subs) == 6
+    assert all(s.strip() for s in subs)
+
+
+def test_the_window_is_the_platform_s_not_the_control_above(au):
+    """YouTube reports a rolling 90 days and Instagram 30. The frame control
+    does not change either, and the panels must show what the data came with."""
+    windows = au.locator("#view .a-panel header .a-window").all_text_contents()
+    # The fixture's YouTube window is 18 Jun - 15 Sept; Instagram's 17 Aug - 15 Sept.
+    assert windows[0] == windows[1] == windows[2]
+    assert windows[3] == windows[4] == windows[5]
+    assert windows[0] != windows[3]
+
+
+def test_changing_the_frame_does_not_change_an_audience_window(dashboard):
+    open_tab(dashboard, "audience")
+    before = dashboard.locator("#view .a-panel header .a-window").all_text_contents()
+    dashboard.click('[data-control="frame"]:text-is("7 days")')
+    dashboard.wait_for_selector('#view[data-state="ready"]')
+    assert dashboard.locator("#view .a-panel header .a-window").all_text_contents() == before
+
+
+def test_each_panel_is_bars_with_a_table_twin(au):
+    for title in AUDIENCE_PANELS:
+        section = panel_named(au, title)
+        assert section.locator("svg.a-chart rect.a-bar").count() > 0, title
+        assert section.locator("details.a-twin").count() == 1, title
+
+
+def test_the_bar_is_a_share_so_percentage_and_count_kinds_read_alike(au):
+    """yt_age arrives as percentages, ig_age as follower counts. Both draw as a
+    share of the rows, so neither needs explaining next to the other."""
+    for title in ("YouTube · age", "Instagram · age"):
+        values = panel_named(au, title).locator("text.a-barval").all_text_contents()
+        assert values and all(v.endswith("%") for v in values), title
+        assert sum(float(v.rstrip("%")) for v in values) == pytest.approx(100, abs=1), title
+
+
+def test_the_twin_carries_the_raw_value_under_the_right_unit(au):
+    headers = panel_named(au, "YouTube · country").locator(
+        "details.a-twin thead th").all_text_contents()
+    assert headers == ["Group", "Share", "Views", "Share before", "Change"]
+    ig = panel_named(au, "Instagram · country").locator(
+        "details.a-twin thead th").all_text_contents()
+    assert ig[2] == "Followers"
+
+
+def test_country_codes_are_spelled_the_way_the_public_pages_spell_them(au):
+    labels = panel_named(au, "YouTube · country").locator(
+        "details.a-twin tbody td:first-child").all_text_contents()
+    assert "Thailand" in labels and "India" in labels
+    assert "TH" not in labels
+
+
+def test_the_change_is_stated_in_percentage_points(au):
+    """"India is down 40%" is read as a share by nearly everyone who sees it,
+    and a share is exactly what it is not."""
+    text = panel_named(au, "YouTube · country").text_content()
+    assert "pp" in text
+    assert "Biggest shifts" in text
+
+
+def test_the_biggest_shifts_are_the_ones_the_fixture_encodes(au):
+    text = panel_named(au, "YouTube · country").inner_text()
+    assert "Thailand" in text and "India" in text
+    directions = panel_named(au, "YouTube · country").locator(
+        ".a-note .a-delta").evaluate_all("els => els.map(e => e.dataset.dir)")
+    assert "up" in directions and "down" in directions
+
+
+def test_a_kind_with_no_earlier_window_says_so_instead_of_showing_a_rise(au):
+    section = panel_named(au, "Instagram · city")
+    text = section.inner_text()
+    assert "No comparable earlier window" in text
+    assert "no comparable earlier window" in         section.locator("header .sub").inner_text().lower()
+    assert section.locator(".a-note .a-delta").count() == 0
+
+
+def test_a_long_tail_is_described_rather_than_silently_dropped(browser, stub,
+                                                               analytics_url, signin):
+    stub.rpc["demographics_compare"]["yt_country"] += [
+        {"dimension": code, "value": 10, "prev_value": 10, "delta": 0,
+         "window_start": "2026-06-18", "window_end": "2026-09-15",
+         "prev_window_start": "2026-03-20", "prev_window_end": "2026-06-17"}
+        for code in ("SG", "MY", "AE", "NZ", "DE", "ID", "PH", "JP", "KR")
+    ]
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    pg = ctx.new_page()
+    stub.install(pg)
+    signin(pg)
+    pg.goto(analytics_url + "?tab=audience")
+    pg.wait_for_selector('#view[data-state="ready"]')
+    section = pg.locator("#view .a-panel").filter(
+        has=pg.locator('h2:text-is("YouTube · country")'))
+    assert "largest of 14" in section.inner_text()
     ctx.close()
 
 
