@@ -324,6 +324,8 @@ RLS does the work; no function wrapper.
 | `collector_runs?select=id,started_at,finished_at,status,rows_written,notes&order=started_at.desc&limit=N` | header, Health | `status` is `ok`, `partial` or `failed`; `notes` is jsonb naming the steps that failed |
 | `account_health?select=account_id,checked_at,status,can_fetch_analytics,needs_reconnect,token_expires_at&order=checked_at.desc&limit=60` | Health | latest-per-account is picked client-side; the table is append-only |
 | `metric_daily?select=account_id,day,metric,value&day=gte.D&day=lte.D&metric=in.(...)` | Growth | `day` is a **date**, already Bangkok-dated by the collector; see §7.1 |
+| `post_snapshots?select=taken_at,views&post_id=eq.X&taken_at=gte.F&taken_at=lte.T&order=taken_at` | the inline growth curve on a Posts row | one post over one window is a handful of rows; a rollup function for it would be one more thing to apply for no gain |
+| `post_snapshots?select=taken_at&order=taken_at&limit=1` | the `all` frame | the earliest snapshot — see §7.6 |
 | `episodes?select=id,season,number,title,guest,role,youtube_video_id,published_at&order=season.desc` | Episodes fallback | only if `episode_rollup()` fails |
 | `allowed_users?select=email&limit=1` | the access probe in §2 | 1 row = allowed, 0 rows = not |
 | `HEAD {table}?select=*` with `Prefer: count=exact` | Health | row counts, read from `Content-Range` |
@@ -347,14 +349,20 @@ Shared parameter object, produced by `controls.js` and resolved by
 ```
 
 When `compare` is true, `previous` carries the same payload for the window of
-**identical length immediately before** `from` — `previous.to === from`, exactly,
-with no gap and no overlap. When `compare` is false, `previous` is `null`.
+the **same number of periods immediately before** `from` — `previous.to === from`,
+exactly, with no gap and no overlap. When `compare` is false, `previous` is `null`.
+
+Periods, not milliseconds. For `hour`, `day` and `week` the two are identical.
+For `month` they are not: a twelve-month window shifted back by a fixed number
+of milliseconds lands in the middle of a month, and every boundary and label
+after it is a day or two out. Counting periods keeps both windows on the same
+calendar edges.
 
 | `data.js` export | Calls | `current` payload |
 |---|---|---|
 | `views(p)` | `rollup_views` | `{ series: [{ period: Date, platform, views, postsPublished }], byPlatform: { youtube: n, ... }, total: n, postsPublished: n }` |
 | `followers(p)` | `rollup_followers` | `{ series: [{ period: Date, platform, followers, gained, lost }], latest: { youtube: n, ... }, total: n, gained: n, lost: n }` |
-| `engagement(p)` | `rollup_engagement` | `{ series: [{ period: Date, platform, likes, comments, shares, rate }], likes: n, comments: n, shares: n, rate: n\|null }` |
+| `engagement(p)` | `rollup_engagement` **and** `rollup_views` | `{ series: [{ period: Date, platform, likes, comments, shares, rate }], likes: n, comments: n, shares: n, interactions: n, rate: n\|null }`. The window's `rate` is interactions over the window's views — one ratio of two sums, the same way the SQL does it per period. Averaging the per-period rates would give a quiet Tuesday the same weight as the day an episode landed. The extra `rollup_views` call is almost always a cache hit, because the tab drawing this has already asked for views over the same window. |
 | `posts(p)` | `post_deltas` | `{ rows: [{ postId, platform, title, url, publishedAt: Date, viewsStart, viewsEnd, viewsGained, likes, comments, shares, reach, rate, episodeId }] }` |
 | `postHistory(postId, p)` | `rollup_views`-style per-post read | `{ series: [{ period: Date, views }] }` — the inline growth curve on a Posts row |
 | `episodes()` | `episode_rollup` | `{ rows: [{ episodeId, season, number, title, guest, role, publishedAt: Date, youtubeVideoId, ytViews, clipCount, clipViews: { youtube, instagram, tiktok }, totalReach }] }` |

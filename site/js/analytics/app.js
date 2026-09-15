@@ -5,11 +5,13 @@
    element and a context; they never look for `#shell` or a session. */
 
 import {
-  configProblem, sendLink, signOut, watchSession, sessionEmail, sb,
+  configProblem, sendLink, signOut, watchSession, sessionEmail,
 } from './supa.js';
 import {
   readState, toSearch, withChange, renderControls, renderTabs, TAB_NAME,
 } from './controls.js';
+import { access, lastRun, clearCache, windowFor } from './data.js';
+import { ago, bkkStamp } from './format.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -59,7 +61,8 @@ async function draw() {
     return;
   }
   try {
-    await render(view, { state, isCurrent: () => token === drawToken });
+    const window_ = await windowFor(state);
+    await render(view, { state, window: window_, isCurrent: () => token === drawToken });
   } catch (err) {
     /* A renderer that throws is a bug, but it must not leave the dashboard
        showing the previous tab's numbers under this tab's name. */
@@ -118,22 +121,42 @@ function wireGate() {
   });
 }
 
-/* --- access -------------------------------------------------------------- */
+/* --- freshness and access ------------------------------------------------ */
 
 /**
- * Signed in is not the same as allowed. Supabase will authenticate any address
- * it has a user for; `allowed_users` is what RLS checks. One row back means
- * allowed, zero rows means authenticated-but-not-allowed, and an error means a
- * transport problem that should not be reported as a permissions one.
+ * The header's collector freshness.
+ *
+ * Three states, and the third is the one that matters: a run that FAILED is
+ * failed whatever its age. An eight-minute-old failure is not fresher than a
+ * two-hour-old success, and a green dot over a broken pipeline is the single
+ * most expensive thing this header could do.
  */
-async function isAllowed() {
-  try {
-    const { data, error } = await sb().from('allowed_users').select('email').limit(1);
-    if (error) return { ok: false, reason: error.message };
-    return { ok: true, allowed: (data?.length ?? 0) > 0 };
-  } catch (err) {
-    return { ok: false, reason: String(err?.message ?? err) };
+async function drawFreshness() {
+  const fresh = $('fresh');
+  const text = $('fresh-text');
+  const result = await lastRun();
+
+  if (!result.ok) {
+    fresh.dataset.state = 'failed';
+    text.textContent = 'collector status unavailable';
+    fresh.title = result.reason;
+    return;
   }
+  const { run, ageMs, stale, failed } = result.current;
+  if (!run) {
+    fresh.dataset.state = 'stale';
+    text.textContent = 'no collector run recorded';
+    return;
+  }
+  fresh.dataset.state = failed ? 'failed' : stale ? 'stale' : 'ok';
+  const when = run.finishedAt ? bkkStamp(run.finishedAt.toISOString()) : 'unknown';
+  text.textContent = failed
+    ? `last run ${run.status} · ${ago(ageMs)}`
+    : `collected ${ago(ageMs)}`;
+  fresh.title = [
+    `${when} Bangkok · ${run.status} · ${run.rowsWritten} rows`,
+    'Stale after two hours; the collector runs hourly.',
+  ].join('\n');
 }
 
 async function onSession(next) {
@@ -147,23 +170,24 @@ async function onSession(next) {
   $('who').textContent = sessionEmail(session);
   $('noaccess-email').textContent = sessionEmail(session);
 
-  const access = await isAllowed();
-  if (!access.ok) {
+  const permitted = await access();
+  if (!permitted.ok) {
     /* Cannot tell allowed from unreachable, so say which one we cannot tell.
        Showing the dashboard and letting every panel fail separately would be
        six copies of the same message. */
     show('shell');
-    $('view').replaceChildren(fatal('Could not reach the database', access.reason));
+    $('view').replaceChildren(fatal('Could not reach the database', permitted.reason));
     $('fresh').dataset.state = 'failed';
     $('fresh-text').textContent = 'not reachable';
     return;
   }
-  if (!access.allowed) {
+  if (!permitted.current.allowed) {
     show('noaccess');
     return;
   }
 
   show('shell');
+  drawFreshness();
   draw();
 }
 
@@ -191,6 +215,7 @@ function start() {
   for (const b of document.querySelectorAll('[data-signout]')) {
     b.addEventListener('click', async () => {
       await signOut();
+      clearCache();
       onSession(null);
     });
   }

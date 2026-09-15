@@ -86,6 +86,7 @@ class Supabase:
             "collector_runs": fixture("collector_runs"),
             "account_health": fixture("account_health"),
             "metric_daily": fixture("metric_daily"),
+            "post_snapshots": fixture("post_snapshots"),
             "episodes": [],
         }
         self.counts = {"posts": 10, "post_snapshots": 4200, "accounts": 3,
@@ -197,6 +198,11 @@ class Supabase:
             return route.fulfill(status=200, headers={
                 "content-range": f"0-{max(total - 1, 0)}/{total}",
                 "content-type": "application/json",
+                # Content-Range is not CORS-safelisted. PostgREST exposes it,
+                # and without this line the browser hands the shim a null and
+                # every row count reads as unknown.
+                "access-control-expose-headers": "content-range",
+                "access-control-allow-origin": "*",
             }, body="")
 
         rows = self._anchored(table, list(self.tables.get(table, [])))
