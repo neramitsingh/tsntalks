@@ -319,6 +319,208 @@ def test_a_missing_spreadsheet_library_says_csv_still_works(browser, stub, analy
     ctx.close()
 
 
+# --- the pages themselves ---------------------------------------------------
+
+def open_artifact(browser, stub, base_url, signin, page_name, query=""):
+    ctx = browser.new_context(viewport={"width": 1240, "height": 1600})
+    pg = ctx.new_page()
+    errors = []
+    pg.on("pageerror", lambda e: errors.append(str(e)))
+    pg.on("console", lambda m: errors.append(m.text)
+          if m.type == "error" and "Failed to load resource" not in m.text else None)
+
+    def watch(response):
+        """A failed IMAGE is expected: YouTube genuinely 404s maxresdefault for a
+        video that never had one, and the still chain falls back. A failed
+        script or stylesheet is not."""
+        if response.status >= 400 and response.request.resource_type != "image":
+            errors.append(f"{response.status} {response.url}")
+
+    pg.on("response", watch)
+    stub.install(pg)
+    signin(pg)
+    pg.goto(f"{base_url}/analytics/artifacts/{page_name}{query}")
+    pg.wait_for_selector("#sheet section, #sheet .problem, #status.problem")
+    return pg, ctx, errors
+
+
+@pytest.fixture
+def report(browser, stub, base_url, signin):
+    pg, ctx, errors = open_artifact(browser, stub, base_url, signin,
+                                    "episode-report.html", "?episode=1")
+    pg.wait_for_selector("#sheet footer.colophon")
+    yield pg, errors
+    ctx.close()
+
+
+def test_the_episode_report_draws_from_the_fixtures_without_throwing(report):
+    pg, errors = report
+    assert errors == []
+    assert pg.locator("#sheet img").count() == 1, "the still slot is empty"
+    assert pg.locator("#sheet section").count() >= 4
+
+
+def test_the_report_leads_with_the_guest_and_the_date(report):
+    pg, _ = report
+    assert pg.inner_text("#sheet h1").strip() == "Testy McFixture"
+    text = pg.inner_text("#sheet")
+    assert "Founder & CEO, Example Co" in text
+    # Uppercased in CSS; the markup says "Season 2 · Episode 10".
+    assert "SEASON 2" in text.upper() and "EPISODE 10" in text.upper()
+    assert "Published 20 Aug 2026, Bangkok" in text
+
+
+def test_the_report_gives_lifetime_views_and_seven_and_thirty_day_views(report):
+    pg, _ = report
+    labels = pg.locator("#sheet .figs .fig .k").all_text_contents()
+    assert labels == ["Views, lifetime", "At 7 days", "At 30 days"]
+    assert "12,000" in pg.locator("#sheet .figs").inner_text()
+
+
+def test_a_figure_the_archive_cannot_reach_says_not_measured_not_zero(report):
+    """The snapshot archive starts 14 September 2026; this episode aired in
+    August. A 0 there would tell a sponsor the episode did nothing in week one."""
+    pg, _ = report
+    text = pg.locator("#sheet .figs").inner_text()
+    assert "not measured" in text
+    assert "No snapshot from the episode" in text
+
+
+def test_the_report_lists_every_clip_with_its_platform_and_views(report):
+    pg, _ = report
+    rows = pg.locator("#sheet table").first.locator("tbody tr")
+    assert rows.count() == 3                     # a Short, a Reel and a TikTok
+    text = pg.inner_text("#sheet")
+    assert "YouTube" in text and "Instagram" in text and "TikTok" in text
+    # Sorted by views, biggest first: the Reel at 18,000.
+    assert "18,000" in rows.first.inner_text()
+
+
+def test_the_report_says_what_reach_means_and_what_a_dash_means(report):
+    pg, _ = report
+    assert "Reach is reported by Instagram only" in pg.inner_text("#sheet")
+
+
+def test_the_total_across_all_cuts_is_on_the_page_with_its_caveat(report):
+    """The sentence a sponsor will ask about, on the page rather than in a
+    covering email that gets deleted."""
+    pg, _ = report
+    text = pg.inner_text("#sheet")
+    assert "47,000" in text
+    assert "SUM OF VIEW COUNTS" in text
+    assert "not a count of people" in text
+
+
+def test_the_split_across_platforms_is_written_as_numbers_not_only_a_bar(report):
+    """A monochrome print turns three saturated swatches into three greys."""
+    pg, _ = report
+    legend = pg.locator("#sheet .band-legend").inner_text()
+    assert "%" in legend
+    assert "12,000" in legend
+    assert pg.locator("#sheet .band i").count() >= 3
+
+
+def test_the_audience_block_says_it_is_the_channel_not_the_episode(report):
+    """The single most likely way this page could mislead a sponsor."""
+    pg, _ = report
+    text = pg.inner_text("#sheet")
+    assert "for the CHANNEL, not per episode" in text
+    assert "Window: 18 Jun" in text
+
+
+def test_the_report_carries_its_source_note(report):
+    pg, _ = report
+    note = pg.inner_text("#sheet footer.colophon")
+    assert "YouTube, Instagram and TikTok" in note
+    assert "collector run" in note
+    assert "snapshot archive, which begins 14 September 2026" in note
+
+
+def test_the_pdf_filename_is_offered_and_is_the_document_title(report):
+    pg, _ = report
+    assert "tsn-episode-report-s2e10-" in pg.inner_text("#toolbar")
+    assert pg.title().startswith("tsn-episode-report-s2e10-")
+
+
+def test_a_link_without_an_episode_says_so_rather_than_drawing_a_blank_page(
+        browser, stub, base_url, signin):
+    pg, ctx, _ = open_artifact(browser, stub, base_url, signin, "episode-report.html")
+    assert "No episode was named in the link" in pg.inner_text("#sheet")
+    ctx.close()
+
+
+def test_an_episode_that_does_not_exist_says_which_one(browser, stub, base_url, signin):
+    pg, ctx, _ = open_artifact(browser, stub, base_url, signin,
+                               "episode-report.html", "?episode=999")
+    assert "There is no episode 999" in pg.inner_text("#sheet")
+    ctx.close()
+
+
+def test_an_artifact_page_opened_without_a_session_says_to_sign_in(browser, stub,
+                                                                   base_url):
+    ctx = browser.new_context(viewport={"width": 1240, "height": 1600})
+    pg = ctx.new_page()
+    stub.install(pg)
+    pg.goto(f"{base_url}/analytics/artifacts/episode-report.html?episode=1")
+    pg.wait_for_selector("#status.problem")
+    assert "Not signed in" in pg.inner_text("#status")
+    ctx.close()
+
+
+# --- the print stylesheet ---------------------------------------------------
+
+def test_the_artifact_page_is_bodoni_where_the_dashboard_is_not(report):
+    pg, _ = report
+    family = pg.evaluate("getComputedStyle(document.querySelector('#sheet h1')).fontFamily")
+    assert "Bodoni Moda" in family
+
+
+def test_the_print_stylesheet_applies_at_media_print(report):
+    """Checked through the real media emulation, not by reading the CSS."""
+    pg, _ = report
+    before = pg.evaluate(
+        "getComputedStyle(document.getElementById('toolbar')).display")
+    pg.emulate_media(media="print")
+    after = pg.evaluate(
+        "getComputedStyle(document.getElementById('toolbar')).display")
+    sheet = pg.evaluate("getComputedStyle(document.getElementById('sheet')).boxShadow")
+    pg.emulate_media(media="screen")
+    assert before != "none"
+    assert after == "none", "the toolbar would print on the sponsor's copy"
+    assert sheet == "none", "the on-screen page shadow would print as a grey band"
+
+
+def test_nothing_on_the_report_is_allowed_to_break_across_a_page(report):
+    pg, _ = report
+    pg.emulate_media(media="print")
+    breaks = pg.evaluate("""() => [...document.querySelectorAll('#sheet table, #sheet .card')]
+        .map((e) => getComputedStyle(e).breakInside)""")
+    pg.emulate_media(media="screen")
+    assert breaks
+    assert all(b == "avoid" for b in breaks)
+
+
+def test_the_printed_page_is_ink_on_paper_not_cream_on_black(report):
+    """#0D0706 across A4 is four millilitres of ink and a sponsor who cannot
+    read it on the train."""
+    pg, _ = report
+    pg.emulate_media(media="print")
+    colours = pg.evaluate("""() => {
+      const s = getComputedStyle(document.body);
+      return { bg: s.backgroundColor, fg: s.color };
+    }""")
+    pg.emulate_media(media="screen")
+    assert colours["bg"] == "rgb(255, 255, 255)"
+    assert colours["fg"] == "rgb(26, 20, 17)"
+
+
+def test_an_external_link_prints_its_url(report):
+    """A PDF that says "watch the episode" with no URL is a dead end on paper."""
+    css = (SITE / "css" / "artifacts.css").read_text(encoding="utf-8")
+    assert 'a[href^="http"]::after' in css
+    assert "attr(href)" in css
+
+
 # --- the UI -----------------------------------------------------------------
 
 def test_the_recipient_and_the_reason_are_on_screen_next_to_the_button(dashboard):

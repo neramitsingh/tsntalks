@@ -439,6 +439,37 @@ export async function postHistory(postId, w) {
 }
 
 /**
+ * What a post's counter read at one instant: the last snapshot at or before it.
+ *
+ * The episode report asks for "views at 7 days and at 30 days", which is this,
+ * twice. Returns `null` rather than 0 when there is no snapshot that old —
+ * the collector only started on 14 September 2026, so for every episode
+ * published before then the answer is genuinely unknown, and a zero would read
+ * as "nobody watched it in its first week".
+ */
+export async function viewsAt(postId, instant) {
+  const at = instant instanceof Date ? instant : new Date(instant);
+  return once(`viewsAt|${postId}|${at.toISOString()}`, async () => {
+    const { data, error } = await sb()
+      .from('post_snapshots')
+      .select('taken_at,views')
+      .eq('post_id', postId)
+      .lte('taken_at', at.toISOString())
+      .order('taken_at', { ascending: false })
+      .limit(1);
+    if (error) throw new Error(error.message);
+    const row = data?.[0];
+    return ok({
+      views: row ? num(row.views) : null,
+      takenAt: row ? new Date(row.taken_at) : null,
+      /* True when the snapshot we found is much older than the instant asked
+         for — the figure is real but it is not "as of" that date. */
+      stale: row ? at - new Date(row.taken_at) > 36 * 60 * 60 * 1000 : true,
+    });
+  });
+}
+
+/**
  * One row per episode. Lifetime figures — the time frame does not apply, and
  * the Episodes tab says so on screen rather than leaving it to be assumed.
  */

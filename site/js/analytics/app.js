@@ -12,6 +12,7 @@ import {
 } from './controls.js';
 import { access, lastRun, clearCache, windowFor } from './data.js';
 import { TAB_RENDERERS } from './tabs/index.js';
+import './artifacts/builders.js';   // registers the artifacts that exist
 import { ago, bkkStamp } from './format.js';
 
 const $ = (id) => document.getElementById(id);

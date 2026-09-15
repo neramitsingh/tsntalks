@@ -17,6 +17,7 @@ Three things get intercepted:
 
 Everything between those three and the assertions is the dashboard's own code.
 """
+import base64
 import datetime as dt
 import json
 import re
@@ -46,10 +47,21 @@ ALLOWED_EMAIL = "ney@example.test"
 # the real library through and turn a stubbed test into a live one.
 # A regex, not a glob: the dashboard is opened with a query string as often as
 # without one, and a glob would match only the bare path.
-DASHBOARD_PAGE = re.compile(r"/analytics/(index\.html)?(\?|$)")
+DASHBOARD_PAGE = re.compile(r"/analytics/(artifacts/[\w-]+\.html|index\.html)?(\?|$)")
 
 CDN_SUPABASE = "**/supabase*.js"
 CDN_SHEETJS = "**/xlsx.full.min.js"
+
+# YouTube stills. The fixture video ids are deliberately fake, so the real CDN
+# 404s on both; the stub answers the way YouTube really does — no maxresdefault
+# for a video that never had one, hqdefault always there — which exercises the
+# artifact's fallback chain instead of leaving a 404 in the console.
+YT_STILL = "**/i.ytimg.com/**"
+
+# A 1x1 transparent PNG.
+PIXEL = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk"
+    "+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==")
 REST = "**/rest/v1/**"
 AUTH = "**/auth/v1/**"
 
@@ -183,6 +195,7 @@ class Supabase:
         page.route(DASHBOARD_PAGE, self._index)
         page.route(CDN_SUPABASE, self._shim)
         page.route(CDN_SHEETJS, self._sheetjs)
+        page.route(YT_STILL, self._still)
         page.route("**/js/analytics/supa.js", self._supa_js)
         page.route(REST, self._rest)
         page.route(AUTH, self._auth)
@@ -200,14 +213,21 @@ class Supabase:
         SheetJS is NOT stripped: that one is served with its real bytes, so its
         integrity attribute is genuinely exercised.
         """
-        src = (SITE / "analytics" / "index.html").read_text(encoding="utf-8")
+        path = urlsplit(route.request.url).path
+        rel = path.split("/analytics/", 1)[-1] or "index.html"
+        src = (SITE / "analytics" / rel).read_text(encoding="utf-8")
         patched, n = re.subn(r'\s*integrity="sha384-[^"]+"', "", src, count=1)
-        assert n == 1, "site/analytics/index.html no longer pins supabase-js with an SRI hash"
+        assert n == 1, f"site/analytics/{rel} no longer pins supabase-js with an SRI hash"
         route.fulfill(status=200, content_type="text/html; charset=utf-8", body=patched)
 
     def _shim(self, route):
         route.fulfill(status=200, content_type="application/javascript",
                       body=SHIM.read_text(encoding="utf-8"))
+
+    def _still(self, route):
+        if "maxresdefault" in route.request.url:
+            return route.fulfill(status=404, content_type="text/plain", body="")
+        route.fulfill(status=200, content_type="image/png", body=PIXEL)
 
     def _sheetjs(self, route):
         """The real library, served locally. The page's integrity hash is checked
