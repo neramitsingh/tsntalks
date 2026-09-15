@@ -3,8 +3,10 @@
 
 import { overview } from './overview.js';
 import { postsTab } from './posts.js';
+import { growth } from './growth.js';
 
 export const TAB_RENDERERS = {
   overview,
+  growth,
   posts: postsTab,
 };

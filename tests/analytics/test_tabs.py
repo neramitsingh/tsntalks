@@ -12,7 +12,7 @@ import pytest
 
 FIX = Path(__file__).parent / "fixtures"
 
-BUILT = ["overview", "posts"]
+BUILT = ["overview", "growth", "posts"]
 
 
 def load(name):
@@ -150,6 +150,112 @@ def test_filtering_to_one_platform_drops_the_legend(dashboard):
     dashboard.wait_for_function(
         "document.querySelectorAll('#view .a-legend').length === 0")
     assert dashboard.locator("#view svg.a-chart").count() == 2
+
+
+# --- Growth -----------------------------------------------------------------
+
+@pytest.fixture
+def gr(dashboard):
+    open_tab(dashboard, "growth")
+    return dashboard
+
+
+def panel_named(page, title):
+    return page.locator("#view .a-panel").filter(has=page.locator(f'h2:text-is("{title}")'))
+
+
+def test_growth_answers_which_channel_is_growing(gr):
+    titles = gr.locator("#view .a-panel h2").all_text_contents()
+    assert titles == ["Followers by platform", "Followers gained and lost",
+                      "YouTube subscribers", "Watch time", "Average view duration"]
+
+
+def test_followers_are_lines_and_gains_are_bars(gr):
+    """A stock gets a line; a flow gets a bar. Bars of a stock invite a sum."""
+    assert panel_named(gr, "Followers by platform").locator("path.a-line").count() > 0
+    assert panel_named(gr, "Followers gained and lost").locator("rect.a-bar").count() > 0
+
+
+def test_gained_and_lost_diverge_around_a_zero_line(gr):
+    """Not a net line: +3 that hides 40 arriving and 37 leaving is a different
+    story from three people arriving."""
+    section = panel_named(gr, "Followers gained and lost")
+    assert section.locator("line.a-zeroline").count() == 1
+    values = section.locator("g.a-point").evaluate_all(
+        "els => els.map(e => Number(e.dataset.value))")
+    assert any(v > 0 for v in values)
+    assert any(v < 0 for v in values)
+
+
+def test_the_twin_lists_losses_as_the_positive_counts_they_are(gr):
+    section = panel_named(gr, "Followers gained and lost")
+    headers = section.locator("details.a-twin thead th").all_text_contents()
+    assert headers == ["Period", "Gained", "Lost", "Net"]
+    lost = section.evaluate("""(el) => [...el.querySelectorAll('details.a-twin tbody tr')]
+        .map((tr) => Number(tr.children[2].dataset.value))""",
+        section.element_handle())
+    assert lost and all(v >= 0 for v in lost)
+
+
+def test_watch_time_and_average_duration_are_two_charts_not_two_axes(gr):
+    """The one rule the spec states twice. Different units never share an axis."""
+    for title in ("Watch time", "Average view duration"):
+        assert panel_named(gr, title).locator("svg.a-chart").count() == 1
+    assert "different units never share an axis" in         panel_named(gr, "Average view duration").inner_text()
+
+
+def test_the_panels_that_are_youtube_only_say_so(gr):
+    text = panel_named(gr, "Watch time").inner_text()
+    assert "Instagram and TikTok do not report watch time" in text
+
+
+def test_a_metric_nobody_reported_is_named_rather_than_drawn_as_zero(browser, stub,
+                                                                     analytics_url, signin):
+    """A flat line at zero across a quarter is a claim that nobody watched."""
+    stub.tables["metric_daily"] = [
+        r for r in stub.tables["metric_daily"] if r["metric"] != "yt_minutes"]
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    pg = ctx.new_page()
+    stub.install(pg)
+    signin(pg)
+    pg.goto(analytics_url + "?tab=growth")
+    pg.wait_for_selector('#view[data-state="ready"]')
+
+    section = pg.locator("#view .a-panel").filter(
+        has=pg.locator('h2:text-is("Watch time")'))
+    assert section.locator("svg.a-chart").count() == 0
+    text = section.inner_text()
+    assert "absence of data, not a zero" in text
+    assert "YouTube" in text
+    ctx.close()
+
+
+def test_average_duration_is_weighted_by_views_not_a_mean_of_daily_means(dashboard):
+    """A Tuesday with forty views must not count the same as the day an episode
+    landed. Same mistake as a mean of rates, one level down."""
+    got = dashboard.evaluate("""async () => {
+      const data = await import('/js/analytics/data.js');
+      const w = await data.windowFor({ frame: '30d', granularity: 'month', platform: 'all' });
+      const r = await data.dailyMetrics(w, ['yt_views', 'yt_avg_duration']);
+      const bucket = r.current.byPeriod.yt_avg_duration.at(-1);
+      // Only the days inside that bucket; a 30-day frame read monthly spans two.
+      const rows = r.current.byMetric.yt_avg_duration.filter((x) => x.day >= bucket.period);
+      const views = new Map(r.current.byMetric.yt_views.map(
+        (v) => [v.day.getTime(), v.value]));
+      const plain = rows.reduce((a, x) => a + x.value, 0) / rows.length;
+      const weighted = rows.reduce((a, x) => a + x.value * views.get(x.day.getTime()), 0)
+        / rows.reduce((a, x) => a + views.get(x.day.getTime()), 0);
+      return { got: bucket.value, plain, weighted, days: rows.length };
+    }""")
+    assert got["days"] > 1, "the fixture no longer spans enough days to tell them apart"
+    assert got["got"] == pytest.approx(got["weighted"], rel=1e-9)
+    assert got["got"] != pytest.approx(got["plain"], rel=1e-9)
+
+
+def test_a_duration_is_shown_as_time_not_as_a_bare_number(gr):
+    # text_content, not inner_text: the twin is a closed <details>.
+    text = panel_named(gr, "Average view duration").locator("details.a-twin").text_content()
+    assert "m " in text and "s" in text
 
 
 # --- Posts ------------------------------------------------------------------

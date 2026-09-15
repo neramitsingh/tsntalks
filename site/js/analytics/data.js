@@ -537,7 +537,15 @@ export async function audience(kind, windowDays = 90) {
  * `missing` names the metrics that came back with no rows at all, so the Growth
  * tab can say "TikTok does not report watch time" rather than draw a zero line
  * over data that does not exist.
+ *
+ * `byPeriod` buckets the daily rows into the window's granularity, HERE, so no
+ * tab has to. Most metrics sum. `yt_avg_duration` is an average and is combined
+ * as a mean weighted by that day's `yt_views` when those were requested too — a
+ * plain mean of daily averages gives a Tuesday with forty views the same weight
+ * as the day an episode landed, which is the same mistake as a mean of rates.
  */
+export const MEAN_METRICS = new Set(['yt_avg_duration']);
+
 export async function dailyMetrics(w, metrics) {
   const wanted = [...metrics];
   return windowed(w, 'dailyMetrics', async (win) => {
@@ -567,9 +575,42 @@ export async function dailyMetrics(w, metrics) {
     for (const m of wanted) byMetric[m] = [];
     for (const r of series) (byMetric[r.metric] ??= []).push(r);
 
+    const weights = new Map();
+    for (const r of byMetric.yt_views ?? []) {
+      weights.set(`${r.accountId}|${r.day.getTime()}`, r.value);
+    }
+
+    const byPeriod = {};
+    for (const m of wanted) {
+      const buckets = new Map();
+      for (const r of byMetric[m]) {
+        const t = floorPeriod(r.day, win.granularity).getTime();
+        if (!buckets.has(t)) {
+          buckets.set(t, { period: new Date(t), value: 0, weight: 0, days: 0 });
+        }
+        const b = buckets.get(t);
+        b.days += 1;
+        if (MEAN_METRICS.has(m)) {
+          const weight = weights.get(`${r.accountId}|${r.day.getTime()}`) ?? 1;
+          b.value += r.value * weight;
+          b.weight += weight;
+        } else {
+          b.value += r.value;
+        }
+      }
+      byPeriod[m] = [...buckets.values()]
+        .map((b) => ({
+          period: b.period,
+          value: MEAN_METRICS.has(m) ? (b.weight ? b.value / b.weight : null) : b.value,
+          days: b.days,
+        }))
+        .sort((a, b) => a.period - b.period);
+    }
+
     return ok({
       series,
       byMetric,
+      byPeriod,
       missing: wanted.filter((m) => byMetric[m].length === 0),
     });
   }, wanted.join(','));
