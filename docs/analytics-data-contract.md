@@ -234,7 +234,8 @@ through it the posts-table artifact.
    "url": "https://www.instagram.com/reel/FIXCLIP01/",
    "published_at": "2026-09-10T04:00:00+00:00",
    "views_start": 0, "views_end": 18000, "views_gained": 18000,
-   "likes": 1200, "comments": 90, "shares": 300, "engagement_rate": 0.088333 }]
+   "likes": 1200, "comments": 90, "shares": 300, "reach": 11160,
+   "engagement_rate": 0.088333 }]
 ```
 
 - `views_end` / `views_start`: the last snapshot **at or before** `to_ts` /
@@ -249,13 +250,20 @@ through it the posts-table artifact.
   the `views_end` snapshot, not deltas. The column headers say so.
 - Posts with no snapshot at or before `to_ts` are omitted entirely.
 
-**Two columns are added to this function in later tasks** and are already
-described here because they are part of the contract the tabs are written
-against:
+`reach` is lifetime `post_snapshots.reach` from the `views_end` snapshot, and it
+is returned as **`nullif(reach, 0)`**. Instagram reports reach; YouTube and
+TikTok do not, and the collector writes `a.get("reach") or 0`, so a post on a
+platform that never reported it is stored as a zero. A zero in that column
+renders as a claim that nobody saw the post. A reach of exactly zero on a post
+with views is not a thing that happens, so zero means "not reported" here and
+comes back null. The cleaner fix is for the collector to store null; that is a
+change to `collector/tsn_collector/transform.py` and outside this plan.
+
+**One column is added to this function in a later task** and is described here
+because it is part of the contract the tabs are written against:
 
 | Column | Added in | Why |
 |---|---|---|
-| `reach` bigint | Task 7 | §3.4 of the spec lists **reach** as a Posts-tab column. Lifetime `post_snapshots.reach` from the `views_end` snapshot. Instagram reports it; YouTube and TikTok do not, so it is `null` there and the cell reads "not reported", never 0. |
 | `episode_id` integer | Task 9 | The episode report needs the **list** of an episode's clips, not just the totals `episode_rollup` gives. Reading `v_post_latest` over PostgREST would work but see §7.2 before you rely on it. |
 
 ### 3.5 `episode_rollup()`

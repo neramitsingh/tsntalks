@@ -326,6 +326,37 @@ ul.a-legend {
 ul.a-legend li { display: inline-flex; align-items: center; gap: 6px; }
 ul.a-legend i { width: 9px; height: 9px; flex: none; border-radius: 1px; }
 
+/* --- sortable tables, filters, expanding rows ---------------------------- */
+
+.a-filters {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.a-filters input[type="search"] { min-width: 240px; }
+.a-count { font-size: 12px; color: var(--cream-dim); font-variant-numeric: tabular-nums; }
+.a-filters .a-note { padding: 0; }
+
+.a-table th button.a-sort {
+  font: inherit; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  font-weight: 700; color: var(--muted); background: none; border: 0;
+  padding: 0; cursor: pointer; display: inline-flex; gap: 5px; align-items: center;
+}
+.a-table th button.a-sort:hover { color: var(--cream-dim); }
+.a-table th.num button.a-sort { flex-direction: row-reverse; }
+.a-table th[aria-sort="ascending"] button.a-sort,
+.a-table th[aria-sort="descending"] button.a-sort { color: var(--saffron2); }
+.a-sortmark { font-size: 8px; font-style: normal; }
+
+th.a-expandcol, td.a-expandcol { width: 28px; padding-left: 6px; padding-right: 0; }
+button.a-expand {
+  font: inherit; font-size: 11px; color: var(--muted);
+  background: none; border: 0; cursor: pointer; padding: 2px 4px;
+}
+button.a-expand:hover { color: var(--saffron2); }
+
+tr.a-expanded > td { background: var(--panel-hi); padding: 14px 16px; }
+tr.a-expanded svg.a-chart { max-height: 220px; }
+
 /* --- the table twin ------------------------------------------------------ */
 
 details.a-twin { margin-top: 10px; }

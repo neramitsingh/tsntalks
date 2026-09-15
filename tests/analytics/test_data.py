@@ -215,9 +215,14 @@ def test_posts_carries_every_row_including_the_one_that_lost_views(d, win):
 
 
 def test_reach_is_null_where_a_platform_does_not_report_it_never_zero(d, win):
+    """null is "not reported"; 0 would be a claim that nobody saw the post."""
     got = js(d, f"const r = await data.posts({win}); return r.ok && r.current.rows;")
-    assert all(r["reach"] is None for r in got), \
-        "post_deltas does not return reach yet; null is 'not reported', 0 is a claim"
+    by_platform = {}
+    for r in got:
+        by_platform.setdefault(r["platform"], []).append(r["reach"])
+    assert all(v is None for v in by_platform["youtube"])
+    assert all(v is None for v in by_platform["tiktok"])
+    assert all(v and v > 0 for v in by_platform["instagram"])
 
 
 def test_episodes_matches_the_episode_rollup_fixture(d):

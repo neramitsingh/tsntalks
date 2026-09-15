@@ -55,19 +55,41 @@ async function draw() {
   const render = TAB_RENDERERS[state.tab];
   const token = ++drawToken;
 
+  /* Switching tabs empties the view first. A renderer awaits its data, and
+     leaving the previous tab's numbers on screen under the new tab's name for
+     those few hundred milliseconds is worse than an empty frame: it is the same
+     figures labelled as something else. Changing a CONTROL does not clear —
+     there the numbers on screen are still about the right thing, and a flash of
+     blank on every click would be worse. */
+  if (view.dataset.tab !== state.tab) {
+    view.replaceChildren(loading(state.tab));
+    view.dataset.tab = state.tab;
+  }
+  view.dataset.state = 'loading';
+
   if (!render) {
     view.replaceChildren(placeholder(state.tab));
+    view.dataset.state = 'ready';
     return;
   }
   try {
     const window_ = await windowFor(state);
     await render(view, { state, window: window_, isCurrent: () => token === drawToken });
   } catch (err) {
-    /* A renderer that throws is a bug, but it must not leave the dashboard
-       showing the previous tab's numbers under this tab's name. */
     console.error(`${state.tab} tab failed`, err);
     if (token === drawToken) view.replaceChildren(panelError(state.tab, err));
+  } finally {
+    if (token === drawToken) view.dataset.state = 'ready';
   }
+}
+
+function loading(tab) {
+  const p = document.createElement('section');
+  p.className = 'a-panel';
+  const h = document.createElement('header');
+  h.appendChild(Object.assign(document.createElement('h2'), { textContent: TAB_NAME[tab] }));
+  p.append(h, Object.assign(document.createElement('div'), { className: 'a-skel' }));
+  return p;
 }
 
 function placeholder(tab) {

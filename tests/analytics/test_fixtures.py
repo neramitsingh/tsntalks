@@ -61,7 +61,7 @@ def demographics():
     ("rollup_engagement", {"period", "platform", "likes", "comments", "shares",
                            "engagement_rate"}),
     ("post_deltas", {"post_id", "platform", "title", "url", "published_at", "views_start",
-                     "views_end", "views_gained", "likes", "comments", "shares",
+                     "views_end", "views_gained", "likes", "comments", "shares", "reach",
                      "engagement_rate"}),
     ("episode_rollup", {"episode_id", "season", "number", "title", "guest", "role",
                         "published_at", "youtube_video_id", "yt_views", "clip_count",
@@ -148,6 +148,17 @@ def test_post_engagement_rate_is_a_fraction_not_a_percentage(posts):
 
 
 # --- the edge cases that exist on purpose -------------------------------------
+
+def test_reach_is_reported_only_where_a_platform_reports_it(posts):
+    """Instagram reports reach. YouTube and TikTok do not, and post_deltas
+    returns null rather than the zero the collector stored — a zero there reads
+    as "nobody saw this post"."""
+    for r in posts:
+        if r["platform"] == "instagram":
+            assert r["reach"] and r["reach"] > 0, r["post_id"]
+        else:
+            assert r["reach"] is None, r["post_id"]
+
 
 def test_a_post_can_lose_views(posts):
     """Platforms recount. post_deltas does not clamp, so a renderer must cope."""

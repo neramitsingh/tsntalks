@@ -89,6 +89,19 @@
 -- ============================================================================
 
 
+-- --- drop first -------------------------------------------------------------
+-- Not paranoia. `create or replace function` refuses to change a return type,
+-- and these rollups gained columns while the dashboard was being written. The
+-- drops keep the file re-runnable; the grants at the bottom are re-stated, so
+-- dropping does not leave anything unprivileged.
+
+drop function if exists rollup_followers(timestamptz, timestamptz, text, text);
+drop function if exists rollup_engagement(timestamptz, timestamptz, text, text);
+drop function if exists post_deltas(timestamptz, timestamptz, text);
+drop function if exists episode_rollup();
+drop function if exists demographics_compare(text, integer);
+
+
 -- --- argument validation ----------------------------------------------------
 -- `granularity` and `platform_filter` reach these functions from the browser.
 -- Neither is ever concatenated into executable SQL — `date_trunc(g, ts)` and
@@ -296,8 +309,17 @@ $$;
 -- feeding charts that a reader will read as "activity"; this table is read as
 -- "what the record says".
 --
--- likes / comments / shares / engagement_rate are lifetime values from the
--- views_end snapshot, not deltas. The tab's column headers say so.
+-- likes / comments / shares / reach / engagement_rate are lifetime values from
+-- the views_end snapshot, not deltas. The tab's column headers say so.
+--
+-- `reach` is `nullif(reach, 0)`, and that deserves a sentence. Instagram
+-- reports reach; YouTube and TikTok do not. The collector writes
+-- `a.get("reach") or 0`, so a post on a platform that never reported it is
+-- stored as 0 rather than as null — and a 0 in that column would be rendered
+-- as a claim that nobody saw the post. A reach of exactly zero on a post with
+-- views is not a thing that happens, so zero here means "not reported" and is
+-- returned as null. The cleaner fix is for the collector to store null, which
+-- is a change to collector/tsn_collector/transform.py and outside this plan.
 --
 -- Posts with no snapshot at or before to_ts are omitted entirely: they did not
 -- exist as far as this window is concerned.
@@ -307,7 +329,8 @@ create or replace function post_deltas(
   platform_filter text default 'all')
 returns table (post_id text, platform text, title text, url text, published_at timestamptz,
                views_start bigint, views_end bigint, views_gained bigint,
-               likes integer, comments integer, shares integer, engagement_rate numeric)
+               likes integer, comments integer, shares integer, reach bigint,
+               engagement_rate numeric)
 language sql stable security definer set search_path = public as $$
   with args as (select analytics_platform(platform_filter) as plat)
   select p.id, p.platform, p.title, p.url, p.published_at,
@@ -315,11 +338,12 @@ language sql stable security definer set search_path = public as $$
          coalesce(e.views, 0)::bigint,
          (coalesce(e.views, 0) - coalesce(s.views, 0))::bigint,
          coalesce(e.likes, 0), coalesce(e.comments, 0), coalesce(e.shares, 0),
+         nullif(e.reach, 0),
          e.engagement_rate
   from posts p
   cross join args a
   left join lateral (
-    select x.views, x.likes, x.comments, x.shares, x.engagement_rate
+    select x.views, x.likes, x.comments, x.shares, x.reach, x.engagement_rate
     from post_snapshots x
     where x.post_id = p.id and x.taken_at <= to_ts
     order by x.taken_at desc limit 1) e on true
