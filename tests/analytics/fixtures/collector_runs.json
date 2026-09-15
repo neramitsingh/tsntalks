@@ -1,0 +1,204 @@
+[
+  {
+    "id": 5000,
+    "started_at": "2026-09-15T10:00:00+00:00",
+    "finished_at": "2026-09-15T10:01:30+00:00",
+    "status": "ok",
+    "rows_written": 240,
+    "notes": {}
+  },
+  {
+    "id": 4999,
+    "started_at": "2026-09-15T09:00:00+00:00",
+    "finished_at": "2026-09-15T09:01:50+00:00",
+    "status": "ok",
+    "rows_written": 250,
+    "notes": {}
+  },
+  {
+    "id": 4998,
+    "started_at": "2026-09-15T08:00:00+00:00",
+    "finished_at": "2026-09-15T08:02:10+00:00",
+    "status": "ok",
+    "rows_written": 260,
+    "notes": {}
+  },
+  {
+    "id": 4997,
+    "started_at": "2026-09-15T07:00:00+00:00",
+    "finished_at": "2026-09-15T07:02:30+00:00",
+    "status": "partial",
+    "rows_written": 180,
+    "notes": {
+      "failed": [
+        "tiktok"
+      ],
+      "reason": "tiktok token expired"
+    }
+  },
+  {
+    "id": 4996,
+    "started_at": "2026-09-15T06:00:00+00:00",
+    "finished_at": "2026-09-15T06:02:50+00:00",
+    "status": "ok",
+    "rows_written": 280,
+    "notes": {}
+  },
+  {
+    "id": 4995,
+    "started_at": "2026-09-15T05:00:00+00:00",
+    "finished_at": "2026-09-15T05:01:30+00:00",
+    "status": "ok",
+    "rows_written": 290,
+    "notes": {}
+  },
+  {
+    "id": 4994,
+    "started_at": "2026-09-15T04:00:00+00:00",
+    "finished_at": "2026-09-15T04:01:50+00:00",
+    "status": "ok",
+    "rows_written": 300,
+    "notes": {}
+  },
+  {
+    "id": 4993,
+    "started_at": "2026-09-15T03:00:00+00:00",
+    "finished_at": "2026-09-15T03:02:10+00:00",
+    "status": "ok",
+    "rows_written": 240,
+    "notes": {}
+  },
+  {
+    "id": 4992,
+    "started_at": "2026-09-15T02:00:00+00:00",
+    "finished_at": "2026-09-15T02:02:30+00:00",
+    "status": "ok",
+    "rows_written": 250,
+    "notes": {}
+  },
+  {
+    "id": 4991,
+    "started_at": "2026-09-15T01:00:00+00:00",
+    "finished_at": "2026-09-15T01:02:50+00:00",
+    "status": "ok",
+    "rows_written": 260,
+    "notes": {}
+  },
+  {
+    "id": 4990,
+    "started_at": "2026-09-15T00:00:00+00:00",
+    "finished_at": "2026-09-15T00:01:30+00:00",
+    "status": "ok",
+    "rows_written": 270,
+    "notes": {}
+  },
+  {
+    "id": 4989,
+    "started_at": "2026-09-14T23:00:00+00:00",
+    "finished_at": "2026-09-14T23:01:50+00:00",
+    "status": "failed",
+    "rows_written": 0,
+    "notes": {
+      "failed": [
+        "zernio"
+      ],
+      "reason": "zernio returned 503"
+    }
+  },
+  {
+    "id": 4988,
+    "started_at": "2026-09-14T22:00:00+00:00",
+    "finished_at": "2026-09-14T22:02:10+00:00",
+    "status": "ok",
+    "rows_written": 290,
+    "notes": {}
+  },
+  {
+    "id": 4987,
+    "started_at": "2026-09-14T21:00:00+00:00",
+    "finished_at": "2026-09-14T21:02:30+00:00",
+    "status": "ok",
+    "rows_written": 300,
+    "notes": {}
+  },
+  {
+    "id": 4986,
+    "started_at": "2026-09-14T20:00:00+00:00",
+    "finished_at": "2026-09-14T20:02:50+00:00",
+    "status": "ok",
+    "rows_written": 240,
+    "notes": {}
+  },
+  {
+    "id": 4985,
+    "started_at": "2026-09-14T19:00:00+00:00",
+    "finished_at": "2026-09-14T19:01:30+00:00",
+    "status": "ok",
+    "rows_written": 250,
+    "notes": {}
+  },
+  {
+    "id": 4984,
+    "started_at": "2026-09-14T18:00:00+00:00",
+    "finished_at": "2026-09-14T18:01:50+00:00",
+    "status": "ok",
+    "rows_written": 260,
+    "notes": {}
+  },
+  {
+    "id": 4983,
+    "started_at": "2026-09-14T17:00:00+00:00",
+    "finished_at": "2026-09-14T17:02:10+00:00",
+    "status": "ok",
+    "rows_written": 270,
+    "notes": {}
+  },
+  {
+    "id": 4982,
+    "started_at": "2026-09-14T16:00:00+00:00",
+    "finished_at": "2026-09-14T16:02:30+00:00",
+    "status": "ok",
+    "rows_written": 280,
+    "notes": {}
+  },
+  {
+    "id": 4981,
+    "started_at": "2026-09-14T15:00:00+00:00",
+    "finished_at": "2026-09-14T15:02:50+00:00",
+    "status": "ok",
+    "rows_written": 290,
+    "notes": {}
+  },
+  {
+    "id": 4980,
+    "started_at": "2026-09-14T14:00:00+00:00",
+    "finished_at": "2026-09-14T14:01:30+00:00",
+    "status": "ok",
+    "rows_written": 300,
+    "notes": {}
+  },
+  {
+    "id": 4979,
+    "started_at": "2026-09-14T13:00:00+00:00",
+    "finished_at": "2026-09-14T13:01:50+00:00",
+    "status": "ok",
+    "rows_written": 240,
+    "notes": {}
+  },
+  {
+    "id": 4978,
+    "started_at": "2026-09-14T12:00:00+00:00",
+    "finished_at": "2026-09-14T12:02:10+00:00",
+    "status": "ok",
+    "rows_written": 250,
+    "notes": {}
+  },
+  {
+    "id": 4977,
+    "started_at": "2026-09-14T11:00:00+00:00",
+    "finished_at": "2026-09-14T11:02:30+00:00",
+    "status": "ok",
+    "rows_written": 260,
+    "notes": {}
+  }
+]

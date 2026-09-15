@@ -464,6 +464,13 @@ def test_live_now_playing_never_ships_a_blank_box_when_a_cover_expires(browser, 
     assert blank == 0
     # every tile still carries its caption
     assert pg.locator("#top .po .g").count() == 4
+    # and the best YouTube post, being an episode with a committed frame, shows
+    # that frame rather than YouTube's own thumbnail
+    import re as _re
+    yt_id = _re.search(r"[?&]v=([\w-]{11})", live_data["platforms"]["youtube"]["top"]["url"]).group(1)
+    if (ROOT / "site" / "img" / "episodes" / f"{yt_id}.jpg").exists():
+        srcs = pg.eval_on_selector_all("#top .po img", "els => els.map(e => e.currentSrc)")
+        assert any(s.endswith(f"/img/episodes/{yt_id}.jpg") for s in srcs), srcs
     ctx.close()
 
 

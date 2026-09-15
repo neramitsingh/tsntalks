@@ -1,0 +1,50 @@
+[
+  {
+    "episode_id": 1,
+    "season": 2,
+    "number": "10",
+    "title": "TSN Talks S2 E10: Testy McFixture, Founder & CEO, Example Co",
+    "guest": "Testy McFixture",
+    "role": "Founder & CEO, Example Co",
+    "published_at": "2026-08-20T05:00:00+00:00",
+    "youtube_video_id": "FIXTUREVID01",
+    "yt_views": 12000,
+    "clip_count": 3,
+    "clip_views_youtube": 3000,
+    "clip_views_instagram": 18000,
+    "clip_views_tiktok": 14000,
+    "total_reach": 47000
+  },
+  {
+    "episode_id": 2,
+    "season": 2,
+    "number": "9",
+    "title": "TSN Talks S2 E9: Placeholder Singh, President, Sample Association",
+    "guest": "Placeholder Singh",
+    "role": "President, Sample Association",
+    "published_at": "2026-08-06T05:00:00+00:00",
+    "youtube_video_id": "FIXTUREVID02",
+    "yt_views": 23000,
+    "clip_count": 2,
+    "clip_views_youtube": 0,
+    "clip_views_instagram": 15000,
+    "clip_views_tiktok": 15350,
+    "total_reach": 53350
+  },
+  {
+    "episode_id": 3,
+    "season": 1,
+    "number": "22",
+    "title": "TSN Talks Ep. 22: Sample Kaur, Chef, Demo Kitchen",
+    "guest": "Sample Kaur",
+    "role": "Chef, Demo Kitchen",
+    "published_at": "2026-07-16T05:00:00+00:00",
+    "youtube_video_id": "FIXTUREVID03",
+    "yt_views": 7700,
+    "clip_count": 1,
+    "clip_views_youtube": 0,
+    "clip_views_instagram": 42900,
+    "clip_views_tiktok": 0,
+    "total_reach": 50600
+  }
+]

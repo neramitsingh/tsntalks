@@ -232,9 +232,14 @@ function renderTop(d) {
 
   for (const k of ['youtube', 'instagram', 'tiktok']) {
     const t = d.platforms[k].top;
+    /* The best YouTube post is an episode, and an episode may have a committed
+       frame; the still chain prefers it and only then falls back to YouTube's
+       own thumbnail, which carries the headline baked in. */
+    const ytId = k === 'youtube' ? (t.url.match(/[?&]v=([\w-]{11})/) || [])[1] : null;
     tiles.push({
       cls: '',
       href: t.url,
+      img: ytId || undefined,
       thumb: t.thumb,
       kicker: `Top on ${PLATFORM_NAME[k]} · ${bkk(t.date)}`,
       title: clip(stripLeadingSymbols(t.title), 70),

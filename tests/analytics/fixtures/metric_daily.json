@@ -1,0 +1,1982 @@
+[
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-17",
+    "metric": "yt_views",
+    "value": 720
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-17",
+    "metric": "yt_minutes",
+    "value": 1680
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-17",
+    "metric": "yt_avg_duration",
+    "value": 128
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-17",
+    "metric": "yt_subs_gained",
+    "value": 10
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-17",
+    "metric": "yt_subs_lost",
+    "value": 0
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-17",
+    "metric": "ig_reach",
+    "value": 4300
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-17",
+    "metric": "ig_views",
+    "value": 4900
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-17",
+    "metric": "ig_follows",
+    "value": 13
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-17",
+    "metric": "ig_unfollows",
+    "value": 4
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-17",
+    "metric": "tt_followers_gained",
+    "value": 8
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-17",
+    "metric": "tt_followers_lost",
+    "value": -1
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-18",
+    "metric": "yt_views",
+    "value": 780
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-18",
+    "metric": "yt_minutes",
+    "value": 1820
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-18",
+    "metric": "yt_avg_duration",
+    "value": 132
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-18",
+    "metric": "yt_subs_gained",
+    "value": 12
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-18",
+    "metric": "yt_subs_lost",
+    "value": 1
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-18",
+    "metric": "ig_reach",
+    "value": 4600
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-18",
+    "metric": "ig_views",
+    "value": 5300
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-18",
+    "metric": "ig_follows",
+    "value": 16
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-18",
+    "metric": "ig_unfollows",
+    "value": 5
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-18",
+    "metric": "tt_followers_gained",
+    "value": 10
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-18",
+    "metric": "tt_followers_lost",
+    "value": 0
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-19",
+    "metric": "yt_views",
+    "value": 840
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-19",
+    "metric": "yt_minutes",
+    "value": 1960
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-19",
+    "metric": "yt_avg_duration",
+    "value": 136
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-19",
+    "metric": "yt_subs_gained",
+    "value": 14
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-19",
+    "metric": "yt_subs_lost",
+    "value": 2
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-19",
+    "metric": "ig_reach",
+    "value": 4900
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-19",
+    "metric": "ig_views",
+    "value": 5700
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-19",
+    "metric": "ig_follows",
+    "value": 19
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-19",
+    "metric": "ig_unfollows",
+    "value": 6
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-19",
+    "metric": "tt_followers_gained",
+    "value": 12
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-19",
+    "metric": "tt_followers_lost",
+    "value": 1
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-20",
+    "metric": "yt_views",
+    "value": 900
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-20",
+    "metric": "yt_minutes",
+    "value": 2100
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-20",
+    "metric": "yt_avg_duration",
+    "value": 140
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-20",
+    "metric": "yt_subs_gained",
+    "value": 16
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-20",
+    "metric": "yt_subs_lost",
+    "value": 3
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-20",
+    "metric": "ig_reach",
+    "value": 5200
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-20",
+    "metric": "ig_views",
+    "value": 6100
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-20",
+    "metric": "ig_follows",
+    "value": 22
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-20",
+    "metric": "ig_unfollows",
+    "value": 7
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-20",
+    "metric": "tt_followers_gained",
+    "value": 14
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-20",
+    "metric": "tt_followers_lost",
+    "value": 2
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-21",
+    "metric": "yt_views",
+    "value": 960
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-21",
+    "metric": "yt_minutes",
+    "value": 2240
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-21",
+    "metric": "yt_avg_duration",
+    "value": 144
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-21",
+    "metric": "yt_subs_gained",
+    "value": 18
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-21",
+    "metric": "yt_subs_lost",
+    "value": 4
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-21",
+    "metric": "ig_reach",
+    "value": 5500
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-21",
+    "metric": "ig_views",
+    "value": 6500
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-21",
+    "metric": "ig_follows",
+    "value": 25
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-21",
+    "metric": "ig_unfollows",
+    "value": 8
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-21",
+    "metric": "tt_followers_gained",
+    "value": 16
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-21",
+    "metric": "tt_followers_lost",
+    "value": 3
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-22",
+    "metric": "yt_views",
+    "value": 1020
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-22",
+    "metric": "yt_minutes",
+    "value": 2380
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-22",
+    "metric": "yt_avg_duration",
+    "value": 148
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-22",
+    "metric": "yt_subs_gained",
+    "value": 20
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-22",
+    "metric": "yt_subs_lost",
+    "value": 5
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-22",
+    "metric": "ig_reach",
+    "value": 5800
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-22",
+    "metric": "ig_views",
+    "value": 6900
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-22",
+    "metric": "ig_follows",
+    "value": 28
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-22",
+    "metric": "ig_unfollows",
+    "value": 9
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-22",
+    "metric": "tt_followers_gained",
+    "value": 18
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-22",
+    "metric": "tt_followers_lost",
+    "value": 4
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-23",
+    "metric": "yt_views",
+    "value": 1080
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-23",
+    "metric": "yt_minutes",
+    "value": 2520
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-23",
+    "metric": "yt_avg_duration",
+    "value": 152
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-23",
+    "metric": "yt_subs_gained",
+    "value": 22
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-23",
+    "metric": "yt_subs_lost",
+    "value": 6
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-23",
+    "metric": "ig_reach",
+    "value": 6100
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-23",
+    "metric": "ig_views",
+    "value": 7300
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-23",
+    "metric": "ig_follows",
+    "value": 31
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-23",
+    "metric": "ig_unfollows",
+    "value": 10
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-23",
+    "metric": "tt_followers_gained",
+    "value": 20
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-23",
+    "metric": "tt_followers_lost",
+    "value": 5
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-24",
+    "metric": "yt_views",
+    "value": 720
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-24",
+    "metric": "yt_minutes",
+    "value": 1680
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-24",
+    "metric": "yt_avg_duration",
+    "value": 128
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-24",
+    "metric": "yt_subs_gained",
+    "value": 10
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-24",
+    "metric": "yt_subs_lost",
+    "value": 0
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-24",
+    "metric": "ig_reach",
+    "value": 4300
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-24",
+    "metric": "ig_views",
+    "value": 4900
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-24",
+    "metric": "ig_follows",
+    "value": 13
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-24",
+    "metric": "ig_unfollows",
+    "value": 4
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-24",
+    "metric": "tt_followers_gained",
+    "value": 8
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-24",
+    "metric": "tt_followers_lost",
+    "value": -1
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-25",
+    "metric": "yt_views",
+    "value": 780
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-25",
+    "metric": "yt_minutes",
+    "value": 1820
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-25",
+    "metric": "yt_avg_duration",
+    "value": 132
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-25",
+    "metric": "yt_subs_gained",
+    "value": 12
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-25",
+    "metric": "yt_subs_lost",
+    "value": 1
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-25",
+    "metric": "ig_reach",
+    "value": 4600
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-25",
+    "metric": "ig_views",
+    "value": 5300
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-25",
+    "metric": "ig_follows",
+    "value": 16
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-25",
+    "metric": "ig_unfollows",
+    "value": 5
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-25",
+    "metric": "tt_followers_gained",
+    "value": 10
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-25",
+    "metric": "tt_followers_lost",
+    "value": 0
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-26",
+    "metric": "yt_views",
+    "value": 840
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-26",
+    "metric": "yt_minutes",
+    "value": 1960
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-26",
+    "metric": "yt_avg_duration",
+    "value": 136
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-26",
+    "metric": "yt_subs_gained",
+    "value": 14
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-26",
+    "metric": "yt_subs_lost",
+    "value": 2
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-26",
+    "metric": "ig_reach",
+    "value": 4900
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-26",
+    "metric": "ig_views",
+    "value": 5700
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-26",
+    "metric": "ig_follows",
+    "value": 19
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-26",
+    "metric": "ig_unfollows",
+    "value": 6
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-26",
+    "metric": "tt_followers_gained",
+    "value": 12
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-26",
+    "metric": "tt_followers_lost",
+    "value": 1
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-27",
+    "metric": "yt_views",
+    "value": 900
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-27",
+    "metric": "yt_minutes",
+    "value": 2100
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-27",
+    "metric": "yt_avg_duration",
+    "value": 140
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-27",
+    "metric": "yt_subs_gained",
+    "value": 16
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-27",
+    "metric": "yt_subs_lost",
+    "value": 3
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-27",
+    "metric": "ig_reach",
+    "value": 5200
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-27",
+    "metric": "ig_views",
+    "value": 6100
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-27",
+    "metric": "ig_follows",
+    "value": 22
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-27",
+    "metric": "ig_unfollows",
+    "value": 7
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-27",
+    "metric": "tt_followers_gained",
+    "value": 14
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-27",
+    "metric": "tt_followers_lost",
+    "value": 2
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-28",
+    "metric": "yt_views",
+    "value": 960
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-28",
+    "metric": "yt_minutes",
+    "value": 2240
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-28",
+    "metric": "yt_avg_duration",
+    "value": 144
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-28",
+    "metric": "yt_subs_gained",
+    "value": 18
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-28",
+    "metric": "yt_subs_lost",
+    "value": 4
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-28",
+    "metric": "ig_reach",
+    "value": 5500
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-28",
+    "metric": "ig_views",
+    "value": 6500
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-28",
+    "metric": "ig_follows",
+    "value": 25
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-28",
+    "metric": "ig_unfollows",
+    "value": 8
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-28",
+    "metric": "tt_followers_gained",
+    "value": 16
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-28",
+    "metric": "tt_followers_lost",
+    "value": 3
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-29",
+    "metric": "yt_views",
+    "value": 1020
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-29",
+    "metric": "yt_minutes",
+    "value": 2380
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-29",
+    "metric": "yt_avg_duration",
+    "value": 148
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-29",
+    "metric": "yt_subs_gained",
+    "value": 20
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-29",
+    "metric": "yt_subs_lost",
+    "value": 5
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-29",
+    "metric": "ig_reach",
+    "value": 5800
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-29",
+    "metric": "ig_views",
+    "value": 6900
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-29",
+    "metric": "ig_follows",
+    "value": 28
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-29",
+    "metric": "ig_unfollows",
+    "value": 9
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-29",
+    "metric": "tt_followers_gained",
+    "value": 18
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-29",
+    "metric": "tt_followers_lost",
+    "value": 4
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-30",
+    "metric": "yt_views",
+    "value": 1080
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-30",
+    "metric": "yt_minutes",
+    "value": 2520
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-30",
+    "metric": "yt_avg_duration",
+    "value": 152
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-30",
+    "metric": "yt_subs_gained",
+    "value": 22
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-30",
+    "metric": "yt_subs_lost",
+    "value": 6
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-30",
+    "metric": "ig_reach",
+    "value": 6100
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-30",
+    "metric": "ig_views",
+    "value": 7300
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-30",
+    "metric": "ig_follows",
+    "value": 31
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-30",
+    "metric": "ig_unfollows",
+    "value": 10
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-30",
+    "metric": "tt_followers_gained",
+    "value": 20
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-30",
+    "metric": "tt_followers_lost",
+    "value": 5
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-31",
+    "metric": "yt_views",
+    "value": 720
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-31",
+    "metric": "yt_minutes",
+    "value": 1680
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-31",
+    "metric": "yt_avg_duration",
+    "value": 128
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-31",
+    "metric": "yt_subs_gained",
+    "value": 10
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-08-31",
+    "metric": "yt_subs_lost",
+    "value": 0
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-31",
+    "metric": "ig_reach",
+    "value": 4300
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-31",
+    "metric": "ig_views",
+    "value": 4900
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-31",
+    "metric": "ig_follows",
+    "value": 13
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-08-31",
+    "metric": "ig_unfollows",
+    "value": 4
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-31",
+    "metric": "tt_followers_gained",
+    "value": 8
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-08-31",
+    "metric": "tt_followers_lost",
+    "value": -1
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-01",
+    "metric": "yt_views",
+    "value": 780
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-01",
+    "metric": "yt_minutes",
+    "value": 1820
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-01",
+    "metric": "yt_avg_duration",
+    "value": 132
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-01",
+    "metric": "yt_subs_gained",
+    "value": 12
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-01",
+    "metric": "yt_subs_lost",
+    "value": 1
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-01",
+    "metric": "ig_reach",
+    "value": 4600
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-01",
+    "metric": "ig_views",
+    "value": 5300
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-01",
+    "metric": "ig_follows",
+    "value": 16
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-01",
+    "metric": "ig_unfollows",
+    "value": 5
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-01",
+    "metric": "tt_followers_gained",
+    "value": 10
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-01",
+    "metric": "tt_followers_lost",
+    "value": 0
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-02",
+    "metric": "yt_views",
+    "value": 840
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-02",
+    "metric": "yt_minutes",
+    "value": 1960
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-02",
+    "metric": "yt_avg_duration",
+    "value": 136
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-02",
+    "metric": "yt_subs_gained",
+    "value": 14
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-02",
+    "metric": "yt_subs_lost",
+    "value": 2
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-02",
+    "metric": "ig_reach",
+    "value": 4900
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-02",
+    "metric": "ig_views",
+    "value": 5700
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-02",
+    "metric": "ig_follows",
+    "value": 19
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-02",
+    "metric": "ig_unfollows",
+    "value": 6
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-02",
+    "metric": "tt_followers_gained",
+    "value": 12
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-02",
+    "metric": "tt_followers_lost",
+    "value": 1
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-03",
+    "metric": "yt_views",
+    "value": 900
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-03",
+    "metric": "yt_minutes",
+    "value": 2100
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-03",
+    "metric": "yt_avg_duration",
+    "value": 140
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-03",
+    "metric": "yt_subs_gained",
+    "value": 16
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-03",
+    "metric": "yt_subs_lost",
+    "value": 3
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-03",
+    "metric": "ig_reach",
+    "value": 5200
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-03",
+    "metric": "ig_views",
+    "value": 6100
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-03",
+    "metric": "ig_follows",
+    "value": 22
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-03",
+    "metric": "ig_unfollows",
+    "value": 7
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-03",
+    "metric": "tt_followers_gained",
+    "value": 14
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-03",
+    "metric": "tt_followers_lost",
+    "value": 2
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-04",
+    "metric": "yt_views",
+    "value": 960
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-04",
+    "metric": "yt_minutes",
+    "value": 2240
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-04",
+    "metric": "yt_avg_duration",
+    "value": 144
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-04",
+    "metric": "yt_subs_gained",
+    "value": 18
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-04",
+    "metric": "yt_subs_lost",
+    "value": 4
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-04",
+    "metric": "ig_reach",
+    "value": 5500
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-04",
+    "metric": "ig_views",
+    "value": 6500
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-04",
+    "metric": "ig_follows",
+    "value": 25
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-04",
+    "metric": "ig_unfollows",
+    "value": 8
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-04",
+    "metric": "tt_followers_gained",
+    "value": 16
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-04",
+    "metric": "tt_followers_lost",
+    "value": 3
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-05",
+    "metric": "yt_views",
+    "value": 1020
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-05",
+    "metric": "yt_minutes",
+    "value": 2380
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-05",
+    "metric": "yt_avg_duration",
+    "value": 148
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-05",
+    "metric": "yt_subs_gained",
+    "value": 20
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-05",
+    "metric": "yt_subs_lost",
+    "value": 5
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-05",
+    "metric": "ig_reach",
+    "value": 5800
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-05",
+    "metric": "ig_views",
+    "value": 6900
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-05",
+    "metric": "ig_follows",
+    "value": 28
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-05",
+    "metric": "ig_unfollows",
+    "value": 9
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-05",
+    "metric": "tt_followers_gained",
+    "value": 18
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-05",
+    "metric": "tt_followers_lost",
+    "value": 4
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-06",
+    "metric": "yt_views",
+    "value": 1080
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-06",
+    "metric": "yt_minutes",
+    "value": 2520
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-06",
+    "metric": "yt_avg_duration",
+    "value": 152
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-06",
+    "metric": "yt_subs_gained",
+    "value": 22
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-06",
+    "metric": "yt_subs_lost",
+    "value": 6
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-06",
+    "metric": "ig_reach",
+    "value": 6100
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-06",
+    "metric": "ig_views",
+    "value": 7300
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-06",
+    "metric": "ig_follows",
+    "value": 31
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-06",
+    "metric": "ig_unfollows",
+    "value": 10
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-06",
+    "metric": "tt_followers_gained",
+    "value": 20
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-06",
+    "metric": "tt_followers_lost",
+    "value": 5
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-07",
+    "metric": "yt_views",
+    "value": 720
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-07",
+    "metric": "yt_minutes",
+    "value": 1680
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-07",
+    "metric": "yt_avg_duration",
+    "value": 128
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-07",
+    "metric": "yt_subs_gained",
+    "value": 10
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-07",
+    "metric": "yt_subs_lost",
+    "value": 0
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-07",
+    "metric": "ig_reach",
+    "value": 4300
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-07",
+    "metric": "ig_views",
+    "value": 4900
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-07",
+    "metric": "ig_follows",
+    "value": 13
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-07",
+    "metric": "ig_unfollows",
+    "value": 4
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-07",
+    "metric": "tt_followers_gained",
+    "value": 8
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-07",
+    "metric": "tt_followers_lost",
+    "value": -1
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-08",
+    "metric": "yt_views",
+    "value": 780
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-08",
+    "metric": "yt_minutes",
+    "value": 1820
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-08",
+    "metric": "yt_avg_duration",
+    "value": 132
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-08",
+    "metric": "yt_subs_gained",
+    "value": 12
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-08",
+    "metric": "yt_subs_lost",
+    "value": 1
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-08",
+    "metric": "ig_reach",
+    "value": 4600
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-08",
+    "metric": "ig_views",
+    "value": 5300
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-08",
+    "metric": "ig_follows",
+    "value": 16
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-08",
+    "metric": "ig_unfollows",
+    "value": 5
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-08",
+    "metric": "tt_followers_gained",
+    "value": 10
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-08",
+    "metric": "tt_followers_lost",
+    "value": 0
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-09",
+    "metric": "yt_views",
+    "value": 840
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-09",
+    "metric": "yt_minutes",
+    "value": 1960
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-09",
+    "metric": "yt_avg_duration",
+    "value": 136
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-09",
+    "metric": "yt_subs_gained",
+    "value": 14
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-09",
+    "metric": "yt_subs_lost",
+    "value": 2
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-09",
+    "metric": "ig_reach",
+    "value": 4900
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-09",
+    "metric": "ig_views",
+    "value": 5700
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-09",
+    "metric": "ig_follows",
+    "value": 19
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-09",
+    "metric": "ig_unfollows",
+    "value": 6
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-09",
+    "metric": "tt_followers_gained",
+    "value": 12
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-09",
+    "metric": "tt_followers_lost",
+    "value": 1
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-10",
+    "metric": "yt_views",
+    "value": 900
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-10",
+    "metric": "yt_minutes",
+    "value": 2100
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-10",
+    "metric": "yt_avg_duration",
+    "value": 140
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-10",
+    "metric": "yt_subs_gained",
+    "value": 16
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-10",
+    "metric": "yt_subs_lost",
+    "value": 3
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-10",
+    "metric": "ig_reach",
+    "value": 5200
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-10",
+    "metric": "ig_views",
+    "value": 6100
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-10",
+    "metric": "ig_follows",
+    "value": 22
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-10",
+    "metric": "ig_unfollows",
+    "value": 7
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-10",
+    "metric": "tt_followers_gained",
+    "value": 14
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-10",
+    "metric": "tt_followers_lost",
+    "value": 2
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-11",
+    "metric": "yt_views",
+    "value": 960
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-11",
+    "metric": "yt_minutes",
+    "value": 2240
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-11",
+    "metric": "yt_avg_duration",
+    "value": 144
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-11",
+    "metric": "yt_subs_gained",
+    "value": 18
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-11",
+    "metric": "yt_subs_lost",
+    "value": 4
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-11",
+    "metric": "ig_reach",
+    "value": 5500
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-11",
+    "metric": "ig_views",
+    "value": 6500
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-11",
+    "metric": "ig_follows",
+    "value": 25
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-11",
+    "metric": "ig_unfollows",
+    "value": 8
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-11",
+    "metric": "tt_followers_gained",
+    "value": 16
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-11",
+    "metric": "tt_followers_lost",
+    "value": 3
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-12",
+    "metric": "yt_views",
+    "value": 1020
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-12",
+    "metric": "yt_minutes",
+    "value": 2380
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-12",
+    "metric": "yt_avg_duration",
+    "value": 148
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-12",
+    "metric": "yt_subs_gained",
+    "value": 20
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-12",
+    "metric": "yt_subs_lost",
+    "value": 5
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-12",
+    "metric": "ig_reach",
+    "value": 5800
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-12",
+    "metric": "ig_views",
+    "value": 6900
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-12",
+    "metric": "ig_follows",
+    "value": 28
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-12",
+    "metric": "ig_unfollows",
+    "value": 9
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-12",
+    "metric": "tt_followers_gained",
+    "value": 18
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-12",
+    "metric": "tt_followers_lost",
+    "value": 4
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-13",
+    "metric": "yt_views",
+    "value": 1080
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-13",
+    "metric": "yt_minutes",
+    "value": 2520
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-13",
+    "metric": "yt_avg_duration",
+    "value": 152
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-13",
+    "metric": "yt_subs_gained",
+    "value": 22
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-13",
+    "metric": "yt_subs_lost",
+    "value": 6
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-13",
+    "metric": "ig_reach",
+    "value": 6100
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-13",
+    "metric": "ig_views",
+    "value": 7300
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-13",
+    "metric": "ig_follows",
+    "value": 31
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-13",
+    "metric": "ig_unfollows",
+    "value": 10
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-13",
+    "metric": "tt_followers_gained",
+    "value": 20
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-13",
+    "metric": "tt_followers_lost",
+    "value": 5
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-14",
+    "metric": "yt_views",
+    "value": 720
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-14",
+    "metric": "yt_minutes",
+    "value": 1680
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-14",
+    "metric": "yt_avg_duration",
+    "value": 128
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-14",
+    "metric": "yt_subs_gained",
+    "value": 10
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-14",
+    "metric": "yt_subs_lost",
+    "value": 0
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-14",
+    "metric": "ig_reach",
+    "value": 4300
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-14",
+    "metric": "ig_views",
+    "value": 4900
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-14",
+    "metric": "ig_follows",
+    "value": 13
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-14",
+    "metric": "ig_unfollows",
+    "value": 4
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-14",
+    "metric": "tt_followers_gained",
+    "value": 8
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-14",
+    "metric": "tt_followers_lost",
+    "value": -1
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-15",
+    "metric": "yt_views",
+    "value": 780
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-15",
+    "metric": "yt_minutes",
+    "value": 1820
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-15",
+    "metric": "yt_avg_duration",
+    "value": 132
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-15",
+    "metric": "yt_subs_gained",
+    "value": 12
+  },
+  {
+    "account_id": "acc-yt",
+    "day": "2026-09-15",
+    "metric": "yt_subs_lost",
+    "value": 1
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-15",
+    "metric": "ig_reach",
+    "value": 4600
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-15",
+    "metric": "ig_views",
+    "value": 5300
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-15",
+    "metric": "ig_follows",
+    "value": 16
+  },
+  {
+    "account_id": "acc-ig",
+    "day": "2026-09-15",
+    "metric": "ig_unfollows",
+    "value": 5
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-15",
+    "metric": "tt_followers_gained",
+    "value": 10
+  },
+  {
+    "account_id": "acc-tt",
+    "day": "2026-09-15",
+    "metric": "tt_followers_lost",
+    "value": 0
+  }
+]

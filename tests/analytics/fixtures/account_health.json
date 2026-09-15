@@ -1,0 +1,194 @@
+[
+  {
+    "account_id": "acc-yt",
+    "checked_at": "2026-09-15T10:00:00+00:00",
+    "status": "ok",
+    "can_fetch_analytics": true,
+    "needs_reconnect": false,
+    "token_expires_at": null
+  },
+  {
+    "account_id": "acc-ig",
+    "checked_at": "2026-09-15T10:00:00+00:00",
+    "status": "ok",
+    "can_fetch_analytics": true,
+    "needs_reconnect": false,
+    "token_expires_at": "2026-11-13T00:00:00+00:00"
+  },
+  {
+    "account_id": "acc-tt",
+    "checked_at": "2026-09-15T10:00:00+00:00",
+    "status": "needs_reconnect",
+    "can_fetch_analytics": false,
+    "needs_reconnect": true,
+    "token_expires_at": "2026-09-10T00:00:00+00:00"
+  },
+  {
+    "account_id": "acc-yt",
+    "checked_at": "2026-09-15T09:00:00+00:00",
+    "status": "ok",
+    "can_fetch_analytics": true,
+    "needs_reconnect": false,
+    "token_expires_at": null
+  },
+  {
+    "account_id": "acc-ig",
+    "checked_at": "2026-09-15T09:00:00+00:00",
+    "status": "ok",
+    "can_fetch_analytics": true,
+    "needs_reconnect": false,
+    "token_expires_at": "2026-11-13T00:00:00+00:00"
+  },
+  {
+    "account_id": "acc-tt",
+    "checked_at": "2026-09-15T09:00:00+00:00",
+    "status": "needs_reconnect",
+    "can_fetch_analytics": false,
+    "needs_reconnect": true,
+    "token_expires_at": "2026-09-10T00:00:00+00:00"
+  },
+  {
+    "account_id": "acc-yt",
+    "checked_at": "2026-09-15T08:00:00+00:00",
+    "status": "ok",
+    "can_fetch_analytics": true,
+    "needs_reconnect": false,
+    "token_expires_at": null
+  },
+  {
+    "account_id": "acc-ig",
+    "checked_at": "2026-09-15T08:00:00+00:00",
+    "status": "ok",
+    "can_fetch_analytics": true,
+    "needs_reconnect": false,
+    "token_expires_at": "2026-11-13T00:00:00+00:00"
+  },
+  {
+    "account_id": "acc-tt",
+    "checked_at": "2026-09-15T08:00:00+00:00",
+    "status": "needs_reconnect",
+    "can_fetch_analytics": false,
+    "needs_reconnect": true,
+    "token_expires_at": "2026-09-10T00:00:00+00:00"
+  },
+  {
+    "account_id": "acc-yt",
+    "checked_at": "2026-09-15T07:00:00+00:00",
+    "status": "ok",
+    "can_fetch_analytics": true,
+    "needs_reconnect": false,
+    "token_expires_at": null
+  },
+  {
+    "account_id": "acc-ig",
+    "checked_at": "2026-09-15T07:00:00+00:00",
+    "status": "ok",
+    "can_fetch_analytics": true,
+    "needs_reconnect": false,
+    "token_expires_at": "2026-11-13T00:00:00+00:00"
+  },
+  {
+    "account_id": "acc-tt",
+    "checked_at": "2026-09-15T07:00:00+00:00",
+    "status": "needs_reconnect",
+    "can_fetch_analytics": false,
+    "needs_reconnect": true,
+    "token_expires_at": "2026-09-10T00:00:00+00:00"
+  },
+  {
+    "account_id": "acc-yt",
+    "checked_at": "2026-09-15T06:00:00+00:00",
+    "status": "ok",
+    "can_fetch_analytics": true,
+    "needs_reconnect": false,
+    "token_expires_at": null
+  },
+  {
+    "account_id": "acc-ig",
+    "checked_at": "2026-09-15T06:00:00+00:00",
+    "status": "ok",
+    "can_fetch_analytics": true,
+    "needs_reconnect": false,
+    "token_expires_at": "2026-11-13T00:00:00+00:00"
+  },
+  {
+    "account_id": "acc-tt",
+    "checked_at": "2026-09-15T06:00:00+00:00",
+    "status": "needs_reconnect",
+    "can_fetch_analytics": false,
+    "needs_reconnect": true,
+    "token_expires_at": "2026-09-10T00:00:00+00:00"
+  },
+  {
+    "account_id": "acc-yt",
+    "checked_at": "2026-09-15T05:00:00+00:00",
+    "status": "ok",
+    "can_fetch_analytics": true,
+    "needs_reconnect": false,
+    "token_expires_at": null
+  },
+  {
+    "account_id": "acc-ig",
+    "checked_at": "2026-09-15T05:00:00+00:00",
+    "status": "ok",
+    "can_fetch_analytics": true,
+    "needs_reconnect": false,
+    "token_expires_at": "2026-11-13T00:00:00+00:00"
+  },
+  {
+    "account_id": "acc-tt",
+    "checked_at": "2026-09-15T05:00:00+00:00",
+    "status": "needs_reconnect",
+    "can_fetch_analytics": false,
+    "needs_reconnect": true,
+    "token_expires_at": "2026-09-10T00:00:00+00:00"
+  },
+  {
+    "account_id": "acc-yt",
+    "checked_at": "2026-09-15T04:00:00+00:00",
+    "status": "ok",
+    "can_fetch_analytics": true,
+    "needs_reconnect": false,
+    "token_expires_at": null
+  },
+  {
+    "account_id": "acc-ig",
+    "checked_at": "2026-09-15T04:00:00+00:00",
+    "status": "ok",
+    "can_fetch_analytics": true,
+    "needs_reconnect": false,
+    "token_expires_at": "2026-11-13T00:00:00+00:00"
+  },
+  {
+    "account_id": "acc-tt",
+    "checked_at": "2026-09-15T04:00:00+00:00",
+    "status": "needs_reconnect",
+    "can_fetch_analytics": false,
+    "needs_reconnect": true,
+    "token_expires_at": "2026-09-10T00:00:00+00:00"
+  },
+  {
+    "account_id": "acc-yt",
+    "checked_at": "2026-09-15T03:00:00+00:00",
+    "status": "ok",
+    "can_fetch_analytics": true,
+    "needs_reconnect": false,
+    "token_expires_at": null
+  },
+  {
+    "account_id": "acc-ig",
+    "checked_at": "2026-09-15T03:00:00+00:00",
+    "status": "ok",
+    "can_fetch_analytics": true,
+    "needs_reconnect": false,
+    "token_expires_at": "2026-11-13T00:00:00+00:00"
+  },
+  {
+    "account_id": "acc-tt",
+    "checked_at": "2026-09-15T03:00:00+00:00",
+    "status": "needs_reconnect",
+    "can_fetch_analytics": false,
+    "needs_reconnect": true,
+    "token_expires_at": "2026-09-10T00:00:00+00:00"
+  }
+]

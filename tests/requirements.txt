@@ -1,0 +1,12 @@
+# What the suite needs, beyond a Python 3.12+ interpreter.
+#
+#   python -m pip install -r tests/requirements.txt
+#   python -m playwright install chromium
+#
+# openpyxl is only used by one test — the one that opens an exported workbook
+# and checks it is a real one. Without it that test skips with a named reason
+# rather than failing, so the suite stays green on a box that has not installed
+# it; but the check it makes is the whole point of offering XLSX at all.
+pytest
+playwright
+openpyxl

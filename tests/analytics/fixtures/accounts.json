@@ -1,0 +1,23 @@
+[
+  {
+    "id": "acc-ig",
+    "platform": "instagram",
+    "handle": "tsntalks.demo",
+    "display_name": "TSN Talks (fixture)",
+    "active": true
+  },
+  {
+    "id": "acc-tt",
+    "platform": "tiktok",
+    "handle": "tsntalks.demo",
+    "display_name": "TSN Talks (fixture)",
+    "active": true
+  },
+  {
+    "id": "acc-yt",
+    "platform": "youtube",
+    "handle": "TSNTalksDemo",
+    "display_name": "TSN Talks (fixture)",
+    "active": true
+  }
+]

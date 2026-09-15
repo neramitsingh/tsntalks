@@ -8,3 +8,4 @@ sketches/shots/
 collector/*.egg-info/
 site/data/live.json
 tests/site/shots/
+tests/analytics/stubs/vendor/
