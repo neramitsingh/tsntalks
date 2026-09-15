@@ -1,0 +1,170 @@
+[
+  {
+    "period": "2026-09-08T17:00:00+00:00",
+    "platform": "instagram",
+    "likes": 200,
+    "comments": 20,
+    "shares": 40,
+    "engagement_rate": 0.065
+  },
+  {
+    "period": "2026-09-08T17:00:00+00:00",
+    "platform": "tiktok",
+    "likes": 125,
+    "comments": 15,
+    "shares": 25,
+    "engagement_rate": 0.066
+  },
+  {
+    "period": "2026-09-08T17:00:00+00:00",
+    "platform": "youtube",
+    "likes": 60,
+    "comments": 10,
+    "shares": 5,
+    "engagement_rate": 0.0625
+  },
+  {
+    "period": "2026-09-09T17:00:00+00:00",
+    "platform": "instagram",
+    "likes": 175,
+    "comments": 18,
+    "shares": 35,
+    "engagement_rate": 0.065143
+  },
+  {
+    "period": "2026-09-09T17:00:00+00:00",
+    "platform": "tiktok",
+    "likes": 110,
+    "comments": 12,
+    "shares": 22,
+    "engagement_rate": 0.065455
+  },
+  {
+    "period": "2026-09-09T17:00:00+00:00",
+    "platform": "youtube",
+    "likes": 45,
+    "comments": 8,
+    "shares": 4,
+    "engagement_rate": 0.063333
+  },
+  {
+    "period": "2026-09-10T17:00:00+00:00",
+    "platform": "instagram",
+    "likes": 300,
+    "comments": 30,
+    "shares": 60,
+    "engagement_rate": 0.065
+  },
+  {
+    "period": "2026-09-10T17:00:00+00:00",
+    "platform": "tiktok",
+    "likes": 150,
+    "comments": 18,
+    "shares": 30,
+    "engagement_rate": 0.066
+  },
+  {
+    "period": "2026-09-10T17:00:00+00:00",
+    "platform": "youtube",
+    "likes": 75,
+    "comments": 12,
+    "shares": 6,
+    "engagement_rate": 0.062
+  },
+  {
+    "period": "2026-09-11T17:00:00+00:00",
+    "platform": "instagram",
+    "likes": 260,
+    "comments": 26,
+    "shares": 52,
+    "engagement_rate": 0.065
+  },
+  {
+    "period": "2026-09-11T17:00:00+00:00",
+    "platform": "tiktok",
+    "likes": 140,
+    "comments": 16,
+    "shares": 28,
+    "engagement_rate": 0.065714
+  },
+  {
+    "period": "2026-09-11T17:00:00+00:00",
+    "platform": "youtube",
+    "likes": 55,
+    "comments": 9,
+    "shares": 5,
+    "engagement_rate": 0.062727
+  },
+  {
+    "period": "2026-09-12T17:00:00+00:00",
+    "platform": "instagram",
+    "likes": 240,
+    "comments": 24,
+    "shares": 48,
+    "engagement_rate": 0.065
+  },
+  {
+    "period": "2026-09-12T17:00:00+00:00",
+    "platform": "tiktok",
+    "likes": 250,
+    "comments": 30,
+    "shares": 50,
+    "engagement_rate": 0.066
+  },
+  {
+    "period": "2026-09-12T17:00:00+00:00",
+    "platform": "youtube",
+    "likes": 100,
+    "comments": 16,
+    "shares": 8,
+    "engagement_rate": 0.062
+  },
+  {
+    "period": "2026-09-13T17:00:00+00:00",
+    "platform": "instagram",
+    "likes": 350,
+    "comments": 35,
+    "shares": 70,
+    "engagement_rate": 0.065
+  },
+  {
+    "period": "2026-09-13T17:00:00+00:00",
+    "platform": "tiktok",
+    "likes": 210,
+    "comments": 25,
+    "shares": 42,
+    "engagement_rate": 0.065952
+  },
+  {
+    "period": "2026-09-13T17:00:00+00:00",
+    "platform": "youtube",
+    "likes": 85,
+    "comments": 14,
+    "shares": 7,
+    "engagement_rate": 0.062353
+  },
+  {
+    "period": "2026-09-14T17:00:00+00:00",
+    "platform": "instagram",
+    "likes": 320,
+    "comments": 32,
+    "shares": 64,
+    "engagement_rate": 0.065
+  },
+  {
+    "period": "2026-09-14T17:00:00+00:00",
+    "platform": "tiktok",
+    "likes": 180,
+    "comments": 20,
+    "shares": 36,
+    "engagement_rate": 0.065556
+  },
+  {
+    "period": "2026-09-14T17:00:00+00:00",
+    "platform": "youtube",
+    "likes": 65,
+    "comments": 10,
+    "shares": 5,
+    "engagement_rate": 0.061538
+  }
+]

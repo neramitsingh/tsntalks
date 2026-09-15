@@ -1,0 +1,149 @@
+[
+  {
+    "period": "2026-09-08T17:00:00+00:00",
+    "platform": "instagram",
+    "followers": 3000,
+    "gained": 0,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-08T17:00:00+00:00",
+    "platform": "tiktok",
+    "followers": 2000,
+    "gained": 0,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-08T17:00:00+00:00",
+    "platform": "youtube",
+    "followers": 4000,
+    "gained": 0,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-09T17:00:00+00:00",
+    "platform": "instagram",
+    "followers": 3020,
+    "gained": 20,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-09T17:00:00+00:00",
+    "platform": "tiktok",
+    "followers": 2010,
+    "gained": 10,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-09T17:00:00+00:00",
+    "platform": "youtube",
+    "followers": 4010,
+    "gained": 10,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-10T17:00:00+00:00",
+    "platform": "instagram",
+    "followers": 3015,
+    "gained": 0,
+    "lost": 5
+  },
+  {
+    "period": "2026-09-10T17:00:00+00:00",
+    "platform": "tiktok",
+    "followers": 2030,
+    "gained": 20,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-10T17:00:00+00:00",
+    "platform": "youtube",
+    "followers": 4025,
+    "gained": 15,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-11T17:00:00+00:00",
+    "platform": "instagram",
+    "followers": 3040,
+    "gained": 25,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-11T17:00:00+00:00",
+    "platform": "tiktok",
+    "followers": 2035,
+    "gained": 5,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-11T17:00:00+00:00",
+    "platform": "youtube",
+    "followers": 4030,
+    "gained": 5,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-12T17:00:00+00:00",
+    "platform": "instagram",
+    "followers": 3060,
+    "gained": 20,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-12T17:00:00+00:00",
+    "platform": "tiktok",
+    "followers": 2040,
+    "gained": 5,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-12T17:00:00+00:00",
+    "platform": "youtube",
+    "followers": 4050,
+    "gained": 20,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-13T17:00:00+00:00",
+    "platform": "instagram",
+    "followers": 3055,
+    "gained": 0,
+    "lost": 5
+  },
+  {
+    "period": "2026-09-13T17:00:00+00:00",
+    "platform": "tiktok",
+    "followers": 2070,
+    "gained": 30,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-13T17:00:00+00:00",
+    "platform": "youtube",
+    "followers": 4065,
+    "gained": 15,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-14T17:00:00+00:00",
+    "platform": "instagram",
+    "followers": 3080,
+    "gained": 25,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-14T17:00:00+00:00",
+    "platform": "tiktok",
+    "followers": 2100,
+    "gained": 30,
+    "lost": 0
+  },
+  {
+    "period": "2026-09-14T17:00:00+00:00",
+    "platform": "youtube",
+    "followers": 4080,
+    "gained": 15,
+    "lost": 0
+  }
+]

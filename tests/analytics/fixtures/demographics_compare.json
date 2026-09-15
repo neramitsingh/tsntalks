@@ -1,0 +1,366 @@
+{
+  "yt_age": [
+    {
+      "dimension": "25-34",
+      "value": 40.0,
+      "prev_value": 36.0,
+      "delta": 4.0,
+      "window_start": "2026-06-18",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-03-20",
+      "prev_window_end": "2026-06-17"
+    },
+    {
+      "dimension": "35-44",
+      "value": 24.0,
+      "prev_value": 23.0,
+      "delta": 1.0,
+      "window_start": "2026-06-18",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-03-20",
+      "prev_window_end": "2026-06-17"
+    },
+    {
+      "dimension": "18-24",
+      "value": 14.0,
+      "prev_value": 16.0,
+      "delta": -2.0,
+      "window_start": "2026-06-18",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-03-20",
+      "prev_window_end": "2026-06-17"
+    },
+    {
+      "dimension": "45-54",
+      "value": 12.0,
+      "prev_value": 13.0,
+      "delta": -1.0,
+      "window_start": "2026-06-18",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-03-20",
+      "prev_window_end": "2026-06-17"
+    },
+    {
+      "dimension": "55-64",
+      "value": 6.0,
+      "prev_value": 7.0,
+      "delta": -1.0,
+      "window_start": "2026-06-18",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-03-20",
+      "prev_window_end": "2026-06-17"
+    },
+    {
+      "dimension": "13-17",
+      "value": 2.0,
+      "prev_value": 3.0,
+      "delta": -1.0,
+      "window_start": "2026-06-18",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-03-20",
+      "prev_window_end": "2026-06-17"
+    },
+    {
+      "dimension": "65-",
+      "value": 2.0,
+      "prev_value": 2.0,
+      "delta": 0.0,
+      "window_start": "2026-06-18",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-03-20",
+      "prev_window_end": "2026-06-17"
+    }
+  ],
+  "yt_gender": [
+    {
+      "dimension": "male",
+      "value": 68.0,
+      "prev_value": 64.0,
+      "delta": 4.0,
+      "window_start": "2026-06-18",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-03-20",
+      "prev_window_end": "2026-06-17"
+    },
+    {
+      "dimension": "female",
+      "value": 30.0,
+      "prev_value": 34.0,
+      "delta": -4.0,
+      "window_start": "2026-06-18",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-03-20",
+      "prev_window_end": "2026-06-17"
+    },
+    {
+      "dimension": "genderUserSpecified",
+      "value": 2.0,
+      "prev_value": 2.0,
+      "delta": 0.0,
+      "window_start": "2026-06-18",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-03-20",
+      "prev_window_end": "2026-06-17"
+    }
+  ],
+  "yt_country": [
+    {
+      "dimension": "TH",
+      "value": 45000,
+      "prev_value": 30000,
+      "delta": 15000,
+      "window_start": "2026-06-18",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-03-20",
+      "prev_window_end": "2026-06-17"
+    },
+    {
+      "dimension": "IN",
+      "value": 9000,
+      "prev_value": 12000,
+      "delta": -3000,
+      "window_start": "2026-06-18",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-03-20",
+      "prev_window_end": "2026-06-17"
+    },
+    {
+      "dimension": "US",
+      "value": 1500,
+      "prev_value": 1200,
+      "delta": 300,
+      "window_start": "2026-06-18",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-03-20",
+      "prev_window_end": "2026-06-17"
+    },
+    {
+      "dimension": "AU",
+      "value": 900,
+      "prev_value": 700,
+      "delta": 200,
+      "window_start": "2026-06-18",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-03-20",
+      "prev_window_end": "2026-06-17"
+    },
+    {
+      "dimension": "GB",
+      "value": 600,
+      "prev_value": 500,
+      "delta": 100,
+      "window_start": "2026-06-18",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-03-20",
+      "prev_window_end": "2026-06-17"
+    }
+  ],
+  "ig_age": [
+    {
+      "dimension": "35-44",
+      "value": 380,
+      "prev_value": 350,
+      "delta": 30,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-07-18",
+      "prev_window_end": "2026-08-16"
+    },
+    {
+      "dimension": "25-34",
+      "value": 360,
+      "prev_value": 340,
+      "delta": 20,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-07-18",
+      "prev_window_end": "2026-08-16"
+    },
+    {
+      "dimension": "45-54",
+      "value": 300,
+      "prev_value": 280,
+      "delta": 20,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-07-18",
+      "prev_window_end": "2026-08-16"
+    },
+    {
+      "dimension": "18-24",
+      "value": 150,
+      "prev_value": 160,
+      "delta": -10,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-07-18",
+      "prev_window_end": "2026-08-16"
+    },
+    {
+      "dimension": "55-64",
+      "value": 100,
+      "prev_value": 90,
+      "delta": 10,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-07-18",
+      "prev_window_end": "2026-08-16"
+    },
+    {
+      "dimension": "13-17",
+      "value": 50,
+      "prev_value": 60,
+      "delta": -10,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-07-18",
+      "prev_window_end": "2026-08-16"
+    },
+    {
+      "dimension": "65-",
+      "value": 40,
+      "prev_value": 40,
+      "delta": 0,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-07-18",
+      "prev_window_end": "2026-08-16"
+    }
+  ],
+  "ig_gender": [
+    {
+      "dimension": "U",
+      "value": 700,
+      "prev_value": 690,
+      "delta": 10,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-07-18",
+      "prev_window_end": "2026-08-16"
+    },
+    {
+      "dimension": "M",
+      "value": 410,
+      "prev_value": 380,
+      "delta": 30,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-07-18",
+      "prev_window_end": "2026-08-16"
+    },
+    {
+      "dimension": "F",
+      "value": 320,
+      "prev_value": 300,
+      "delta": 20,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-07-18",
+      "prev_window_end": "2026-08-16"
+    }
+  ],
+  "ig_city": [
+    {
+      "dimension": "Bangkok, Bangkok",
+      "value": 500,
+      "prev_value": null,
+      "delta": null,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": null,
+      "prev_window_end": null
+    },
+    {
+      "dimension": "Chiang Mai, Chiang Mai",
+      "value": 60,
+      "prev_value": null,
+      "delta": null,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": null,
+      "prev_window_end": null
+    },
+    {
+      "dimension": "Pattaya, Chon Buri",
+      "value": 30,
+      "prev_value": null,
+      "delta": null,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": null,
+      "prev_window_end": null
+    },
+    {
+      "dimension": "Delhi, Delhi",
+      "value": 25,
+      "prev_value": null,
+      "delta": null,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": null,
+      "prev_window_end": null
+    },
+    {
+      "dimension": "Example City, Example State",
+      "value": 10,
+      "prev_value": null,
+      "delta": null,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": null,
+      "prev_window_end": null
+    }
+  ],
+  "ig_country": [
+    {
+      "dimension": "TH",
+      "value": 600,
+      "prev_value": 560,
+      "delta": 40,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-07-18",
+      "prev_window_end": "2026-08-16"
+    },
+    {
+      "dimension": "IN",
+      "value": 260,
+      "prev_value": 280,
+      "delta": -20,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-07-18",
+      "prev_window_end": "2026-08-16"
+    },
+    {
+      "dimension": "SG",
+      "value": 40,
+      "prev_value": 35,
+      "delta": 5,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-07-18",
+      "prev_window_end": "2026-08-16"
+    },
+    {
+      "dimension": "MY",
+      "value": 30,
+      "prev_value": 25,
+      "delta": 5,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-07-18",
+      "prev_window_end": "2026-08-16"
+    },
+    {
+      "dimension": "AE",
+      "value": 20,
+      "prev_value": 20,
+      "delta": 0,
+      "window_start": "2026-08-17",
+      "window_end": "2026-09-15",
+      "prev_window_start": "2026-07-18",
+      "prev_window_end": "2026-08-16"
+    }
+  ]
+}
