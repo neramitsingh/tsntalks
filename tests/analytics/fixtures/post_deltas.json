@@ -12,7 +12,8 @@
     "comments": 90,
     "shares": 300,
     "reach": 11160,
-    "engagement_rate": 0.088333
+    "engagement_rate": 0.088333,
+    "episode_id": 1
   },
   {
     "post_id": "tt:FIXCLIP01",
@@ -27,7 +28,8 @@
     "comments": 70,
     "shares": 250,
     "reach": null,
-    "engagement_rate": 0.087143
+    "engagement_rate": 0.087143,
+    "episode_id": 1
   },
   {
     "post_id": "ig:FIXCLIP03",
@@ -42,7 +44,8 @@
     "comments": 160,
     "shares": 450,
     "reach": 26598,
-    "engagement_rate": 0.060839
+    "engagement_rate": 0.060839,
+    "episode_id": 3
   },
   {
     "post_id": "tt:FIXCLIP02",
@@ -57,7 +60,8 @@
     "comments": 40,
     "shares": 120,
     "reach": null,
-    "engagement_rate": 0.042997
+    "engagement_rate": 0.042997,
+    "episode_id": 2
   },
   {
     "post_id": "ig:FIXCLIP02",
@@ -72,7 +76,8 @@
     "comments": 50,
     "shares": 150,
     "reach": 9300,
-    "engagement_rate": 0.06
+    "engagement_rate": 0.06,
+    "episode_id": 2
   },
   {
     "post_id": "yt:FIXTUREVID01",
@@ -87,7 +92,8 @@
     "comments": 60,
     "shares": 30,
     "reach": null,
-    "engagement_rate": 0.040833
+    "engagement_rate": 0.040833,
+    "episode_id": 1
   },
   {
     "post_id": "yt:FIXTUREVID02",
@@ -102,7 +108,8 @@
     "comments": 120,
     "shares": 60,
     "reach": null,
-    "engagement_rate": 0.046957
+    "engagement_rate": 0.046957,
+    "episode_id": 2
   },
   {
     "post_id": "yt:FIXTUREVID03",
@@ -117,7 +124,8 @@
     "comments": 40,
     "shares": 15,
     "reach": null,
-    "engagement_rate": 0.03961
+    "engagement_rate": 0.03961,
+    "episode_id": 3
   },
   {
     "post_id": "yt:FIXSHORT01",
@@ -132,7 +140,8 @@
     "comments": 12,
     "shares": 20,
     "reach": null,
-    "engagement_rate": 0.070667
+    "engagement_rate": 0.070667,
+    "episode_id": 1
   },
   {
     "post_id": "tt:FIXCLIP03",
@@ -147,6 +156,7 @@
     "comments": 6,
     "shares": 8,
     "reach": null,
-    "engagement_rate": 0.026019
+    "engagement_rate": 0.026019,
+    "episode_id": null
   }
 ]

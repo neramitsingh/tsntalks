@@ -235,7 +235,7 @@ through it the posts-table artifact.
    "published_at": "2026-09-10T04:00:00+00:00",
    "views_start": 0, "views_end": 18000, "views_gained": 18000,
    "likes": 1200, "comments": 90, "shares": 300, "reach": 11160,
-   "engagement_rate": 0.088333 }]
+   "engagement_rate": 0.088333, "episode_id": 1 }]
 ```
 
 - `views_end` / `views_start`: the last snapshot **at or before** `to_ts` /
@@ -259,12 +259,12 @@ with views is not a thing that happens, so zero means "not reported" here and
 comes back null. The cleaner fix is for the collector to store null; that is a
 change to `collector/tsn_collector/transform.py` and outside this plan.
 
-**One column is added to this function in a later task** and is described here
-because it is part of the contract the tabs are written against:
-
-| Column | Added in | Why |
-|---|---|---|
-| `episode_id` integer | Task 9 | The episode report needs the **list** of an episode's clips, not just the totals `episode_rollup` gives. Reading `v_post_latest` over PostgREST would work but see §7.2 before you rely on it. |
+`episode_id` is the episode the collector matched the post to, or `null`. The
+Episodes tab and the episode-report artifact use it to get the **list** of an
+episode's cuts rather than only the totals `episode_rollup` gives. The
+alternative was reading `v_post_latest` over PostgREST, which works but is a
+view that reads past RLS — see §7.2. Posts with `episode_id: null` are shown on
+the Episodes tab under **Unassigned**.
 
 ### 3.5 `episode_rollup()`
 
@@ -435,7 +435,7 @@ Every tab is a pure renderer over the table in §4. None of them fetch.
 | **Overview** | `headline(p)`, `views(p)`, `followers(p)`, `posts(p)` | Four headline figures with deltas; views over time by platform; follower growth by platform; top posts in the frame (`posts()` sorted by `viewsGained`, top 10). Nothing below the fold is load-bearing. |
 | **Growth** | `followers(p)`, `dailyMetrics(p, ['yt_subs_gained','yt_subs_lost','yt_minutes','yt_avg_duration','ig_follows','ig_unfollows','tt_followers_gained','tt_followers_lost'])` | Followers per platform as lines; gained/lost as diverging bars; YouTube subscribers gained/lost; watch time and average view duration. Metrics no platform reports are named in a panel, never drawn as zero. |
 | **Posts** | `posts(p)`, `postHistory(postId, p)` on row expand | Sortable on every column, filterable by platform and title substring. The current sort and filters are what the posts-table artifact exports. |
-| **Episodes** | `episodes()`, `episodeClips(id, p)` on expand | Lifetime figures — the controls' time frame does **not** apply to the episode totals, and the panel says so. Per-row buttons produce the episode report and the guest card. |
+| **Episodes** | `episodes()`, `episodeClips(id, p)` on expand, `posts(p)` for the unassigned list | Lifetime figures — the controls' time frame does **not** apply to the episode totals, and the panel says so. Per-row buttons produce the episode report and the guest card. The **Unassigned** panel lists posts with a null `episode_id`; it is read-only, because assignment is `data/episodes.json` plus the collector's title match, not a write from this page. |
 | **Audience** | `audience(kind, 90)` for `yt_age`, `yt_gender`, `yt_country`; `audience(kind, 30)` for `ig_age`, `ig_city`, `ig_country` | **Every panel names its own window in its subtitle**, from `meta.window`. This is not decoration: it is the exact thing that let the old media kit claim India 54% when the 90-day window was 97% Thailand. A test asserts each panel renders a window label. |
 | **Health** | `lastRun()`, `runs(20)`, `accountHealth()`, `rowCounts()`, `accounts()` | Green/amber/red by age with the **thresholds written on screen** — "green under 2h, amber under 6h, red beyond" — rather than implied by colour alone. |
 

@@ -323,6 +323,13 @@ $$;
 --
 -- Posts with no snapshot at or before to_ts are omitted entirely: they did not
 -- exist as far as this window is concerned.
+--
+-- `episode_id` is here so the Episodes tab and the episode-report artifact can
+-- get the LIST of an episode's cuts, not just the totals episode_rollup gives.
+-- The alternative was reading v_post_latest over PostgREST, which works but is
+-- a view that reads past RLS — see §7.2 of the data contract. Null means the
+-- collector could not match the post's title to an episode; those show under
+-- "Unassigned" on the Episodes tab.
 create or replace function post_deltas(
   from_ts timestamptz,
   to_ts timestamptz,
@@ -330,7 +337,7 @@ create or replace function post_deltas(
 returns table (post_id text, platform text, title text, url text, published_at timestamptz,
                views_start bigint, views_end bigint, views_gained bigint,
                likes integer, comments integer, shares integer, reach bigint,
-               engagement_rate numeric)
+               engagement_rate numeric, episode_id integer)
 language sql stable security definer set search_path = public as $$
   with args as (select analytics_platform(platform_filter) as plat)
   select p.id, p.platform, p.title, p.url, p.published_at,
@@ -339,7 +346,8 @@ language sql stable security definer set search_path = public as $$
          (coalesce(e.views, 0) - coalesce(s.views, 0))::bigint,
          coalesce(e.likes, 0), coalesce(e.comments, 0), coalesce(e.shares, 0),
          nullif(e.reach, 0),
-         e.engagement_rate
+         e.engagement_rate,
+         p.episode_id
   from posts p
   cross join args a
   left join lateral (

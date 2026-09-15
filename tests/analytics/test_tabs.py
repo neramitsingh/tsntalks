@@ -12,7 +12,7 @@ import pytest
 
 FIX = Path(__file__).parent / "fixtures"
 
-BUILT = ["overview", "growth", "posts"]
+BUILT = ["overview", "growth", "posts", "episodes"]
 
 
 def load(name):
@@ -428,6 +428,132 @@ def test_the_exported_view_is_the_view_on_screen(po):
     assert view["ids"] == on_screen
     assert view["sort"] == {"key": "likes", "dir": "desc"}
     assert view["search"] == "Testy"
+
+
+# --- Episodes ---------------------------------------------------------------
+
+@pytest.fixture
+def ep(dashboard):
+    open_tab(dashboard, "episodes")
+    return dashboard
+
+
+def episode_rows(page):
+    return page.locator("#view .a-panel").filter(
+        has=page.locator('h2:text-is("Episodes")')).locator("tbody tr:not(.a-expanded)")
+
+
+def test_one_row_per_episode_with_the_columns_the_spec_lists(ep):
+    section = ep.locator("#view .a-panel").filter(has=ep.locator('h2:text-is("Episodes")'))
+    headers = [h for h in section.locator("thead th").all_text_contents() if h.strip()]
+    assert headers == ["Episode", "Guest", "Role", "Published", "YouTube", "Clips",
+                       "Clip views · YT", "Clip views · IG", "Clip views · TT", "All cuts"]
+    assert episode_rows(ep).count() == len(load("episode_rollup"))
+
+
+def test_the_figures_are_the_ones_episode_rollup_returned(ep):
+    expected = {e["episode_id"]: e for e in load("episode_rollup")}
+    got = ep.evaluate("""() => {
+      const section = [...document.querySelectorAll('#view .a-panel')]
+        .find((p) => p.querySelector('h2')?.textContent === 'Episodes');
+      return [...section.querySelectorAll('tbody tr:not(.a-expanded)')].map((tr) => ({
+        id: Number(tr.dataset.episodeId),
+        values: [...tr.querySelectorAll('td.num')].map((td) => Number(td.dataset.value)),
+      }));
+    }""")
+    for row in got:
+        e = expected[row["id"]]
+        assert row["values"] == [e["yt_views"], e["clip_count"], e["clip_views_youtube"],
+                                 e["clip_views_instagram"], e["clip_views_tiktok"],
+                                 e["total_reach"]]
+
+
+def test_the_panel_says_the_time_frame_does_not_apply(ep):
+    """A panel with no window label, on a page full of windowed panels, reads as
+    "the window above" by default."""
+    section = ep.locator("#view .a-panel").filter(has=ep.locator('h2:text-is("Episodes")'))
+    assert "time frame does not apply" in section.inner_text()
+
+
+def test_all_cuts_is_named_as_a_sum_of_views_and_not_as_people(ep):
+    """The artifacts inherit this figure and a sponsor will ask what it means."""
+    section = ep.locator("#view .a-panel").filter(has=ep.locator('h2:text-is("Episodes")'))
+    text = section.inner_text()
+    assert "SUM OF VIEW COUNTS" in text
+    assert "is not people" in text
+
+
+def test_expanding_an_episode_lists_its_cuts_and_their_split(ep):
+    episode_rows(ep).first.locator("button.a-expand").click()
+    ep.wait_for_selector("#view tr.a-expanded svg.a-chart")
+    expanded = ep.locator("#view tr.a-expanded")
+    # `td > .a-tablewrap` is the cuts table; the split chart's twin sits inside
+    # a <details> and would otherwise be counted too.
+    assert expanded.locator("td > .a-tablewrap tbody tr").count() == 3
+    assert expanded.locator("details.a-twin").count() == 1
+
+
+def test_the_long_cut_is_not_listed_among_its_own_clips(ep):
+    episode_rows(ep).first.locator("button.a-expand").click()
+    ep.wait_for_selector("#view tr.a-expanded svg.a-chart")
+    links = ep.locator("#view tr.a-expanded td > .a-tablewrap tbody a").evaluate_all(
+        "els => els.map(e => e.href)")
+    assert not any("watch?v=FIXTUREVID01" in href for href in links)
+
+
+def test_a_row_offers_the_two_artifacts_and_names_their_recipients(ep):
+    """There is no generic "export this view". Every artifact goes to a named
+    person, and the UI says so rather than merely being true."""
+    episode_rows(ep).first.locator("button.a-expand").click()
+    ep.wait_for_selector("#view .a-artifacts")
+    labels = ep.locator("#view .a-artifacts button").all_text_contents()
+    assert labels == ["Episode report", "Guest card"]
+    recipients = ep.locator("#view .a-recipient").all_text_contents()
+    assert recipients == ["to the episode’s sponsor", "to the guest"]
+
+
+def test_an_artifact_that_does_not_exist_yet_is_disabled_and_says_why(ep):
+    """A missing button is a feature nobody knows about; a disabled one that
+    says why is a promise with a date on it."""
+    episode_rows(ep).first.locator("button.a-expand").click()
+    ep.wait_for_selector("#view .a-artifacts")
+    for button in ep.locator("#view .a-artifacts button").all():
+        if button.is_disabled():
+            assert "Not built yet" in button.get_attribute("title")
+
+
+def test_clips_the_collector_could_not_match_are_listed_separately(ep):
+    section = ep.locator("#view .a-panel").filter(
+        has=ep.locator('h2:text-is("Unassigned clips")'))
+    rows = section.locator("tbody tr")
+    assert rows.count() == 1
+    assert "The clip the platform quietly recounted" in rows.first.inner_text()
+
+
+def test_the_unassigned_panel_says_where_an_assignment_is_actually_made(ep):
+    """The dashboard does not write. Spec §4 describes assigning by hand here;
+    the assignment lives in data/episodes.json and the collector instead."""
+    section = ep.locator("#view .a-panel").filter(
+        has=ep.locator('h2:text-is("Unassigned clips")'))
+    text = section.inner_text()
+    assert "data/episodes.json" in text
+    assert "only reads" in text
+
+
+def test_the_unassigned_list_ignores_the_platform_control(browser, stub, analytics_url,
+                                                          signin):
+    """A clip is unassigned wherever it was posted. Hiding two thirds of the
+    list behind a filter makes "everything is matched" look true."""
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    pg = ctx.new_page()
+    stub.install(pg)
+    signin(pg)
+    pg.goto(analytics_url + "?tab=episodes&p=youtube")
+    pg.wait_for_selector('#view[data-state="ready"]')
+    section = pg.locator("#view .a-panel").filter(
+        has=pg.locator('h2:text-is("Unassigned clips")'))
+    assert section.locator("tbody tr").count() == 1      # the TikTok one
+    ctx.close()
 
 
 # --- the rules that hold for every tab --------------------------------------

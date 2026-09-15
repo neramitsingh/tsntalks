@@ -62,7 +62,7 @@ def demographics():
                            "engagement_rate"}),
     ("post_deltas", {"post_id", "platform", "title", "url", "published_at", "views_start",
                      "views_end", "views_gained", "likes", "comments", "shares", "reach",
-                     "engagement_rate"}),
+                     "engagement_rate", "episode_id"}),
     ("episode_rollup", {"episode_id", "season", "number", "title", "guest", "role",
                         "published_at", "youtube_video_id", "yt_views", "clip_count",
                         "clip_views_youtube", "clip_views_instagram", "clip_views_tiktok",
@@ -169,6 +169,29 @@ def test_posts_first_seen_in_the_window_count_their_whole_total(posts):
     new = [r for r in posts if r["views_start"] == 0]
     assert {r["post_id"] for r in new} == {"ig:FIXCLIP01", "tt:FIXCLIP01"}
     assert all(r["views_gained"] == r["views_end"] for r in new)
+
+
+def test_every_post_is_matched_to_an_episode_except_the_one_that_is_not(posts):
+    """The collector matches on title, and sometimes it cannot. The Episodes tab
+    has an Unassigned panel because of exactly this row."""
+    unmatched = [r["post_id"] for r in posts if r["episode_id"] is None]
+    assert unmatched == ["tt:FIXCLIP03"]
+
+
+def test_episode_clip_counts_agree_with_the_post_table(episodes, posts):
+    """episode_rollup's clip_count is the number of matched posts that are not
+    the long cut. If the two fixtures drift, the Episodes tab shows a count it
+    cannot then list."""
+    for e in episodes:
+        long_cut = f"yt:{e['youtube_video_id']}"
+        clips = [r for r in posts
+                 if r["episode_id"] == e["episode_id"] and r["post_id"] != long_cut]
+        assert e["clip_count"] == len(clips), e["guest"]
+        for platform, column in (("youtube", "clip_views_youtube"),
+                                 ("instagram", "clip_views_instagram"),
+                                 ("tiktok", "clip_views_tiktok")):
+            expected = sum(r["views_end"] for r in clips if r["platform"] == platform)
+            assert e[column] == expected, (e["guest"], platform)
 
 
 def test_a_youtube_clip_is_not_the_same_thing_as_the_long_cut(episodes):

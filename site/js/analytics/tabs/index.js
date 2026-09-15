@@ -4,9 +4,11 @@
 import { overview } from './overview.js';
 import { postsTab } from './posts.js';
 import { growth } from './growth.js';
+import { episodesTab } from './episodes.js';
 
 export const TAB_RENDERERS = {
   overview,
   growth,
   posts: postsTab,
+  episodes: episodesTab,
 };
