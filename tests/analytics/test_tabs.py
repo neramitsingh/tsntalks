@@ -197,6 +197,23 @@ def test_the_twin_lists_losses_as_the_positive_counts_they_are(gr):
     assert lost and all(v >= 0 for v in lost)
 
 
+def test_subscribers_lost_are_drawn_below_the_zero_line_and_listed_as_positive_counts(gr):
+    section = panel_named(gr, "YouTube subscribers")
+    got = section.evaluate("""(el) => {
+      const svg = el.querySelector('svg.a-chart');
+      const zero = Number(svg.querySelector('line.a-zeroline')?.getAttribute('y1'));
+      const marks = [...svg.querySelectorAll('.a-point')].map((g) => Number(g.dataset.value));
+      const lost = [...el.querySelectorAll('details.a-twin tbody tr')]
+        .map((tr) => Number(tr.querySelectorAll('td.num')[1]?.dataset.value ?? 0));
+      const swatches = [...el.querySelectorAll('.a-legend i')].map((i) => getComputedStyle(i).backgroundColor);
+      return { zero, negatives: marks.filter((v) => v < 0).length, lost, swatches };
+    }""")
+    assert got["zero"] > 0
+    assert got["negatives"] == sum(1 for v in got["lost"] if v > 0)
+    assert all(v >= 0 for v in got["lost"])
+    assert len(set(got["swatches"])) == 2
+
+
 def test_watch_time_and_average_duration_are_two_charts_not_two_axes(gr):
     """The one rule the spec states twice. Different units never share an axis."""
     for title in ("Watch time", "Average view duration"):

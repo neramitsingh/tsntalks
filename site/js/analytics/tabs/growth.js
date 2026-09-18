@@ -141,7 +141,7 @@ function gainedLostPanel(result, w) {
  * simply never reported the number.
  */
 function metricPanel(result, w, {
-  title, name, metrics, kind = 'bar', format = compact, seriesNames, twin,
+  title, name, metrics, kind = 'bar', format = compact, seriesNames, twin, negate = [],
 }) {
   return resultPanel(result, {
     title,
@@ -176,7 +176,12 @@ function metricPanel(result, w, {
       name,
       points: rows.map((r) => ({
         label: periodLabel(r.period, w.granularity),
-        values: Object.fromEntries(metrics.map((m) => [m, r.values[m] ?? null])),
+        /* A negated metric is drawn below the zero line; `twin` keeps the count
+           positive, because a loss of nine people is nine people. */
+        values: Object.fromEntries(metrics.map((m) => {
+          const v = r.values[m] ?? null;
+          return [m, v != null && negate.includes(m) ? -v : v];
+        })),
       })),
       series,
       format,
@@ -200,6 +205,22 @@ function subscribersPanel(result, w) {
     metrics: ['yt_subs_gained', 'yt_subs_lost'],
     seriesNames: { yt_subs_gained: 'Gained', yt_subs_lost: 'Lost' },
     format: full,
+    /* Lost is drawn below the line, as on the followers panel; the twin keeps the count positive. */
+    negate: ['yt_subs_lost'],
+    twin: {
+      columns: [
+        { key: 'label', name: 'Period' },
+        { key: 'gained', name: 'Gained', num: true, format: full },
+        { key: 'lost', name: 'Lost', num: true, format: full },
+        { key: 'net', name: 'Net', num: true, format: full },
+      ],
+      rows: (rows) => rows.map((r) => ({
+        label: periodLabel(r.period, w.granularity),
+        gained: r.values.yt_subs_gained ?? null,
+        lost: r.values.yt_subs_lost ?? null,
+        net: (r.values.yt_subs_gained ?? 0) - (r.values.yt_subs_lost ?? 0),
+      })),
+    },
   });
 }
 
