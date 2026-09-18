@@ -52,7 +52,19 @@ export const SERIES_COLOR = {
   previous: 'var(--muted)',
 };
 
-export const seriesColor = (id) => SERIES_COLOR[id] ?? 'var(--saffron)';
+/**
+ * A series colour. The platforms are fixed. Anything that reads as arriving
+ * (gained, follows) is the up colour and anything leaving (lost, unfollows) is
+ * the down colour, whatever metric_daily key it arrived under — the
+ * subscribers panel shipped with both bars saffron because its ids were
+ * `yt_subs_gained` and `yt_subs_lost`.
+ */
+export const seriesColor = (id) => {
+  if (SERIES_COLOR[id]) return SERIES_COLOR[id];
+  if (/(gained|follows)$/.test(id) && !/unfollows$/.test(id)) return SERIES_COLOR.gained;
+  if (/(lost|unfollows)$/.test(id)) return SERIES_COLOR.lost;
+  return 'var(--saffron)';
+};
 export const seriesName = (id) => PLATFORM_NAME[id] ?? id;
 
 /* --- small builders -------------------------------------------------------- */

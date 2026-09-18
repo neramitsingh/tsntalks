@@ -391,6 +391,16 @@ def test_an_all_zero_window_says_so_instead_of_drawing_an_axis(c):
     assert got["twin"] == 1, "the numbers are still there for anyone who wants to check"
 
 
+def test_gained_and_lost_take_their_direction_colours_whatever_the_metric_is_called(c):
+    got = js(c, """
+      return ['yt_subs_gained', 'yt_subs_lost', 'ig_follows', 'ig_unfollows',
+              'tt_followers_gained', 'tt_followers_lost', 'gained', 'lost', 'youtube', 'previous']
+        .map((id) => charts.seriesColor(id));
+    """)
+    up, down = "var(--up)", "var(--down)"
+    assert got == [up, down, up, down, up, down, up, down, "var(--yt)", "var(--muted)"]
+
+
 # --- panels -----------------------------------------------------------------
 
 def test_a_panel_subtitle_names_its_window(c):
