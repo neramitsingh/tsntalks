@@ -73,6 +73,7 @@ class HourlyRun:
         self.video_stats = video_stats
         self.result = RunResult()
         self.accounts: list[dict] = []
+        self.zernio_ids: dict[str, set[str]] = {}  # post ids Zernio returned this run, per platform
 
     # helpers
     def _step(self, name: str, fn: Callable[[], int]) -> None:
@@ -111,16 +112,24 @@ class HourlyRun:
             return 0
         data = self.z.analytics(platform, self._d(365), self._d(0))
         posts, snaps = T.post_rows(data, platform, acct["id"], self.now)
+        self.zernio_ids[platform] = {p["id"] for p in posts}
         n = self.s.upsert("posts", posts, on_conflict="id")
         n += self.s.upsert("post_snapshots", snaps, on_conflict="post_id,taken_at")
         return n
 
     def step_youtube_catalogue(self) -> int:
-        """Episodes from titles, plus lifetime stats for catalogue videos Zernio did not return."""
+        """Episodes from titles, plus lifetime stats for catalogue videos Zernio did not return.
+
+        A video Zernio returned this run keeps Zernio's hourly snapshot. Every other catalogue video (season one's
+        Ep. 1-12, which Zernio never imported) gets its lifetime stats from yt-dlp on every daily run; pulling them only
+        once would freeze their views on the day they were first seen. If Zernio's YouTube step failed this run, fall
+        back to pulling only videos never seen before, so a Zernio outage does not turn into sixty yt-dlp calls."""
         acct = self._acct("youtube")
         if not acct or not self.catalogue:
             return 0
-        known = {p["id"] for p in self.s.select("posts", select="id", platform="eq.youtube")}
+        covered = self.zernio_ids.get("youtube")
+        if covered is None:
+            covered = {p["id"] for p in self.s.select("posts", select="id", platform="eq.youtube")}
         ep_rows, n = [], 0
         for v in self.catalogue:
             parsed = E.parse_title(v["title"])
@@ -128,7 +137,7 @@ class HourlyRun:
                 ep_rows.append({"season": parsed.season, "number": parsed.number, "title": v["title"], "guest": parsed.guest,
                                 "role": parsed.role, "youtube_video_id": v["id"], "match_terms": E.match_terms(parsed)})
             key = f"yt:{v['id']}"
-            if key in known or not self.video_stats:
+            if key in covered or not self.video_stats:
                 continue
             st = self.video_stats(v["id"])
             n += self.s.upsert("posts", [{"id": key, "account_id": acct["id"], "platform": "youtube", "platform_post_id": v["id"],

@@ -79,6 +79,62 @@ def test_daily_run_adds_metrics_and_demographics_and_episodes():
     assert any(p["id"] == "yt:AXukyl9hVp0" for p in s.writes["posts"])
 
 
+def _stats(pulled, views):
+    def video_stats(vid):
+        pulled.append(vid)
+        return {"id": vid, "title": "t", "view_count": views, "like_count": 1, "comment_count": 0,
+                "upload_date": "20250830", "thumbnail": None}
+    return video_stats
+
+
+def test_daily_run_refreshes_catalogue_videos_zernio_did_not_return():
+    """Season one's Ep. 1-12 exist in `posts` since the backfill but Zernio never imported them. The daily run
+    must re-pull their lifetime stats from yt-dlp every time, or their views freeze on the day they were first seen."""
+    z, s = FakeZernio(), FakeSupa()
+    s.rows["posts"] = [{"id": "yt:YdxkrDzVDjQ"}]  # already known
+    catalogue = [{"id": "YdxkrDzVDjQ", "title": "TSN Talks Ep. 11, Part 1: Dr. Sunil Phol", "duration": 3000.0}]
+    pulled = []
+    run = HourlyRun(z, s, now=datetime(2026, 9, 18, 20, 30, tzinfo=timezone.utc), daily=True, youtube_catalogue=catalogue,
+                    video_stats=_stats(pulled, 103_777))
+    result = run.execute()
+    assert result.status == "ok"
+    assert pulled == ["YdxkrDzVDjQ"]
+    snaps = [r for r in s.writes["post_snapshots"] if r["post_id"] == "yt:YdxkrDzVDjQ"]
+    assert [r["views"] for r in snaps] == [103_777]
+
+
+def test_daily_run_leaves_videos_zernio_returned_to_zernio():
+    """A catalogue video Zernio returned this run keeps Zernio's snapshot; yt-dlp is not asked for it."""
+    z, s = FakeZernio(), FakeSupa()
+    catalogue = [{"id": "AXukyl9hVp0", "title": "TSN TALKS S2 E10: Sunny Khurana, Founder & CEO, Spark.love", "duration": 2206.0}]
+    pulled = []
+    run = HourlyRun(z, s, now=datetime(2026, 9, 18, 20, 30, tzinfo=timezone.utc), daily=True, youtube_catalogue=catalogue,
+                    video_stats=_stats(pulled, 999))
+    result = run.execute()
+    assert result.status == "ok"
+    assert pulled == []
+    snaps = [r for r in s.writes["post_snapshots"] if r["post_id"] == "yt:AXukyl9hVp0"]
+    assert len(snaps) == 1 and snaps[0]["views"] != 999
+
+
+def test_catalogue_pulls_only_unseen_videos_when_zernio_youtube_failed():
+    """Zernio's YouTube step failing must not turn the catalogue step into sixty yt-dlp calls: known videos wait."""
+    z, s = FakeZernio(), FakeSupa()
+    def analytics(platform, a, b):
+        if platform == "youtube":
+            raise RuntimeError("zernio 502")
+        return fx(f"analytics_{platform}.json")
+    z.analytics = analytics
+    s.rows["posts"] = [{"id": "yt:YdxkrDzVDjQ"}]
+    catalogue = [{"id": "YdxkrDzVDjQ", "title": "TSN Talks Ep. 11, Part 1: Dr. Sunil Phol", "duration": 3000.0},
+                 {"id": "NEWVIDEO123", "title": "TSN Talks S2 E11: Someone New", "duration": 2000.0}]
+    pulled = []
+    result = HourlyRun(z, s, now=datetime(2026, 9, 18, 20, 30, tzinfo=timezone.utc), daily=True, youtube_catalogue=catalogue,
+                       video_stats=_stats(pulled, 5)).execute()
+    assert result.status == "failed" and "posts:youtube" in result.notes["errors"][0]
+    assert pulled == ["NEWVIDEO123"]
+
+
 def test_needs_reconnect_marks_run_failed():
     z, s = FakeZernio(), FakeSupa()
     bad = fx("health.json"); bad["accounts"][0]["needsReconnect"] = True
