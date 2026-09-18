@@ -44,6 +44,12 @@ def main(owner: str, repo: str):
         "SUPABASE_URL": re.search(r"URL `(https://[a-z]+\.supabase\.co)`", t).group(1),
         "SUPABASE_SERVICE_ROLE_KEY": re.search(r"service_role key[^`]*`([^`]+)`", t).group(1),
     }
+    # Optional: exact catalogue stats through the YouTube Data API (collector/tsn_collector/youtube.py). Google keys are
+    # AIza + 35 chars; the "<paste here>" placeholder in secrets.md does not match, so an unfilled line is skipped.
+    if yt := re.search(r"YouTube Data API key[^`]*`(AIza[A-Za-z0-9_\-]{30,})`", t):
+        values["YOUTUBE_API_KEY"] = yt.group(1)
+    else:
+        print("skip YOUTUBE_API_KEY (no key in secrets.md yet)")
     token = cached_token()
     key = api("GET", f"https://api.github.com/repos/{owner}/{repo}/actions/secrets/public-key", token)
     for name, value in values.items():
