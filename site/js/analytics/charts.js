@@ -537,6 +537,7 @@ const DRAW = {
  * @param {Array} [spec.series]    `[{ id, name }]`; one entry means no legend
  * @param {Array} [spec.columns]   overrides the default twin columns
  * @param {Array} [spec.rows]      overrides the default twin rows
+ * @param {string} [spec.zero]     what to say when every value is zero
  */
 export function chart(spec) {
   const { kind, name, points = [], series = [], format = compact } = spec;
@@ -546,6 +547,21 @@ export function chart(spec) {
 
   if (!points.length) {
     figure.appendChild(html('p', 'a-empty', spec.empty ?? `No data for ${name} in this window.`));
+    return figure;
+  }
+
+  /* Every value zero or absent: an axis over nothing is a chart that says
+     "0.25 people". Say what happened in words and keep the twin. */
+  const allZero = kind === 'hbar'
+    ? points.every((p) => !(p.value))
+    : points.every((p) => series.every((s) => !(p.values?.[s.id])));
+  if (allZero) {
+    figure.appendChild(html('p', 'a-empty', spec.zero ?? `Every value in ${name} is zero for this window.`));
+    figure.appendChild(tableTwin(
+      spec.rows ?? defaultTwinRows(points, series, kind),
+      spec.columns ?? defaultTwinColumns(series, kind, format),
+      { summary: spec.summary ?? 'Show the numbers' },
+    ));
     return figure;
   }
 

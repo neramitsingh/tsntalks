@@ -367,6 +367,30 @@ def test_a_sparkline_with_one_point_draws_nothing_rather_than_a_flat_line(c):
     assert got == 0
 
 
+def test_a_count_axis_never_shows_a_fraction(c):
+    """Max 1 used to produce 0 / 0.25 / 0.5 / 0.75 / 1 on a chart of people."""
+    got = js(c, """
+      const pts = [{ label: 'a', values: { gained: 1 } }, { label: 'b', values: { gained: 0 } }];
+      mount.appendChild(charts.chart({ kind: 'bar', name: 'Gained', points: pts, series: [{ id: 'gained' }] }));
+      return [...mount.querySelectorAll('g[aria-label="y-axis tick label"] text.a-axis')].map((t) => t.textContent);
+    """)
+    assert got == ["0", "1"]
+
+
+def test_an_all_zero_window_says_so_instead_of_drawing_an_axis(c):
+    got = js(c, """
+      const pts = [{ label: 'a', values: { gained: 0, lost: 0 } }, { label: 'b', values: { gained: 0, lost: 0 } }];
+      const fig = charts.chart({ kind: 'bar', name: 'Gained and lost', points: pts,
+        series: [{ id: 'gained' }, { id: 'lost' }], zero: 'Nobody arrived or left in this window.' });
+      mount.appendChild(fig);
+      return { svg: fig.querySelectorAll('svg.a-chart').length, text: fig.querySelector('.a-empty')?.textContent,
+               twin: fig.querySelectorAll('.a-twin').length };
+    """)
+    assert got["svg"] == 0
+    assert got["text"] == "Nobody arrived or left in this window."
+    assert got["twin"] == 1, "the numbers are still there for anyone who wants to check"
+
+
 # --- panels -----------------------------------------------------------------
 
 def test_a_panel_subtitle_names_its_window(c):
