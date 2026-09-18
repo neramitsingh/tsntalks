@@ -168,15 +168,17 @@ function yTickCount(values) {
  * forced — that is what put "15 Sept" on top of "16 Sept". The exact period of
  * every point is in its tooltip and in the twin.
  */
-function xBand(points) {
+function xBand(points, width = W) {
   const domain = points.map((p) => p.label);
-  const every = thinning(points.length);
+  /* The label budget is per canvas width: seven dates fit under 720 and crowd
+     360, so a narrow chart thins as if it had proportionally more points. */
+  const every = thinning(Math.ceil(points.length * (W / width)));
   return { type: 'band', domain, ticks: domain.filter((_, i) => i % every === 0),
            label: null, padding: 0.32, tickSize: 0 };
 }
 
-const BASE = (height = H) => ({
-  width: W, height,
+const BASE = (height = H, width = W) => ({
+  width, height,
   marginTop: PAD.top, marginRight: PAD.right, marginBottom: PAD.bottom, marginLeft: PAD.left,
   style: { background: 'transparent', overflow: 'visible' },
 });
@@ -262,7 +264,7 @@ function peakLabel(svg, rows, sc, format) {
  * A null breaks the line (Plot's default) rather than joining across it, and a
  * faint area sits under each line so the eye reads the level, not just the edge.
  */
-export function lineSeries({ name, points, series, format = compact, height = H }) {
+export function lineSeries({ name, points, series, format = compact, height = H, width = W }) {
   assertName(name);
   const Plot = plotLib();
   const rows = longRows(points, series);
@@ -271,15 +273,19 @@ export function lineSeries({ name, points, series, format = compact, height = H 
   for (const s of series) {
     const mine = rows.filter((r) => r.series === s.id);
     const colour = resolvedColor(s.id);
-    marks.push(Plot.areaY(mine, { x: 'label', y: 'value', fill: colour, fillOpacity: 0.08 }));
+    /* The faint ground under a line is for ONE line. Three of them overlapping
+       added up to a block that read as a fourth series (Plan 4 screenshots). */
+    if (series.length === 1) {
+      marks.push(Plot.areaY(mine, { x: 'label', y: 'value', fill: colour, fillOpacity: 0.08 }));
+    }
     marks.push(Plot.line(mine, { x: 'label', y: 'value', stroke: colour, strokeWidth: 1.5,
                                  strokeLinejoin: 'round', strokeLinecap: 'round' }));
   }
   const min = Math.min(0, ...values.filter((v) => v != null));
   const max = Math.max(1, ...values.filter((v) => v != null));
   const svg = Plot.plot({
-    ...BASE(height),
-    x: xBand(points),
+    ...BASE(height, width),
+    x: xBand(points, width),
     y: { grid: true, label: null, domain: [min, max], nice: true, ticks: yTickCount(values),
          tickFormat: (v) => format(v), tickSize: 0 },
     marks,
@@ -436,8 +442,10 @@ export function multiples({ name, points, series, format = compact }) {
     const h = html('h3', null, s.name ?? seriesName(s.id));
     h.style.color = seriesColor(s.id);
     cell.appendChild(h);
+    /* Half the canvas width: at a third of the row a 720-wide viewBox scales
+       11px labels to about 7px. 360 x 150 keeps the type the size it is elsewhere. */
     cell.appendChild(lineSeries({
-      name: `${name} — ${s.name ?? seriesName(s.id)}`, points, series: [s], format, height: 150,
+      name: `${name} — ${s.name ?? seriesName(s.id)}`, points, series: [s], format, height: 150, width: 360,
     }));
     wrap.appendChild(cell);
   }

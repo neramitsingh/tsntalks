@@ -457,3 +457,48 @@ def test_a_panel_subtitle_is_never_interpolated_as_html(c):
     """)
     assert got["imgs"] == 0
     assert got["text"] == "<img src=x onerror=alert(1)>"
+
+
+# --- after Plan 4's first look at real screenshots ------------------------------
+
+def test_the_area_under_a_line_is_drawn_only_when_there_is_one_line(c):
+    """Three overlapping 8% fills under the follower lines added up to a block
+    that read as a fourth series. One line keeps its faint ground; several
+    lines are lines."""
+    got = js(c, """
+      const one = charts.chart({ kind: 'line', name: 'One', points: POINTS, series: [{ id: 'youtube' }] });
+      const three = charts.chart({ kind: 'line', name: 'Three', points: POINTS, series: PLATFORMS });
+      mount.append(one, three);
+      return {
+        one: one.querySelectorAll('g[aria-label="area"] path').length,
+        three: three.querySelectorAll('g[aria-label="area"] path').length,
+        lines: three.querySelectorAll('path.a-line').length,
+      };
+    """)
+    assert got == {"one": 1, "three": 0, "lines": 3}
+
+
+def test_small_multiples_draw_on_a_narrower_canvas_so_their_type_stays_readable(c):
+    """At a third of the row, a 720-wide viewBox scales 11px labels down to
+    about 7px. Each multiple draws at 360 x 150 instead."""
+    got = js(c, """
+      const fig = charts.chart({ kind: 'multiples', name: 'Views by platform', points: POINTS, series: PLATFORMS });
+      mount.appendChild(fig);
+      return [...fig.querySelectorAll('svg.a-chart')].map((s) => s.getAttribute('viewBox'));
+    """)
+    assert got == ["0 0 360 150"] * 3
+
+
+def test_a_narrow_canvas_thins_its_date_labels_harder(c):
+    """Seven labels fit under a 720-wide chart and crowd a 360-wide one. Thinning
+    counts label budget per canvas width, so the multiples show every other date."""
+    got = js(c, """
+      const seven = [9, 10, 11, 12, 13, 14, 15].map((d) => ({ label: `${d} Sept`, values: { youtube: d * 100 } }));
+      const wide = charts.chart({ kind: 'line', name: 'Wide', points: seven, series: [{ id: 'youtube' }] });
+      const narrow = charts.chart({ kind: 'multiples', name: 'Narrow', points: seven, series: [{ id: 'youtube' }] });
+      mount.append(wide, narrow);
+      const labels = (fig) => [...fig.querySelectorAll('g[aria-label="x-axis tick label"] text')].map((t) => t.textContent);
+      return { wide: labels(wide), narrow: labels(narrow) };
+    """)
+    assert len(got["wide"]) == 7
+    assert got["narrow"] == ["9 Sept", "11 Sept", "13 Sept", "15 Sept"]
