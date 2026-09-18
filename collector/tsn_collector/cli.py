@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 from .config import settings_from_env
 from .run import HourlyRun
 from .supa import Supa
-from .youtube import fetch_flat_catalogue, fetch_video_stats, parse_flat_catalogue
+from .youtube import fetch_flat_catalogue, parse_flat_catalogue, video_stats_source
 from .zernio import Zernio
 
 
@@ -27,7 +27,8 @@ def cmd_collect(args) -> int:
     daily = is_daily_slot(now, st.tz_name, args.daily)
     catalogue = parse_flat_catalogue(fetch_flat_catalogue(st.youtube_channel_url)) if daily else None
     run = HourlyRun(Zernio(st.zernio_api_key), Supa(st.supabase_url, st.supabase_service_key), now=now, daily=daily,
-                    youtube_catalogue=catalogue, video_stats=fetch_video_stats if daily else None)
+                    youtube_catalogue=catalogue,
+                    video_stats=video_stats_source(st.youtube_api_key, catalogue) if daily else None)
     result = run.execute()
     print(json.dumps({"status": result.status, "rows": result.rows, "daily": daily, "notes": result.notes}, indent=1))
     return 0 if result.status == "ok" else 1

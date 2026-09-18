@@ -62,7 +62,7 @@ def apply_episode_overrides(supa, path: Path = DEFAULT_OVERRIDE_PATH) -> int:
 class RunResult:
     status: str = "ok"
     rows: int = 0
-    notes: dict[str, Any] = field(default_factory=lambda: {"errors": [], "steps": {}})
+    notes: dict[str, Any] = field(default_factory=lambda: {"errors": [], "warnings": [], "steps": {}})
 
 
 class HourlyRun:
@@ -139,7 +139,11 @@ class HourlyRun:
             key = f"yt:{v['id']}"
             if key in covered or not self.video_stats:
                 continue
-            st = self.video_stats(v["id"])
+            try:
+                st = self.video_stats(v["id"])
+            except Exception as ex:  # one blocked video (YouTube's bot check on a runner IP) must not stop the rest
+                self.result.notes["warnings"].append(f"youtube_catalogue: {v['id']} skipped: {str(ex)[:160]}")
+                continue
             n += self.s.upsert("posts", [{"id": key, "account_id": acct["id"], "platform": "youtube", "platform_post_id": v["id"],
                                           "url": f"https://www.youtube.com/watch?v={v['id']}", "title": st["title"] or v["title"],
                                           "media_type": "video", "published_at": upload_date_to_iso(st.get("upload_date")),

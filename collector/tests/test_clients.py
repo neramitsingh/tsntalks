@@ -60,3 +60,89 @@ def test_parse_flat_catalogue():
     vids = parse_flat_catalogue(flat)
     assert len(vids) == 32
     assert vids[0] == {"id": "AXukyl9hVp0", "title": "TSN TALKS S2 E10: Sunny Khurana, Founder & CEO, Spark.love", "duration": 2206.0}
+
+# --- YouTube Data API: exact counts for the catalogue videos Zernio never imported ---------------------------------
+#
+# yt-dlp's per-video extraction is blocked by YouTube's bot check from GitHub's runners (seen 2026-09-18 on Ep. 12),
+# and the flat channel listing only carries rounded counts (103K, 1.2K). The Data API returns exact statistics for
+# fifty ids per call at one quota unit, so it is the source whenever a key exists.
+
+import pytest
+
+from tsn_collector.youtube import fetch_video_stats, fetch_video_stats_api, video_stats_source
+
+YT = "https://www.googleapis.com/youtube/v3/videos"
+
+
+def _item(vid, views, likes="7", comments="2", published="2025-08-30T05:00:00Z"):
+    snippet = {"title": f"title {vid}", "publishedAt": published,
+               "thumbnails": {"maxres": {"url": f"https://i.ytimg.com/vi/{vid}/maxresdefault.jpg"}}}
+    stats = {"viewCount": str(views)}
+    if likes is not None:
+        stats["likeCount"] = likes
+    if comments is not None:
+        stats["commentCount"] = comments
+    return {"id": vid, "snippet": snippet, "statistics": stats}
+
+
+@responses.activate
+def test_data_api_stats_come_back_in_the_ytdlp_shape():
+    responses.add(responses.GET, YT, json={"items": [_item("YdxkrDzVDjQ", 103512, likes="1070", comments="12"),
+                                                     _item("0qgsjhonhwc", 1301, likes=None, comments=None)]},
+                  match=[responses.matchers.query_param_matcher(
+                      {"part": "snippet,statistics", "id": "YdxkrDzVDjQ,0qgsjhonhwc,9AxuohprUbU", "maxResults": "50", "key": "k"})])
+    out = fetch_video_stats_api(["YdxkrDzVDjQ", "0qgsjhonhwc", "9AxuohprUbU"], "k")
+    assert out["YdxkrDzVDjQ"] == {"id": "YdxkrDzVDjQ", "title": "title YdxkrDzVDjQ", "view_count": 103512, "like_count": 1070,
+                                  "comment_count": 12, "upload_date": "20250830",
+                                  "thumbnail": "https://i.ytimg.com/vi/YdxkrDzVDjQ/maxresdefault.jpg"}
+    # likes hidden and comments off come back as 0, like yt-dlp's `or 0`
+    assert (out["0qgsjhonhwc"]["like_count"], out["0qgsjhonhwc"]["comment_count"]) == (0, 0)
+    # a video the API does not return (deleted, private) is simply absent
+    assert "9AxuohprUbU" not in out
+
+
+@responses.activate
+def test_data_api_batches_fifty_ids_per_call():
+    ids = [f"id{i:09d}" for i in range(60)]
+    for chunk in (ids[:50], ids[50:]):
+        responses.add(responses.GET, YT, json={"items": [_item(v, 1) for v in chunk]},
+                      match=[responses.matchers.query_param_matcher(
+                          {"part": "snippet,statistics", "id": ",".join(chunk), "maxResults": "50", "key": "k"})])
+    out = fetch_video_stats_api(ids, "k")
+    assert len(out) == 60 and len(responses.calls) == 2
+
+
+@responses.activate
+def test_data_api_error_names_the_reason():
+    responses.add(responses.GET, YT, status=403, json={"error": {"message": "The request cannot be completed because you have exceeded your quota."}})
+    with pytest.raises(RuntimeError, match="quota"):
+        fetch_video_stats_api(["YdxkrDzVDjQ"], "k")
+
+
+def test_video_stats_source_is_ytdlp_without_a_key():
+    assert video_stats_source(None, [{"id": "YdxkrDzVDjQ"}]) is fetch_video_stats
+    assert video_stats_source("", [{"id": "YdxkrDzVDjQ"}]) is fetch_video_stats
+
+
+@responses.activate
+def test_video_stats_source_with_a_key_looks_the_whole_catalogue_up_once():
+    responses.add(responses.GET, YT, json={"items": [_item("YdxkrDzVDjQ", 103512), _item("0qgsjhonhwc", 1301)]},
+                  match=[responses.matchers.query_param_matcher(
+                      {"part": "snippet,statistics", "id": "YdxkrDzVDjQ,0qgsjhonhwc", "maxResults": "50", "key": "k"})])
+    stats = video_stats_source("k", [{"id": "YdxkrDzVDjQ"}, {"id": "0qgsjhonhwc"}])
+    assert len(responses.calls) == 0  # nothing fetched until a video is asked for
+    assert stats("YdxkrDzVDjQ")["view_count"] == 103512
+    assert stats("0qgsjhonhwc")["view_count"] == 1301
+    assert len(responses.calls) == 1
+    with pytest.raises(RuntimeError, match="9AxuohprUbU"):
+        stats("9AxuohprUbU")
+
+
+def test_settings_read_the_optional_youtube_api_key(monkeypatch):
+    from tsn_collector.config import settings_from_env
+    for k, v in {"ZERNIO_API_KEY": "z", "SUPABASE_URL": "https://x.supabase.co/", "SUPABASE_SERVICE_ROLE_KEY": "s"}.items():
+        monkeypatch.setenv(k, v)
+    monkeypatch.setenv("YOUTUBE_API_KEY", "")
+    assert settings_from_env().youtube_api_key is None  # the secret is empty when unset in Actions
+    monkeypatch.setenv("YOUTUBE_API_KEY", "k")
+    assert settings_from_env().youtube_api_key == "k"

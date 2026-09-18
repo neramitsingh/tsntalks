@@ -135,6 +135,28 @@ def test_catalogue_pulls_only_unseen_videos_when_zernio_youtube_failed():
     assert pulled == ["NEWVIDEO123"]
 
 
+def test_catalogue_step_skips_a_video_whose_stats_fail_and_keeps_going():
+    """2026-09-18: YouTube's bot check blocked yt-dlp on Ep. 12 from GitHub's runner and the whole step died with
+    nothing written. A blocked video is skipped and named in the run's warnings; the others still get their snapshot,
+    the episodes still get upserted, and the run is not failed for it."""
+    z, s = FakeZernio(), FakeSupa()
+    s.rows["posts"] = [{"id": "yt:9AxuohprUbU"}, {"id": "yt:YdxkrDzVDjQ"}]
+    catalogue = [{"id": "9AxuohprUbU", "title": "TSN Talks Ep. 12 - Narin Khurana, CEO of SchoolBright", "duration": 3000.0},
+                 {"id": "YdxkrDzVDjQ", "title": "TSN Talks Ep. 11, Part 1: Dr. Sunil Phol", "duration": 3000.0}]
+    def video_stats(vid):
+        if vid == "9AxuohprUbU":
+            raise RuntimeError("ERROR: [youtube] 9AxuohprUbU: Sign in to confirm you're not a bot.")
+        return {"id": vid, "title": "t", "view_count": 103_777, "like_count": 1, "comment_count": 0,
+                "upload_date": "20250830", "thumbnail": None}
+    result = HourlyRun(z, s, now=datetime(2026, 9, 18, 20, 30, tzinfo=timezone.utc), daily=True, youtube_catalogue=catalogue,
+                       video_stats=video_stats).execute()
+    assert result.status == "ok"
+    fresh = [r["post_id"] for r in s.writes["post_snapshots"] if r["views"] == 103_777]
+    assert fresh == ["yt:YdxkrDzVDjQ"]
+    assert len(result.notes["warnings"]) == 1 and "9AxuohprUbU" in result.notes["warnings"][0]
+    assert "episodes" in s.writes
+
+
 def test_needs_reconnect_marks_run_failed():
     z, s = FakeZernio(), FakeSupa()
     bad = fx("health.json"); bad["accounts"][0]["needsReconnect"] = True

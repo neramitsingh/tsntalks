@@ -12,6 +12,7 @@ class Settings:
     supabase_service_key: str
     youtube_channel_url: str = "https://www.youtube.com/@TSNTalksTH/videos"
     tz_name: str = "Asia/Bangkok"
+    youtube_api_key: str | None = None  # optional: exact stats for the catalogue videos Zernio never imported
 
 
 def load_dotenv(path: Path) -> None:
@@ -37,4 +38,5 @@ def settings_from_env() -> Settings:
         supabase_service_key=os.environ["SUPABASE_SERVICE_ROLE_KEY"],
         youtube_channel_url=os.environ.get("YOUTUBE_CHANNEL_URL", Settings.youtube_channel_url),
         tz_name=os.environ.get("TZ_NAME", Settings.tz_name),
+        youtube_api_key=os.environ.get("YOUTUBE_API_KEY") or None,  # an unset Actions secret arrives as ""
     )
