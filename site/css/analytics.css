@@ -278,6 +278,12 @@ table.a-table {
 
 svg.a-chart { display: block; width: 100%; height: auto; overflow: visible; }
 
+/* Plot's injected stylesheet is removed by charts.js; type is set here so every
+   chart wears Hanken Grotesk and tabular figures like the rest of the page. */
+svg.a-chart text { font-family: var(--text); font-variant-numeric: tabular-nums lining-nums; }
+svg.a-chart g[aria-label$="tick label"] text { fill: var(--muted); font-size: 11px; }
+svg.a-chart g[aria-label="area"] path { pointer-events: none; }
+
 /* Thin marks. A 1.5px line at this scale is a mark; a 4px line is a shape. */
 .a-line { fill: none; stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
 .a-dotmark { pointer-events: none; }
