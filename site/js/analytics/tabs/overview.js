@@ -175,7 +175,8 @@ function topPostsPanel(result, w) {
     ], rows));
     section.appendChild(el('p', 'a-note',
       '"Gained here" is the change inside this window; "views total" is lifetime. '
-      + 'A post first seen inside the window counts its whole total as gained.'));
+      + 'A post we started watching inside the window counts only the views it gained after we first saw it; '
+      + 'a post published inside the window counts all of them.'));
     return true;
   });
 }

@@ -132,6 +132,12 @@ def test_top_posts_distinguishes_gained_here_from_lifetime(ov):
     assert "lifetime" in section.inner_text()
 
 
+def test_the_gained_note_describes_the_first_seen_baseline(ov):
+    note = ov.locator("#view .a-panel", has_text="Top posts in this window").locator("p.a-note").last.text_content()
+    assert "first saw it" in note
+    assert "whole total" not in note
+
+
 def test_a_post_title_is_a_link_that_opens_safely(ov):
     link = ov.locator("#view .a-panel", has_text="Top posts").locator("tbody a").first
     assert link.get_attribute("target") == "_blank"

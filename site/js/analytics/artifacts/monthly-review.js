@@ -157,7 +157,7 @@ function topPosts(data) {
   ], data.topPosts));
   section.appendChild(el('p', 'fine',
     '"Views gained" is the change inside this month; "views total" is lifetime. '
-    + 'A post published this month counts its whole total as gained.'));
+    + 'A post published this month counts its whole total as gained; a post we only started watching this month counts what it gained after we first saw it.'));
   return section;
 }
 
