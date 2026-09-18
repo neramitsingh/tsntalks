@@ -101,75 +101,6 @@ function assertName(name) {
   return name;
 }
 
-/* --- the hand-drawn frame -------------------------------------------------- */
-
-/* Everything in this block belongs to the primitives Plot has not taken over
-   yet. It goes when the last of them does. */
-
-const PLOT = { w: W - PAD.left - PAD.right, h: H - PAD.top - PAD.bottom };
-
-/** Four or five round-ish gridline values covering 0..max. */
-function ticks(max, count = 4) {
-  if (!Number.isFinite(max) || max <= 0) return [0];
-  const raw = max / count;
-  const mag = 10 ** Math.floor(Math.log10(raw));
-  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw) ?? mag * 10;
-  const out = [];
-  for (let v = 0; v <= max + step / 2; v += step) out.push(v);
-  return out;
-}
-
-/**
- * The frame: hairline solid gridlines, y labels, x labels.
- *
- * Solid, not dashed. A dashed gridline at this weight reads as a series.
- */
-function frame(svg, { max, min = 0, labels, format = compact, everyNth = 1 }) {
-  const span = (max - min) || 1;
-  const y = (v) => PAD.top + PLOT.h - ((v - min) / span) * PLOT.h;
-
-  const g = el('g', { class: 'a-grid' });
-  for (const t of ticks(max - min).map((v) => v + min)) {
-    g.appendChild(el('line', {
-      x1: PAD.left, x2: PAD.left + PLOT.w, y1: y(t), y2: y(t), class: 'a-gridline',
-    }));
-    g.appendChild(el('text', {
-      x: PAD.left - 8, y: y(t) + 4, class: 'a-axis a-axis-y',
-    }, format(t)));
-  }
-  /* The zero line is drawn brighter when the chart has negative values, because
-     it is a boundary rather than a gridline. */
-  if (min < 0) {
-    g.appendChild(el('line', {
-      x1: PAD.left, x2: PAD.left + PLOT.w, y1: y(0), y2: y(0), class: 'a-zeroline',
-    }));
-  }
-  svg.appendChild(g);
-
-  const xs = el('g', { class: 'a-axis-x' });
-  const step = PLOT.w / Math.max(labels.length, 1);
-  labels.forEach((label, i) => {
-    if (i % everyNth !== 0 && i !== labels.length - 1) return;
-    xs.appendChild(el('text', {
-      x: PAD.left + step * (i + 0.5), y: H - 8, class: 'a-axis', 'text-anchor': 'middle',
-    }, label));
-  });
-  svg.appendChild(xs);
-
-  return { y, step };
-}
-
-function newChart(name) {
-  const svg = el('svg', {
-    class: 'a-chart',
-    viewBox: `0 0 ${W} ${H}`,
-    preserveAspectRatio: 'xMidYMid meet',
-    role: 'group',
-    'aria-label': name,
-  });
-  return svg;
-}
-
 /* --- the Plot core --------------------------------------------------------- */
 
 function plotLib() {
@@ -446,32 +377,37 @@ export function stackedBars({ name, points, series, format = compact }) {
 /** Horizontal bars. Categories with names too long to stand under a column. */
 export function horizontalBars({ name, points, format = compact, colour = 'var(--saffron)' }) {
   assertName(name);
+  const Plot = plotLib();
   const rowH = 22;
   const height = Math.max(points.length * rowH + 20, 60);
-  const labelW = 150;
-  const svg = el('svg', {
-    class: 'a-chart', viewBox: `0 0 ${W} ${height}`,
-    preserveAspectRatio: 'xMidYMid meet', role: 'group', 'aria-label': name,
+  const rows = points.map((p) => ({ label: p.label, value: Math.max(p.value ?? 0, 0) }));
+  const max = Math.max(1, ...rows.map((r) => r.value));
+  const svg = Plot.plot({
+    width: W, height, marginTop: 6, marginRight: 90, marginBottom: 6, marginLeft: 150,
+    style: { background: 'transparent', overflow: 'visible' },
+    x: { axis: null, domain: [0, max] },
+    y: { type: 'band', domain: rows.map((r) => r.label), label: null, padding: 0.3, tickSize: 0 },
+    marks: [Plot.barX(rows, { x: 'value', y: 'label', fill: resolveToken(colour),
+                              insetTop: 1, insetBottom: 1 })],
   });
-  const max = Math.max(1, ...points.map((p) => p.value ?? 0));
-  const barW = W - labelW - 90;
-
-  points.forEach((p, i) => {
-    const y = 12 + i * rowH;
-    svg.appendChild(el('text', {
-      x: labelW - 10, y: y + 11, class: 'a-axis', 'text-anchor': 'end',
-    }, p.label));
-    const w = Math.max((Math.max(p.value ?? 0, 0) / max) * barW, p.value ? 2 : 0);
+  decorate(svg, name);
+  svg.setAttribute('viewBox', `0 0 ${W} ${height}`);
+  const x = svg.scale('x');
+  const y = svg.scale('y');
+  for (const r of rows) {
+    const top = y.apply(r.label);
+    const w = x.apply(r.value) - x.apply(0);
     svg.appendChild(hotspot(
-      el('rect', { x: labelW, y: y + 2, width: w, height: rowH - 8, fill: colour, class: 'a-bar' }),
-      { label: `${p.label}: ${full(p.value)}`, value: p.value },
+      el('rect', { x: x.apply(0), y: top, width: Math.max(w, 2), height: y.bandwidth, class: 'a-hit' }),
+      { label: `${r.label}: ${full(r.value)}`, value: r.value },
     ));
-    /* The number in text, next to the bar. PRODUCT.md: numbers are never only
-       a bar length. */
+    /* The number in text, next to the bar. PRODUCT.md: numbers are never only a
+       bar length. Anchored explicitly: Plot sets text-anchor="middle" on the
+       root, and this one reads from the end of its bar rightwards. */
     svg.appendChild(el('text', {
-      x: labelW + w + 8, y: y + 12, class: 'a-barval',
-    }, format(p.value)));
-  });
+      x: x.apply(r.value) + 8, y: top + y.bandwidth / 2 + 4, class: 'a-barval', 'text-anchor': 'start',
+    }, format(r.value)));
+  }
   return svg;
 }
 
