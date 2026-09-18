@@ -127,6 +127,7 @@ function followersPanel(result, w, series) {
   return resultPanel(result, {
     title: 'Follower growth',
     sub: windowSub('By platform', w.from, w.to, `by ${w.granularity}`),
+    width: 'half',
   }, (section, { current }) => {
     if (!current.series.length) return false;
     /* Lines, not bars: followers are a stock, and a bar chart of a stock invites
