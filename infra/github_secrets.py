@@ -46,7 +46,8 @@ def main(owner: str, repo: str):
     }
     # Optional: exact catalogue stats through the YouTube Data API (collector/tsn_collector/youtube.py). Google keys are
     # AIza + 35 chars; the "<paste here>" placeholder in secrets.md does not match, so an unfilled line is skipped.
-    if yt := re.search(r"YouTube Data API key[^`]*`(AIza[A-Za-z0-9_\-]{30,})`", t):
+    if yt := re.search(r"YouTube Data API key[^
+]*`(AIza[A-Za-z0-9_\-]{30,})`", t):
         values["YOUTUBE_API_KEY"] = yt.group(1)
     else:
         print("skip YOUTUBE_API_KEY (no key in secrets.md yet)")
