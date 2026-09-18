@@ -59,6 +59,8 @@ DASHBOARD_PAGE = re.compile(r"/analytics/(artifacts/[\w-]+\.html|index\.html)?(\
 
 CDN_SUPABASE = "**/supabase*.js"
 CDN_SHEETJS = "**/xlsx.full.min.js"
+CDN_D3 = "**/d3.min.js"
+CDN_PLOT = "**/plot.umd.min.js"
 
 # YouTube stills. The fixture video ids are deliberately fake, so the real CDN
 # 404s on both; the stub answers the way YouTube really does — no maxresdefault
@@ -100,30 +102,39 @@ RPCS = ("rollup_views", "rollup_followers", "rollup_engagement",
 SHEETJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
 SHEETJS_SRI = "sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw"
 
+# d3 and Observable Plot, pinned and hashed exactly as site/analytics/index.html
+# pins them, and cached the same way. Both are served with their real bytes, so
+# the pages' integrity attributes are exercised rather than bypassed.
+D3_URL = "https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"
+D3_SRI = "sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i"
+PLOT_URL = "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6.17/dist/plot.umd.min.js"
+PLOT_SRI = "sha384-JUpn2GgRr0gxU0xOBd8D8P634jhRCwobtG8G2MMEkX1RnGJ7/FJNnuukpfT+H2w1"
+
 
 def fixture(name):
     return json.loads((FIX / f"{name}.json").read_text(encoding="utf-8"))
 
 
-def sheetjs_bytes():
-    """The real SheetJS, or None if it has never been fetched and cannot be now.
+def vendor_bytes(url, sri, filename):
+    """A pinned third-party library, or None if it has never been fetched and
+    cannot be now.
 
     Verified against the same SRI hash the page uses, so the cache cannot drift
     from what a browser would actually accept.
     """
-    cached = VENDOR / "xlsx.full.min.js"
+    cached = VENDOR / filename
     if cached.exists():
         return cached.read_bytes()
     try:
         import base64
         import hashlib
         import urllib.request
-        with urllib.request.urlopen(SHEETJS_URL, timeout=30) as response:
+        with urllib.request.urlopen(url, timeout=30) as response:
             data = response.read()
         digest = "sha384-" + base64.b64encode(hashlib.sha384(data).digest()).decode()
-        if digest != SHEETJS_SRI:
+        if digest != sri:
             raise AssertionError(
-                f"SheetJS at {SHEETJS_URL} no longer matches the pinned hash: {digest}")
+                f"{filename} at {url} no longer matches the pinned hash: {digest}")
         VENDOR.mkdir(parents=True, exist_ok=True)
         cached.write_bytes(data)
         return data
@@ -131,6 +142,10 @@ def sheetjs_bytes():
         raise
     except Exception:
         return None
+
+
+def sheetjs_bytes():
+    return vendor_bytes(SHEETJS_URL, SHEETJS_SRI, "xlsx.full.min.js")
 
 
 class QuietHandler(SimpleHTTPRequestHandler):
@@ -236,6 +251,9 @@ class Supabase:
         page.route(DASHBOARD_PAGE, self._index)
         page.route(CDN_SUPABASE, self._shim)
         page.route(CDN_SHEETJS, self._sheetjs)
+        page.route(CDN_D3, lambda route: self._vendor(route, D3_URL, D3_SRI, "d3.min.js"))
+        page.route(CDN_PLOT, lambda route: self._vendor(route, PLOT_URL, PLOT_SRI,
+                                                        "plot.umd.min.js"))
         page.route(YT_STILL, self._still)
         page.route(GOOGLE_FONTS, lambda route: route.fulfill(
             status=200, content_type="text/css", body="/* fonts stubbed */"))
@@ -281,6 +299,15 @@ class Supabase:
             return route.fulfill(status=503, content_type="text/plain",
                                  body="SheetJS unavailable offline")
         route.fulfill(status=200, content_type="application/javascript", body=data)
+
+    def _vendor(self, route, url, sri, filename):
+        """d3 and Plot, served locally from the cache with their real bytes."""
+        data = vendor_bytes(url, sri, filename)
+        if data is None:
+            route.abort()   # the runtime test then fails with a clear message, not a hang
+            return
+        route.fulfill(status=200, body=data,
+                      headers={"content-type": "application/javascript"})
 
     def _supa_js(self, route):
         """Serve supa.js with a key in it.
