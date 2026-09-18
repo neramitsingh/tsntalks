@@ -209,6 +209,30 @@ def test_escape_dismisses_the_tooltip(c):
     assert got is True
 
 
+def test_bars_diverge_from_the_zero_line_and_wear_their_series_colour(c):
+    got = js(c, """
+      const pts = [
+        { label: 'a', values: { gained: 40, lost: -3 } },
+        { label: 'b', values: { gained: 12, lost: -9 } },
+      ];
+      mount.appendChild(charts.chart({ kind: 'bar', name: 'Gained and lost', points: pts,
+        series: [{ id: 'gained', name: 'Gained' }, { id: 'lost', name: 'Lost' }] }));
+      const svg = mount.querySelector('svg.a-chart');
+      const zero = svg.querySelector('line.a-zeroline');
+      /* Plot sets a constant fill on the mark's <g>, not on each rect: read the computed style. */
+      const bars = [...svg.querySelectorAll('rect.a-bar')].map((r) => ({
+        y: Number(r.getAttribute('y')), h: Number(r.getAttribute('height')), fill: getComputedStyle(r).fill }));
+      const up = [...svg.querySelectorAll('.a-point')].map((g) => Number(g.dataset.value));
+      return { zero: zero && Number(zero.getAttribute('y1')), bars, up };
+    """)
+    assert got["zero"] is not None
+    above = [b for b in got["bars"] if b["y"] + b["h"] <= got["zero"] + 0.5]
+    below = [b for b in got["bars"] if b["y"] >= got["zero"] - 0.5]
+    assert len(above) == 2 and len(below) == 2
+    assert len({b["fill"] for b in got["bars"]}) == 2, "gained and lost must not share a colour"
+    assert sorted(got["up"]) == [-9, -3, 12, 40]
+
+
 # --- the rules the spec fixes -----------------------------------------------
 
 def test_gridlines_are_hairline_and_solid(c):

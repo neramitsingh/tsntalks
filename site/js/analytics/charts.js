@@ -357,32 +357,44 @@ export function lineSeries({ name, points, series, format = compact }) {
   return svg;
 }
 
-/** Grouped columns. Flows — views, gains — where the series are compared. */
+/**
+ * Columns per period. One series up, the other handed in as negatives, drawn
+ * at the same x and diverging from a brighter zero line. Two positive series
+ * that must be compared side by side are a `multiples` chart, not this.
+ */
 export function barSeries({ name, points, series, format = compact }) {
   assertName(name);
-  const svg = newChart(name);
-  const values = points.flatMap((p) => series.map((s) => p.values[s.id] ?? 0));
-  const max = Math.max(1, ...values);
+  const Plot = plotLib();
+  const rows = longRows(points, series).filter((r) => r.value != null);
+  const values = rows.map((r) => r.value);
   const min = Math.min(0, ...values);
-  const { y, step } = frame(svg, { max, min, labels: points.map((p) => p.label), format,
-                                   everyNth: thinning(points.length) });
-  const slot = (step * 0.72) / series.length;
-  const zero = y(0);
-
-  points.forEach((p, i) => {
-    series.forEach((s, k) => {
-      const v = p.values[s.id] ?? 0;
-      const bx = PAD.left + step * (i + 0.14) + slot * k;
-      const by = Math.min(y(v), zero);
-      svg.appendChild(hotspot(
-        el('rect', {
-          x: bx, y: by, width: Math.max(slot - 1, 1), height: Math.max(Math.abs(y(v) - zero), 1),
-          fill: seriesColor(s.id), class: 'a-bar',
-        }),
-        { label: `${p.label} · ${seriesName(s.id)}: ${full(v)}`, value: v },
-      ));
-    });
+  const max = Math.max(1, ...values);
+  const marks = series.map((s) => Plot.barY(rows.filter((r) => r.series === s.id), {
+    x: 'label', y: 'value', fill: resolvedColor(s.id), insetLeft: 1, insetRight: 1,
+  }));
+  const svg = Plot.plot({
+    ...BASE(),
+    x: xBand(points),
+    y: { grid: true, label: null, domain: [min, max], nice: true, ticks: yTickCount(values),
+         tickFormat: (v) => format(v), tickSize: 0 },
+    marks,
   });
+  decorate(svg, name);
+  const sc = scalesOf(svg);
+  if (min < 0) {
+    svg.appendChild(el('line', {
+      x1: PAD.left, x2: W - PAD.right, y1: sc.y(0), y2: sc.y(0), class: 'a-zeroline',
+    }));
+  }
+  const zero = sc.y(0);
+  for (const r of rows) {
+    const top = Math.min(sc.y(r.value), zero);
+    svg.appendChild(hotspot(
+      el('rect', { x: sc.xLeft(r.label), y: top, width: sc.bandwidth,
+                   height: Math.max(Math.abs(sc.y(r.value) - zero), 1), class: 'a-hit' }),
+      { label: `${r.label} · ${seriesName(r.series)}: ${full(Math.abs(r.value))}`, value: r.value },
+    ));
+  }
   return svg;
 }
 
