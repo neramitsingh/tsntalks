@@ -175,8 +175,8 @@ function xBand(points) {
            label: null, padding: 0.32, tickSize: 0 };
 }
 
-const BASE = () => ({
-  width: W, height: H,
+const BASE = (height = H) => ({
+  width: W, height,
   marginTop: PAD.top, marginRight: PAD.right, marginBottom: PAD.bottom, marginLeft: PAD.left,
   style: { background: 'transparent', overflow: 'visible' },
 });
@@ -262,7 +262,7 @@ function peakLabel(svg, rows, sc, format) {
  * A null breaks the line (Plot's default) rather than joining across it, and a
  * faint area sits under each line so the eye reads the level, not just the edge.
  */
-export function lineSeries({ name, points, series, format = compact }) {
+export function lineSeries({ name, points, series, format = compact, height = H }) {
   assertName(name);
   const Plot = plotLib();
   const rows = longRows(points, series);
@@ -278,7 +278,7 @@ export function lineSeries({ name, points, series, format = compact }) {
   const min = Math.min(0, ...values.filter((v) => v != null));
   const max = Math.max(1, ...values.filter((v) => v != null));
   const svg = Plot.plot({
-    ...BASE(),
+    ...BASE(height),
     x: xBand(points),
     y: { grid: true, label: null, domain: [min, max], nice: true, ticks: yTickCount(values),
          tickFormat: (v) => format(v), tickSize: 0 },
@@ -424,6 +424,27 @@ export function horizontalBars({ name, points, format = compact, colour = 'var(-
 }
 
 /**
+ * Small multiples. One chart per series, each on its own y-scale, sharing the
+ * x band and one twin. For series of different magnitude — TikTok at 1.5M over
+ * YouTube at 244K — where a stack shows one platform and two slivers.
+ */
+export function multiples({ name, points, series, format = compact }) {
+  assertName(name);
+  const wrap = html('div', 'a-multiples');
+  for (const s of series) {
+    const cell = html('div', 'a-multiple');
+    const h = html('h3', null, s.name ?? seriesName(s.id));
+    h.style.color = seriesColor(s.id);
+    cell.appendChild(h);
+    cell.appendChild(lineSeries({
+      name: `${name} — ${s.name ?? seriesName(s.id)}`, points, series: [s], format, height: 150,
+    }));
+    wrap.appendChild(cell);
+  }
+  return wrap;
+}
+
+/**
  * A sparkline. The one primitive that may be used without a table twin, and
  * only inline beside the figures it summarises — in a table row whose cells
  * already carry the numbers. On its own it is a chart and needs `chart()`.
@@ -531,6 +552,7 @@ const DRAW = {
   bar: barSeries,
   stacked: stackedBars,
   hbar: horizontalBars,
+  multiples,
 };
 
 /**
@@ -542,7 +564,7 @@ const DRAW = {
  * `.a-chart` exists without a `details.a-twin` beside it.
  *
  * @param {object} spec
- * @param {'line'|'bar'|'stacked'|'hbar'} spec.kind
+ * @param {'line'|'bar'|'stacked'|'hbar'|'multiples'} spec.kind
  * @param {string} spec.name       accessible name; required
  * @param {Array} spec.points      `[{ label, values: {seriesId: n} }]`, or
  *                                 `[{ label, value }]` for `hbar`
@@ -579,16 +601,20 @@ export function chart(spec) {
 
   const draw = DRAW[kind];
   if (!draw) throw new Error(`charts: unknown kind "${kind}"`);
-  const svg = draw({ ...spec, format });
+  const drawn = draw({ ...spec, format });
 
-  const key = legend(series);
+  /* A primitive may hand back one svg or a wrapper holding several of them.
+     Small multiples title each of their charts, so a legend would say it twice. */
+  const key = drawn.matches?.('svg') ? legend(series) : null;
   if (key) figure.appendChild(key);
-  figure.appendChild(svg);
+  figure.appendChild(drawn);
 
   const tip = html('div', 'a-tip');
   tip.hidden = true;
   figure.appendChild(tip);
-  wireTooltip(figure, svg, tip);
+  for (const svg of drawn.matches?.('svg') ? [drawn] : drawn.querySelectorAll('svg.a-chart')) {
+    wireTooltip(figure, svg, tip);
+  }
 
   const caption = html('figcaption', 'vh', name);
   figure.appendChild(caption);

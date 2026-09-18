@@ -401,6 +401,34 @@ def test_gained_and_lost_take_their_direction_colours_whatever_the_metric_is_cal
     assert got == [up, down, up, down, up, down, up, down, "var(--yt)", "var(--muted)"]
 
 
+def test_multiples_give_each_series_its_own_scale_and_share_one_twin(c):
+    got = js(c, """
+      const pts = [
+        { label: '9 Sep',  values: { youtube: 120, tiktok: 90000 } },
+        { label: '10 Sep', values: { youtube: 150, tiktok: 70000 } },
+        { label: '11 Sep', values: { youtube: 90,  tiktok: 110000 } },
+      ];
+      const fig = charts.chart({ kind: 'multiples', name: 'Views by platform', points: pts,
+        series: [{ id: 'youtube' }, { id: 'tiktok' }] });
+      mount.appendChild(fig);
+      const svgs = [...fig.querySelectorAll('svg.a-chart')];
+      const tops = svgs.map((s) => [...s.querySelectorAll('g[aria-label="y-axis tick label"] text')].at(-1)?.textContent);
+      return {
+        svgs: svgs.length, tops,
+        titles: [...fig.querySelectorAll('.a-multiple h3')].map((h) => h.textContent),
+        legend: fig.querySelectorAll('.a-legend').length,
+        twins: fig.querySelectorAll('.a-twin').length,
+        headers: [...fig.querySelectorAll('.a-twin thead th')].map((th) => th.textContent),
+        points: fig.querySelectorAll('.a-point').length,
+      };
+    """)
+    assert got["svgs"] == 2 and got["tops"][0] != got["tops"][1]
+    assert got["titles"] == ["YouTube", "TikTok"]
+    assert got["legend"] == 0, "the titles name the series; a legend would say it twice"
+    assert got["twins"] == 1 and got["headers"] == ["Period", "YouTube", "TikTok", "Total"]
+    assert got["points"] == 6
+
+
 # --- panels -----------------------------------------------------------------
 
 def test_a_panel_subtitle_names_its_window(c):
