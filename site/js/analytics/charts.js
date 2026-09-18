@@ -401,38 +401,43 @@ export function barSeries({ name, points, series, format = compact }) {
 /** Stacked columns. Parts of one whole, per period. */
 export function stackedBars({ name, points, series, format = compact }) {
   assertName(name);
-  const svg = newChart(name);
-  const totals = points.map((p) => series.reduce((a, s) => a + (p.values[s.id] ?? 0), 0));
-  const max = Math.max(1, ...totals);
-  const { y, step } = frame(svg, { max, labels: points.map((p) => p.label), format,
-                                   everyNth: thinning(points.length) });
-  const width = step * 0.68;
-
-  points.forEach((p, i) => {
+  const Plot = plotLib();
+  /* Stack in JS so the overlay knows every segment's ends; Plot draws y1..y2. */
+  const segs = [];
+  const totals = points.map((p) => {
     let base = 0;
-    const bx = PAD.left + step * i + (step - width) / 2;
     for (const s of series) {
-      const v = p.values[s.id] ?? 0;
+      const v = p.values?.[s.id] ?? 0;
       if (!v) continue;
-      const top = y(base + v);
-      svg.appendChild(hotspot(
-        el('rect', {
-          x: bx, y: top, width, height: Math.max(y(base) - top, 1),
-          fill: seriesColor(s.id), class: 'a-bar',
-        }),
-        { label: `${p.label} · ${seriesName(s.id)}: ${full(v)}`, value: v },
-      ));
+      segs.push({ label: p.label, series: s.id, value: v, y0: base, y1: base + v });
       base += v;
     }
+    return base;
   });
-
-  /* One direct label, on the tallest column. Labelling every column is how a
-     chart turns into a table that is hard to read. */
+  const max = Math.max(1, ...totals);
+  const marks = series.map((s) => Plot.barY(segs.filter((g) => g.series === s.id), {
+    x: 'label', y1: 'y0', y2: 'y1', fill: resolvedColor(s.id), insetLeft: 1, insetRight: 1, insetTop: 1,
+  }));
+  const svg = Plot.plot({
+    ...BASE(),
+    x: xBand(points),
+    y: { grid: true, label: null, domain: [0, max], nice: true, ticks: yTickCount(totals),
+         tickFormat: (v) => format(v), tickSize: 0 },
+    marks,
+  });
+  decorate(svg, name);
+  const sc = scalesOf(svg);
+  for (const g of segs) {
+    svg.appendChild(hotspot(
+      el('rect', { x: sc.xLeft(g.label), y: sc.y(g.y1), width: sc.bandwidth,
+                   height: Math.max(sc.y(g.y0) - sc.y(g.y1), 1), class: 'a-hit' }),
+      { label: `${g.label} · ${seriesName(g.series)}: ${full(g.value)}`, value: g.value },
+    ));
+  }
   const peak = totals.indexOf(Math.max(...totals));
   if (totals[peak] > 0) {
     svg.appendChild(el('text', {
-      x: PAD.left + step * (peak + 0.5), y: y(totals[peak]) - 6,
-      class: 'a-peak', 'text-anchor': 'middle',
+      x: sc.xMid(points[peak].label), y: sc.y(totals[peak]) - 6, class: 'a-peak', 'text-anchor': 'middle',
     }, format(totals[peak])));
   }
   return svg;
