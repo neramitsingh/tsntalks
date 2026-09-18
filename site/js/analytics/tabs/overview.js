@@ -104,11 +104,13 @@ function viewsPanel(result, w, series) {
   return resultPanel(result, {
     title: 'Views over time',
     sub: windowSub('By platform', w.from, w.to, `by ${w.granularity}`),
-    width: 'half',
   }, (section, { current }) => {
     if (!current.series.length) return false;
+    /* One small chart per platform, each on its own scale. Stacked, TikTok at
+       1.5M over YouTube at 244K is one platform and two slivers; the panel takes
+       the full row so the three charts have room to be read. */
     section.appendChild(chart({
-      kind: 'stacked',
+      kind: 'multiples',
       name: 'Views over time by platform',
       points: pointsFor(current.series, 'views', w.granularity, series),
       series,
@@ -125,7 +127,6 @@ function followersPanel(result, w, series) {
   return resultPanel(result, {
     title: 'Follower growth',
     sub: windowSub('By platform', w.from, w.to, `by ${w.granularity}`),
-    width: 'half',
   }, (section, { current }) => {
     if (!current.series.length) return false;
     /* Lines, not bars: followers are a stock, and a bar chart of a stock invites

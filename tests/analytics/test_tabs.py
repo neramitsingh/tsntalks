@@ -85,22 +85,24 @@ def test_with_compare_off_the_figures_say_there_is_no_comparison(ov):
     assert texts and all("no comparison" in t for t in texts)
 
 
-def test_views_are_drawn_as_stacked_columns_and_followers_as_lines(ov):
-    """Followers are a stock. Bars invite the reader to add them up."""
-    kinds = ov.evaluate("""() => {
+def test_views_are_one_small_chart_per_platform_and_followers_one_line_chart(ov):
+    """TikTok at 1.5M stacked over YouTube at 244K shows one platform and two
+    slivers. Each platform gets its own scale; followers stay one line chart
+    because a bar chart of a stock invites the reader to add the bars up."""
+    got = ov.evaluate("""() => {
       const out = {};
       for (const p of document.querySelectorAll('#view .a-panel')) {
         const title = p.querySelector('h2')?.textContent ?? '';
-        const svg = p.querySelector('svg.a-chart');
-        if (svg) out[title] = { bars: svg.querySelectorAll('rect.a-bar').length,
-                                lines: svg.querySelectorAll('path.a-line').length };
+        const svgs = [...p.querySelectorAll('svg.a-chart')];
+        if (svgs.length) out[title] = { charts: svgs.length,
+          lines: svgs.reduce((n, s) => n + s.querySelectorAll('path.a-line').length, 0),
+          bars: svgs.reduce((n, s) => n + s.querySelectorAll('rect.a-bar').length, 0),
+          twins: p.querySelectorAll('details.a-twin').length };
       }
       return out;
     }""")
-    assert kinds["Views over time"]["bars"] > 0
-    assert kinds["Views over time"]["lines"] == 0
-    assert kinds["Follower growth"]["lines"] > 0
-    assert kinds["Follower growth"]["bars"] == 0
+    assert got["Views over time"] == {"charts": 3, "lines": 3, "bars": 0, "twins": 1}
+    assert got["Follower growth"]["charts"] == 1 and got["Follower growth"]["lines"] == 3
 
 
 def test_the_follower_panel_explains_the_carry_forward_and_the_first_period(ov):
@@ -933,8 +935,10 @@ def test_one_dead_endpoint_leaves_the_rest_of_the_tab_standing(browser, base_url
 
     assert pg.locator("#view .a-error").count() >= 1
     assert "70K" in pg.locator("#view .a-panel", has_text="How are we doing").inner_text()
+    # >= 1, not == 1: since Plan 4 the views panel is one small chart per
+    # platform. What this line is here to say is that the panel still drew.
     assert pg.locator("#view .a-panel", has_text="Views over time")\
-             .locator("svg.a-chart").count() == 1
+             .locator("svg.a-chart").count() >= 1
     ctx.close()
 
 
