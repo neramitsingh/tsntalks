@@ -246,7 +246,7 @@ def test_only_the_peak_gets_a_direct_label(c):
 
 def test_a_gap_in_the_data_breaks_the_line_rather_than_joining_across_it(c):
     """A straight segment across a week nobody measured is a claim we cannot
-    support. Two subpaths, not one."""
+    support. Two subpaths, not one — however many <path> elements carry them."""
     got = js(c, """
       const gapped = [
         { label: 'a', values: { youtube: 100 } },
@@ -259,8 +259,28 @@ def test_a_gap_in_the_data_breaks_the_line_rather_than_joining_across_it(c):
         { kind: 'line', name: 'Views', points: gapped, series: [{ id: 'youtube' }] }));
       return [...mount.querySelectorAll('path.a-line')].map((p) => p.getAttribute('d'));
     """)
-    assert len(got) == 2
-    assert all(d.count("M") == 1 for d in got)
+    assert sum(d.count("M") for d in got) == 2
+    assert "c" not in "".join(got)  # nothing is drawn at the gap
+
+
+def test_lines_are_drawn_by_plot_and_wear_the_house_classes(c):
+    got = js(c, """
+      mount.appendChild(charts.chart(
+        { kind: 'line', name: 'Views', points: POINTS, series: PLATFORMS }));
+      const svg = mount.querySelector('svg.a-chart');
+      return {
+        plotStyle: svg.querySelector('style') === null,
+        grid: svg.querySelectorAll('g[aria-label="y-grid"] line.a-gridline').length,
+        axis: svg.querySelectorAll('text.a-axis').length > 0,
+        lines: svg.querySelectorAll('g[aria-label="line"] path.a-line').length,
+        fixedWidth: svg.hasAttribute('width') || svg.hasAttribute('height'),
+        viewBox: svg.getAttribute('viewBox'),
+      };
+    """)
+    assert got["plotStyle"], "Plot's injected <style> must be removed; analytics.css owns type"
+    assert got["grid"] >= 3 and got["axis"]
+    assert got["lines"] == 3
+    assert not got["fixedWidth"] and got["viewBox"] == "0 0 720 260"
 
 
 def test_a_missing_value_reads_as_not_reported_in_the_twin(c):

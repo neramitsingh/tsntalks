@@ -1,4 +1,10 @@
-/* Charts. Inline SVG, no chart library, no build step.
+/* Charts. Observable Plot under the house rules, no build step.
+ *
+ * Plot owns the scales, the axes, the ticks, the gridlines and the marks; a
+ * post-pass puts the house classes back on (`a-line`, `a-bar`, `a-gridline`,
+ * `a-axis`, `a-peak`), strips Plot's own stylesheet and its fixed width, and
+ * lays an overlay of focusable `.a-point` hotspots over the marks using the
+ * plot's own scales. Nothing below `decorate()` needs to know Plot exists.
  *
  * Five primitives and one composer. Tabs call `chart()`, which draws the mark
  * AND the table below it in one element — so a tab cannot ship a picture of
@@ -23,7 +29,6 @@ import { full, compact, rangeLabel, PLATFORM_NAME } from './format.js';
 const W = 720;
 const H = 260;
 const PAD = { top: 18, right: 16, bottom: 26, left: 52 };
-const PLOT = { w: W - PAD.left - PAD.right, h: H - PAD.top - PAD.bottom };
 
 const SVG = 'http://www.w3.org/2000/svg';
 
@@ -67,6 +72,41 @@ function html(name, className, text) {
   if (text != null) node.textContent = text;
   return node;
 }
+
+/** Keep the x-axis readable without measuring anything: thin the labels. */
+const thinning = (n) => (n <= 8 ? 1 : n <= 16 ? 2 : n <= 40 ? Math.ceil(n / 8) : Math.ceil(n / 6));
+
+/**
+ * A focusable, hoverable point.
+ *
+ * `tabindex` on the group is what makes the chart readable without a mouse; the
+ * aria-label is what makes it readable without eyes. The `<title>` is the
+ * browser's own tooltip, which survives even if the JS tooltip below breaks.
+ */
+function hotspot(shape, { label, value }) {
+  const g = el('g', {
+    class: 'a-point', tabindex: '0', role: 'img', 'aria-label': label,
+  });
+  g.dataset.value = value == null ? '' : String(value);
+  g.dataset.tip = label;
+  g.appendChild(shape);
+  g.appendChild(el('title', {}, label));
+  return g;
+}
+
+function assertName(name) {
+  if (!name || typeof name !== 'string') {
+    throw new Error('charts: every chart needs an accessible name');
+  }
+  return name;
+}
+
+/* --- the hand-drawn frame -------------------------------------------------- */
+
+/* Everything in this block belongs to the primitives Plot has not taken over
+   yet. It goes when the last of them does. */
+
+const PLOT = { w: W - PAD.left - PAD.right, h: H - PAD.top - PAD.bottom };
 
 /** Four or five round-ish gridline values covering 0..max. */
 function ticks(max, count = 4) {
@@ -119,9 +159,6 @@ function frame(svg, { max, min = 0, labels, format = compact, everyNth = 1 }) {
   return { y, step };
 }
 
-/** Keep the x-axis readable without measuring anything: thin the labels. */
-const thinning = (n) => (n <= 8 ? 1 : n <= 16 ? 2 : n <= 40 ? Math.ceil(n / 8) : Math.ceil(n / 6));
-
 function newChart(name) {
   const svg = el('svg', {
     class: 'a-chart',
@@ -133,84 +170,190 @@ function newChart(name) {
   return svg;
 }
 
-/**
- * A focusable, hoverable point.
- *
- * `tabindex` on the group is what makes the chart readable without a mouse; the
- * aria-label is what makes it readable without eyes. The `<title>` is the
- * browser's own tooltip, which survives even if the JS tooltip below breaks.
- */
-function hotspot(shape, { label, value }) {
-  const g = el('g', {
-    class: 'a-point', tabindex: '0', role: 'img', 'aria-label': label,
-  });
-  g.dataset.value = value == null ? '' : String(value);
-  g.dataset.tip = label;
-  g.appendChild(shape);
-  g.appendChild(el('title', {}, label));
-  return g;
-}
+/* --- the Plot core --------------------------------------------------------- */
 
-function assertName(name) {
-  if (!name || typeof name !== 'string') {
-    throw new Error('charts: every chart needs an accessible name');
+function plotLib() {
+  const P = globalThis.Plot;
+  if (!P || !globalThis.d3) {
+    throw new Error('charts: Observable Plot and d3 must be loaded before charts.js (see analytics/index.html)');
   }
-  return name;
+  return P;
 }
 
-/* --- the five primitives --------------------------------------------------- */
+/**
+ * A CSS colour token resolved to something Plot can take as a constant.
+ *
+ * SERIES_COLOR holds CSS custom properties so the tokens stay in one file.
+ * Plot cannot take `var(--yt)` as a colour (it would build a categorical scale
+ * over the strings and repaint the platforms), so the token is resolved from
+ * the document once per draw. The tests run on the real stylesheet, which is
+ * what keeps test_contrast.py honest about these values.
+ */
+function resolveToken(token) {
+  const m = /^var\((--[\w-]+)\)$/.exec(token);
+  if (!m) return token;
+  const v = getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim();
+  return v || '#E8621A';
+}
+
+/** A series colour as a hex string Plot can use as a constant. */
+const resolvedColor = (id) => resolveToken(seriesColor(id));
+
+/** Long rows for Plot: one per (point, series) that has a value. */
+function longRows(points, series) {
+  const rows = [];
+  points.forEach((p, i) => {
+    for (const s of series) {
+      const v = p.values?.[s.id];
+      rows.push({ i, label: p.label, series: s.id, value: v == null ? null : Number(v) });
+    }
+  });
+  return rows;
+}
+
+/** Ticks for a count axis: never fractional when the data is integers. */
+function yTickCount(values) {
+  const finite = values.filter((v) => v != null && Number.isFinite(v));
+  const max = Math.max(0, ...finite.map(Math.abs));
+  const integers = finite.every(Number.isInteger);
+  return integers && max <= 5 ? Math.max(1, Math.ceil(max)) : 5;
+}
+
+/**
+ * The x axis is a band of period labels, always. Plot draws exactly the ticks
+ * it is handed, so thinning is explicit here, and the last label is no longer
+ * forced — that is what put "15 Sept" on top of "16 Sept". The exact period of
+ * every point is in its tooltip and in the twin.
+ */
+function xBand(points) {
+  const domain = points.map((p) => p.label);
+  const every = thinning(points.length);
+  return { type: 'band', domain, ticks: domain.filter((_, i) => i % every === 0),
+           label: null, padding: 0.32, tickSize: 0 };
+}
+
+const BASE = () => ({
+  width: W, height: H,
+  marginTop: PAD.top, marginRight: PAD.right, marginBottom: PAD.bottom, marginLeft: PAD.left,
+  style: { background: 'transparent', overflow: 'visible' },
+});
+
+/**
+ * Plot's SVG, made ours.
+ *
+ *  - Plot injects a <style> that sets system-ui at 10px on the figure and a
+ *    max-width; analytics.css owns type here, so it goes.
+ *  - Plot sets a fixed width and height; the viewBox alone is kept so the
+ *    browser scales the drawing (test: charts scale by viewBox).
+ *  - Groups keep Plot's aria-labels; the elements inside get the house classes
+ *    the CSS and the tests select on. Plot puts the grid's stroke and its 0.1
+ *    opacity on the GROUP, and an inherited stroke-opacity would leave our
+ *    hairline at a tenth of itself, so both come off the group as well.
+ */
+function decorate(svg, name) {
+  svg.querySelector('style')?.remove();
+  svg.removeAttribute('width');
+  svg.removeAttribute('height');
+  svg.removeAttribute('font-family');
+  svg.removeAttribute('font-size');
+  svg.setAttribute('class', 'a-chart');
+  svg.setAttribute('role', 'group');
+  svg.setAttribute('aria-label', name);
+  for (const g of svg.querySelectorAll('g[aria-label="y-grid"]')) {
+    g.removeAttribute('stroke');
+    g.removeAttribute('stroke-opacity');
+    for (const line of g.querySelectorAll('line')) {
+      line.setAttribute('class', 'a-gridline');
+      line.removeAttribute('stroke');
+      line.removeAttribute('stroke-opacity');
+      line.removeAttribute('stroke-dasharray');
+    }
+  }
+  for (const g of svg.querySelectorAll('g[aria-label$="tick label"]')) {
+    g.removeAttribute('fill');
+    for (const t of g.querySelectorAll('text')) t.setAttribute('class', 'a-axis');
+  }
+  for (const p of svg.querySelectorAll('g[aria-label="line"] path')) p.setAttribute('class', 'a-line');
+  for (const r of svg.querySelectorAll('g[aria-label="bar"] rect, g[aria-label="rect"] rect')) {
+    r.setAttribute('class', 'a-bar');
+  }
+  return svg;
+}
+
+/**
+ * Plot's scales, as functions of a label and a value.
+ *
+ * A band scale reports the START of a band; Plot centres the marks that are not
+ * bars by translating their whole group half a bandwidth right, so the overlay
+ * has to add that half itself.
+ */
+function scalesOf(svg) {
+  const x = svg.scale('x');
+  const y = svg.scale('y');
+  const bw = x.bandwidth ?? 0;
+  return {
+    xMid: (label) => x.apply(label) + bw / 2,
+    xLeft: (label) => x.apply(label),
+    bandwidth: bw,
+    y: (v) => y.apply(v),
+  };
+}
+
+/** The single direct label: the highest value drawn. */
+function peakLabel(svg, rows, sc, format) {
+  let best = null;
+  for (const r of rows) if (r.value != null && (!best || r.value > best.value)) best = r;
+  if (!best) return;
+  svg.appendChild(el('text', {
+    x: sc.xMid(best.label), y: sc.y(best.value) - 8, class: 'a-peak', 'text-anchor': 'middle',
+  }, format(best.value)));
+}
+
+/* --- the primitives -------------------------------------------------------- */
 
 /**
  * Lines over time. Stocks — followers, cumulative anything.
  *
- * A gap in the data breaks the line rather than joining across it: a straight
- * segment over a week we did not measure is a claim we cannot support.
+ * One Plot line mark per series with a constant stroke, so no colour scale is
+ * ever built: the platform colours are tokens, not a palette Plot may reorder.
+ * A null breaks the line (Plot's default) rather than joining across it, and a
+ * faint area sits under each line so the eye reads the level, not just the edge.
  */
 export function lineSeries({ name, points, series, format = compact }) {
   assertName(name);
-  const svg = newChart(name);
-  const values = points.flatMap((p) => series.map((s) => p.values[s.id])).filter((v) => v != null);
-  const max = Math.max(1, ...values);
-  const min = Math.min(0, ...values);
-  const { y, step } = frame(svg, { max, min, labels: points.map((p) => p.label), format,
-                                   everyNth: thinning(points.length) });
-  const x = (i) => PAD.left + step * (i + 0.5);
-
+  const Plot = plotLib();
+  const rows = longRows(points, series);
+  const values = rows.map((r) => r.value);
+  const marks = [];
   for (const s of series) {
-    let run = [];
-    const flush = () => {
-      if (run.length > 1) {
-        svg.appendChild(el('path', {
-          class: 'a-line', stroke: seriesColor(s.id),
-          d: run.map((p, i) => `${i ? 'L' : 'M'}${p.x} ${p.y}`).join(' '),
-        }));
-      } else if (run.length === 1) {
-        svg.appendChild(el('circle', {
-          class: 'a-lone', cx: run[0].x, cy: run[0].y, r: 2.5, fill: seriesColor(s.id),
-        }));
-      }
-      run = [];
-    };
-    points.forEach((p, i) => {
-      const v = p.values[s.id];
-      if (v == null) flush();
-      else run.push({ x: x(i), y: y(v) });
-    });
-    flush();
-
-    points.forEach((p, i) => {
-      const v = p.values[s.id];
-      if (v == null) return;
-      svg.appendChild(hotspot(
-        el('circle', { cx: x(i), cy: y(v), r: 8, class: 'a-hit' }),
-        { label: `${p.label} · ${seriesName(s.id)}: ${full(v)}`, value: v },
-      ));
-      svg.appendChild(el('circle', {
-        cx: x(i), cy: y(v), r: 2, fill: seriesColor(s.id), class: 'a-dotmark',
-      }));
-    });
+    const mine = rows.filter((r) => r.series === s.id);
+    const colour = resolvedColor(s.id);
+    marks.push(Plot.areaY(mine, { x: 'label', y: 'value', fill: colour, fillOpacity: 0.08 }));
+    marks.push(Plot.line(mine, { x: 'label', y: 'value', stroke: colour, strokeWidth: 1.5,
+                                 strokeLinejoin: 'round', strokeLinecap: 'round' }));
   }
-  labelThePeak(svg, points, series, x, y, format);
+  const min = Math.min(0, ...values.filter((v) => v != null));
+  const max = Math.max(1, ...values.filter((v) => v != null));
+  const svg = Plot.plot({
+    ...BASE(),
+    x: xBand(points),
+    y: { grid: true, label: null, domain: [min, max], nice: true, ticks: yTickCount(values),
+         tickFormat: (v) => format(v), tickSize: 0 },
+    marks,
+  });
+  decorate(svg, name);
+  const sc = scalesOf(svg);
+  for (const r of rows) {
+    if (r.value == null) continue;
+    svg.appendChild(hotspot(
+      el('circle', { cx: sc.xMid(r.label), cy: sc.y(r.value), r: 8, class: 'a-hit' }),
+      { label: `${r.label} · ${seriesName(r.series)}: ${full(r.value)}`, value: r.value },
+    ));
+    svg.appendChild(el('circle', {
+      cx: sc.xMid(r.label), cy: sc.y(r.value), r: 2, fill: resolvedColor(r.series), class: 'a-dotmark',
+    }));
+  }
+  peakLabel(svg, rows, sc, format);
   return svg;
 }
 
@@ -338,21 +481,6 @@ export function sparkline(values, { name = 'trend', width = 90, height = 22 } = 
   ).join(' '),
   }));
   return svg;
-}
-
-/** The single direct label that the line charts get: the highest point. */
-function labelThePeak(svg, points, series, x, y, format) {
-  let best = null;
-  points.forEach((p, i) => {
-    for (const s of series) {
-      const v = p.values[s.id];
-      if (v != null && (!best || v > best.v)) best = { v, i, id: s.id };
-    }
-  });
-  if (!best) return;
-  svg.appendChild(el('text', {
-    x: x(best.i), y: y(best.v) - 8, class: 'a-peak', 'text-anchor': 'middle',
-  }, format(best.v)));
 }
 
 /* --- legend ---------------------------------------------------------------- */
