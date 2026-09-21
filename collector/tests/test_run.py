@@ -243,3 +243,69 @@ def test_apply_episode_overrides_is_a_no_op_second_time():
 def test_override_rows_skips_rows_already_correct():
     existing = [{"youtube_video_id": "vid1", "guest": "Curated Name", "role": "Curated Role", "season": 1, "number": "3"}]
     assert override_rows(existing, load_episode_overrides(FIX)) == []
+
+
+# ── the follower source (2026-09-21) ────────────────────────────────────────────────────────────────────────────────
+# Zernio's currentFollowers for YouTube fell 2,350 -> 1,870 while its OAuth token rolled over, and the wrong number
+# was on the public sponsorship page inside the hour. YouTube's own API outranks it.
+
+YT = "6aa7d50c726ebfe037e9d45c"
+
+
+def _followers(s):
+    return {r["account_id"]: r["followers"] for r in s.writes["account_snapshots"]}
+
+
+class ZernioWithTheBadYoutubeCount(FakeZernio):
+    """Zernio exactly as it answered at 07:03 on 2026-09-21: YouTube down 480, the other two unchanged."""
+
+    def follower_stats(self):
+        data = fx("follower_stats.json")
+        for a in data["accounts"]:
+            if a["platform"] == "youtube":
+                a["currentFollowers"] = 1870
+        return data
+
+
+def test_youtube_followers_come_from_the_data_api_and_the_disagreement_is_named():
+    z, s = ZernioWithTheBadYoutubeCount(), FakeSupa()
+    s.rows["v_account_latest"] = [{"account_id": YT, "followers": 2350}]
+    run = HourlyRun(z, s, now=datetime(2026, 9, 21, 7, 3, tzinfo=timezone.utc), daily=False, youtube_catalogue=None,
+                    channel_stats=lambda: {"subscribers": 2350, "views": 257933, "videos": 112})
+    result = run.execute()
+    assert result.status == "ok"
+    assert _followers(s)[YT] == 2350                      # YouTube's own number, not Zernio's 1,870
+    assert any("1870" in w and "2350" in w for w in result.notes["warnings"])
+    # and the swing check does not also fire, because the number that landed never moved
+    assert not any("moved" in w for w in result.notes["warnings"])
+
+
+def test_a_data_api_failure_keeps_zernios_number_and_the_run_stays_ok():
+    z, s = FakeZernio(), FakeSupa()
+
+    def boom():
+        raise RuntimeError("youtube data api 403: quota")
+
+    run = HourlyRun(z, s, now=datetime(2026, 9, 21, 7, 3, tzinfo=timezone.utc), daily=False, youtube_catalogue=None,
+                    channel_stats=boom)
+    result = run.execute()
+    assert result.status == "ok"
+    assert _followers(s)[YT] == 2350                      # the fixture's Zernio value, untouched
+    assert any("kept zernio" in w for w in result.notes["warnings"])
+
+
+def test_a_follower_count_that_swings_past_the_threshold_is_warned_about():
+    z, s = FakeZernio(), FakeSupa()
+    s.rows["v_account_latest"] = [{"account_id": YT, "followers": 4000}]   # fixture says 2350 this run
+    run = HourlyRun(z, s, now=datetime(2026, 9, 21, 7, 3, tzinfo=timezone.utc), daily=False, youtube_catalogue=None)
+    result = run.execute()
+    assert result.status == "ok"
+    assert any("4000" in w and "2350" in w for w in result.notes["warnings"])
+
+
+def test_no_channel_stats_callable_leaves_the_run_exactly_as_it_was():
+    z, s = FakeZernio(), FakeSupa()
+    run = HourlyRun(z, s, now=datetime(2026, 9, 21, 7, 3, tzinfo=timezone.utc), daily=False, youtube_catalogue=None)
+    result = run.execute()
+    assert result.status == "ok" and result.notes["warnings"] == []
+    assert _followers(s)[YT] == 2350

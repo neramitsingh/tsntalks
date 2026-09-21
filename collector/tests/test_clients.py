@@ -146,3 +146,52 @@ def test_settings_read_the_optional_youtube_api_key(monkeypatch):
     assert settings_from_env().youtube_api_key is None  # the secret is empty when unset in Actions
     monkeypatch.setenv("YOUTUBE_API_KEY", "k")
     assert settings_from_env().youtube_api_key == "k"
+
+
+# ── the channel's own subscriber count (2026-09-21) ─────────────────────────────────────────────────────────────────
+
+from tsn_collector.youtube import channel_stats_source, fetch_channel_stats_api, handle_from_channel_url
+
+
+def test_handle_from_channel_url():
+    assert handle_from_channel_url("https://www.youtube.com/@TSNTalksTH/videos") == "TSNTalksTH"
+    assert handle_from_channel_url("https://www.youtube.com/@TSNTalksTH") == "TSNTalksTH"
+    assert handle_from_channel_url("https://www.youtube.com/channel/UCCD") is None
+
+
+@responses.activate
+def test_fetch_channel_stats_api_maps_statistics():
+    responses.add(responses.GET, "https://www.googleapis.com/youtube/v3/channels",
+                  json={"items": [{"id": "UCCD", "statistics": {"subscriberCount": "2350", "viewCount": "257933",
+                                                                "videoCount": "112", "hiddenSubscriberCount": False}}]})
+    assert fetch_channel_stats_api("TSNTalksTH", "key") == {"subscribers": 2350, "views": 257933, "videos": 112}
+
+
+@responses.activate
+def test_fetch_channel_stats_api_refuses_a_hidden_count():
+    responses.add(responses.GET, "https://www.googleapis.com/youtube/v3/channels",
+                  json={"items": [{"id": "UCCD", "statistics": {"subscriberCount": "0", "hiddenSubscriberCount": True}}]})
+    try:
+        fetch_channel_stats_api("TSNTalksTH", "key")
+    except RuntimeError as e:
+        assert "hidden" in str(e)
+    else:
+        raise AssertionError("expected RuntimeError")
+
+
+@responses.activate
+def test_fetch_channel_stats_api_raises_with_googles_reason():
+    responses.add(responses.GET, "https://www.googleapis.com/youtube/v3/channels",
+                  json={"error": {"message": "API key not valid"}}, status=400)
+    try:
+        fetch_channel_stats_api("TSNTalksTH", "key")
+    except RuntimeError as e:
+        assert "400" in str(e) and "API key not valid" in str(e)
+    else:
+        raise AssertionError("expected RuntimeError")
+
+
+def test_channel_stats_source_is_none_without_a_key_or_a_handle():
+    assert channel_stats_source(None, "https://www.youtube.com/@TSNTalksTH/videos") is None
+    assert channel_stats_source("key", "https://www.youtube.com/channel/UCCD") is None
+    assert callable(channel_stats_source("key", "https://www.youtube.com/@TSNTalksTH/videos"))

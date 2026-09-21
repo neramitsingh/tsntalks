@@ -102,3 +102,30 @@ def test_health_rows():
     tt = next(r for r in rows if r["account_id"] == "6aa7d4ef726ebfe037e9d35c")
     assert tt["status"] == "healthy" and tt["needs_reconnect"] is False and tt["can_fetch_analytics"] is True
     assert tt["token_expires_at"].startswith("2026-09-15")
+
+# ── follower source (2026-09-21) ────────────────────────────────────────────────────────────────────────────────────
+
+
+def test_override_followers_replaces_one_account_and_returns_what_it_replaced():
+    rows = [{"account_id": "yt", "followers": 1870}, {"account_id": "tt", "followers": 6095}]
+    assert T.override_followers(rows, "yt", 2350) == 1870
+    assert rows[0]["followers"] == 2350
+    assert rows[1]["followers"] == 6095
+
+
+def test_override_followers_on_an_absent_account_changes_nothing():
+    rows = [{"account_id": "tt", "followers": 6095}]
+    assert T.override_followers(rows, "yt", 2350) is None
+    assert rows == [{"account_id": "tt", "followers": 6095}]
+
+
+def test_follower_moves_names_a_swing_past_the_threshold():
+    rows = [{"account_id": "yt", "followers": 1870}, {"account_id": "tt", "followers": 6095}]
+    notes = T.follower_moves(rows, {"yt": 2350, "tt": 6098}, {"yt": "youtube", "tt": "tiktok"})
+    assert len(notes) == 1
+    assert "youtube" in notes[0] and "2350" in notes[0] and "1870" in notes[0]
+
+
+def test_follower_moves_is_silent_without_a_previous_snapshot_or_a_zero_baseline():
+    rows = [{"account_id": "yt", "followers": 1870}, {"account_id": "ig", "followers": 12}]
+    assert T.follower_moves(rows, {"ig": 0}, {"yt": "youtube", "ig": "instagram"}) == []

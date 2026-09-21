@@ -67,10 +67,12 @@ class RunResult:
 
 class HourlyRun:
     def __init__(self, zernio, supa, now: datetime, daily: bool, youtube_catalogue: list[dict] | None,
-                 video_stats: Callable[[str], dict] | None = None):
+                 video_stats: Callable[[str], dict] | None = None,
+                 channel_stats: Callable[[], dict] | None = None):
         self.z, self.s, self.now, self.daily = zernio, supa, now, daily
         self.catalogue = youtube_catalogue or []
         self.video_stats = video_stats
+        self.channel_stats = channel_stats
         self.result = RunResult()
         self.accounts: list[dict] = []
         self.zernio_ids: dict[str, set[str]] = {}  # post ids Zernio returned this run, per platform
@@ -103,8 +105,27 @@ class HourlyRun:
         return n
 
     def step_followers(self) -> int:
-        return self.s.upsert("account_snapshots", T.account_snapshot_rows(self.z.follower_stats(), self.now),
-                             on_conflict="account_id,taken_at")
+        """Follower counts for the three accounts, with YouTube's own API outranking the aggregator.
+
+        On 2026-09-21 Zernio's `currentFollowers` for YouTube fell 2,350 -> 1,870 as its OAuth token rolled over,
+        while YouTube's channels.list still read 2,350 and Zernio's own totalViews agreed with YouTube to the view.
+        The wrong number was on the public sponsorship page within the hour. Instagram and TikTok stay on Zernio —
+        neither has a free official read — so every account also gets a swing check that says so in the run notes."""
+        rows = T.account_snapshot_rows(self.z.follower_stats(), self.now)
+        platforms = {a["id"]: a["platform"] for a in self.accounts}
+        yt = self._acct("youtube")
+        if yt and self.channel_stats:
+            try:
+                subs = self.channel_stats()["subscribers"]
+                was = T.override_followers(rows, yt["id"], subs)
+                if was is not None and was != subs:
+                    self.result.notes["warnings"].append(
+                        f"followers: youtube reads {was} on zernio and {subs} on the data api; took {subs}")
+            except Exception as ex:  # quota, a bad key, a rename — never a reason to lose the hour's snapshot
+                self.result.notes["warnings"].append(f"followers: youtube data api unavailable, kept zernio: {str(ex)[:160]}")
+        previous = {r["account_id"]: r["followers"] for r in self.s.select("v_account_latest", select="account_id,followers")}
+        self.result.notes["warnings"].extend(T.follower_moves(rows, previous, platforms))
+        return self.s.upsert("account_snapshots", rows, on_conflict="account_id,taken_at")
 
     def step_posts(self, platform: str) -> int:
         acct = self._acct(platform)

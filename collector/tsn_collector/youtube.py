@@ -1,6 +1,7 @@
 """YouTube catalogue via yt-dlp (no API key). Replace with the Data API when a key exists."""
 from __future__ import annotations
 
+import re
 from typing import Any
 
 
@@ -100,3 +101,48 @@ def video_stats_source(api_key: str | None, catalogue: list[dict[str, Any]]):
         return cache[video_id]
 
     return lookup
+
+
+CHANNEL_API = "https://www.googleapis.com/youtube/v3/channels"
+_HANDLE_RE = re.compile(r"youtube\.com/@([A-Za-z0-9._-]+)")
+
+
+def handle_from_channel_url(url: str) -> str | None:
+    """The @handle in a channel URL, which is what channels.list takes. None for a /channel/UC... URL."""
+    m = _HANDLE_RE.search(url or "")
+    return m.group(1) if m else None
+
+
+def fetch_channel_stats_api(handle: str, api_key: str, timeout: int = 30) -> dict[str, int]:
+    """The channel's own subscriber, view and video counts. One quota unit.
+
+    YouTube publishes subscriberCount rounded to three significant figures, which is the same precision Zernio
+    resells — but this is the number YouTube itself stands behind, so it is the one that wins when they disagree.
+    A channel that hides its subscriber count raises rather than writing the zero the API returns for it."""
+    import requests
+
+    r = requests.get(CHANNEL_API, params={"part": "statistics", "forHandle": handle, "key": api_key}, timeout=timeout)
+    if r.status_code >= 300:
+        try:
+            reason = (r.json().get("error") or {}).get("message") or r.text[:200]
+        except ValueError:
+            reason = r.text[:200]
+        raise RuntimeError(f"youtube data api {r.status_code}: {reason}")
+    items = r.json().get("items") or []
+    if not items:
+        raise RuntimeError(f"youtube data api: no channel for @{handle}")
+    st = items[0].get("statistics") or {}
+    if st.get("hiddenSubscriberCount"):
+        raise RuntimeError(f"youtube data api: @{handle} hidden subscriber count")
+    return {"subscribers": int(st.get("subscriberCount") or 0),
+            "views": int(st.get("viewCount") or 0),
+            "videos": int(st.get("videoCount") or 0)}
+
+
+def channel_stats_source(api_key: str | None, channel_url: str):
+    """A no-argument call for the channel's own counts, or None when there is no key or no @handle to ask about.
+    Not cached: the hourly run wants this hour's number, and it costs one quota unit against a 10,000/day budget."""
+    handle = handle_from_channel_url(channel_url)
+    if not api_key or not handle:
+        return None
+    return lambda: fetch_channel_stats_api(handle, api_key)

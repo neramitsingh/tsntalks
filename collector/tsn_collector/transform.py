@@ -141,3 +141,31 @@ def health_rows(health: dict[str, Any], checked_at: datetime) -> list[dict[str, 
             "token_expires_at": a.get("tokenExpiresAt"),
         })
     return rows
+
+FOLLOWER_SWING = 0.10
+
+
+def override_followers(rows: list[dict[str, Any]], account_id: str, followers: int) -> int | None:
+    """Replace one account's follower count in a snapshot batch. Returns the value replaced, None if absent."""
+    for r in rows:
+        if r["account_id"] == account_id:
+            was, r["followers"] = r["followers"], followers
+            return was
+    return None
+
+
+def follower_moves(rows: list[dict[str, Any]], previous: dict[str, int],
+                   platforms: dict[str, str] | None = None, threshold: float = FOLLOWER_SWING) -> list[str]:
+    """One note per account whose follower count moved more than `threshold` since its last stored snapshot.
+
+    A warning, never a refusal: a real exodus is data and must land. It exists because on 2026-09-21 an aggregator
+    reported a 20% YouTube drop that the platform itself did not agree with, and nothing said so."""
+    notes = []
+    for r in rows:
+        was, now = previous.get(r["account_id"]), r.get("followers")
+        if not was or now is None:
+            continue
+        if abs(now - was) / was > threshold:
+            who = (platforms or {}).get(r["account_id"], r["account_id"])
+            notes.append(f"followers: {who} moved {was} -> {now} in one run, more than {threshold:.0%}")
+    return notes
