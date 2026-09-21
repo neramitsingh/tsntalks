@@ -1,5 +1,5 @@
 """infra/contabo/trigger-collect.sh runs from ney's crontab on Contabo and asks GitHub to run collect.yml every
-hour, because GitHub's own `schedule` fires about five times a day. These tests keep it a Linux script that
+hour — the only clock since GitHub's own `schedule` was dropped on 2026-09-21. These tests keep it a Linux script that
 targets the right workflow and stays inert without a token; the live dispatch is verified by hand."""
 import os
 import shutil

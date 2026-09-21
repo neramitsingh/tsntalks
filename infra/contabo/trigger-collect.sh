@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # infra/contabo/trigger-collect.sh — hourly `workflow_dispatch` for .github/workflows/collect.yml.
 #
-# Why: GitHub's `schedule` fires the hourly collector about five times a day (2026-09-16: 23:06,
+# Why: GitHub's `schedule` fired the hourly collector about five times a day (2026-09-16: 23:06,
 # 01:26, 07:39, 13:29 UTC; still ~5/day on 2026-09-18), so the public pages read "updated n hours
 # ago" more often than "live". This runs from ney's crontab on Contabo every hour and asks GitHub
-# to run the workflow now. The workflow's `concurrency: collect` queues a scheduled run that lands
-# in the same hour, and every write is an upsert, so a double run is harmless. The daily steps still
-# key off the 03:xx Bangkok run inside the collector; no input is passed here.
+# to run the workflow now. Since 2026-09-21 it is the only clock: `schedule` was dropped from
+# collect.yml after three days of proven cadence here, because both were firing and every hour ran
+# twice. The daily steps still key off the 03:xx Bangkok run inside the collector; no input is
+# passed here. `concurrency: collect` still covers a hand-run dispatch overlapping the hourly one.
 #
 # Token: a fine-grained PAT — resource owner neramitsingh, repository access ONLY tsntalks,
 # permission Actions: read and write — in ~/.config/tsntalks/gh-token on Contabo (dir 700, file
