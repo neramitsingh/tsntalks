@@ -55,6 +55,38 @@ def test_error_raises_with_body():
         raise AssertionError("expected RuntimeError")
 
 
+@responses.activate
+def test_transient_failures_retry_then_succeed():
+    # 29-Sep 13:03 run died on one RemoteDisconnected from posts:instagram; a dropped socket or a 5xx is retried
+    import requests
+    responses.add(responses.GET, f"{B}/accounts", body=requests.ConnectionError("Remote end closed connection"))
+    responses.add(responses.GET, f"{B}/accounts", json={}, status=502)
+    responses.add(responses.GET, f"{B}/accounts", json={"accounts": [1]})
+    z = Zernio("k", backoff=0)
+    assert z.accounts() == [1]
+    assert len(responses.calls) == 3
+
+
+@responses.activate
+def test_transient_failures_give_up_after_attempts():
+    import pytest
+    import requests
+    responses.add(responses.GET, f"{B}/accounts", body=requests.ConnectionError("down"))
+    with pytest.raises(requests.ConnectionError):
+        Zernio("k", backoff=0, attempts=3).accounts()
+    assert len(responses.calls) == 3
+
+
+@responses.activate
+def test_client_errors_are_not_retried():
+    responses.add(responses.GET, f"{B}/accounts", json={"error": "nope"}, status=401)
+    try:
+        Zernio("k", backoff=0).accounts()
+    except RuntimeError:
+        pass
+    assert len(responses.calls) == 1
+
+
 def test_parse_flat_catalogue():
     flat = json.loads((FX / "ytdlp_flat.json").read_text(encoding="utf-8"))
     vids = parse_flat_catalogue(flat)

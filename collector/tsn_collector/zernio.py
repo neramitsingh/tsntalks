@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from typing import Any
 
 import requests
@@ -9,13 +10,28 @@ YT_METRICS = "views,estimatedMinutesWatched,averageViewDuration,subscribersGaine
 
 
 class Zernio:
-    def __init__(self, api_key: str, timeout: int = 60):
+    def __init__(self, api_key: str, timeout: int = 60, attempts: int = 4, backoff: float = 2.0):
         self.s = requests.Session()
         self.s.headers.update({"Authorization": f"Bearer {api_key}"})
         self.timeout = timeout
+        self.attempts = attempts
+        self.backoff = backoff
 
     def get(self, path: str, **params: Any) -> Any:
-        r = self.s.get(f"{BASE}/{path}", params={k: v for k, v in params.items() if v is not None}, timeout=self.timeout)
+        # Zernio drops the odd connection (RemoteDisconnected, 29-Sep); one blip used to fail the whole hourly run.
+        # Dropped sockets, timeouts, 429 and 5xx retry with 2/4/8 s backoff; any other status fails at once.
+        q = {k: v for k, v in params.items() if v is not None}
+        for i in range(self.attempts):
+            last = i == self.attempts - 1
+            try:
+                r = self.s.get(f"{BASE}/{path}", params=q, timeout=self.timeout)
+            except (requests.ConnectionError, requests.Timeout):
+                if last:
+                    raise
+            else:
+                if not (r.status_code == 429 or r.status_code >= 500) or last:
+                    break
+            time.sleep(self.backoff * 2 ** i)
         if r.status_code >= 300:
             raise RuntimeError(f"zernio GET {path} {r.status_code}: {r.text[:300]}")
         return r.json()
