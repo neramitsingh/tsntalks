@@ -523,6 +523,34 @@ footer > div { max-width: 62ch; }
 }
 .data-failed .datamsg b { color: var(--cream); font-weight: 700; }
 
+/* --- 19b. Privacy -------------------------------------------------------- */
+
+/* A notice people actually read: the short version on the table's wood, the
+   full one in a single reading column beside it. */
+.pv-head { grid-template-columns: 1fr; margin-bottom: 44px; }
+.pv-head .lede { justify-self: start; max-width: 60ch; margin-top: 10px; }
+.pv { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 68ch); gap: clamp(32px, 6vw, 96px); align-items: start; }
+.pv-short { position: sticky; top: 96px; background: var(--bg4); border-top: 2px solid var(--saffron); padding: 24px 24px 20px; }
+.pv-short ul { list-style: none; margin: 14px 0 20px; display: grid; gap: 14px; font-size: 14.5px; color: var(--cream-dim); }
+.pv-short b { color: var(--cream); font-weight: 600; }
+.pv-body { font-size: 16px; color: var(--cream-dim); }
+.pv-body p { margin-bottom: 14px; text-wrap: pretty; }
+.pv-body a { color: var(--cream); border-bottom: 1px solid var(--rule-hi); }
+.pv-body a:hover { color: var(--saffron2); border-color: var(--saffron2); }
+.pv-h { font-size: clamp(24px, 2.6vw, 34px); color: var(--cream); margin: 44px 0 16px; display: flex; align-items: baseline; gap: 14px; }
+.pv-h:first-child { margin-top: 0; }
+.pv-h .lab { font-size: 15px; }
+.pv-rows { display: grid; border-top: 1px solid var(--rule); margin-bottom: 8px; }
+.pv-rows > div { padding: 18px 0; border-bottom: 1px solid var(--rule); }
+.pv-rows dt { font-weight: 700; color: var(--cream); margin-bottom: 6px; }
+.pv-list { margin: 0 0 16px 1.1em; display: grid; gap: 6px; }
+footer .pl a[aria-current="page"] { color: var(--cream); }
+
+@media (max-width: 900px) {
+  .pv { grid-template-columns: 1fr; }
+  .pv-short { position: static; }
+}
+
 /* --- 20. Responsive ------------------------------------------------------ */
 
 @media (max-width: 1100px) {

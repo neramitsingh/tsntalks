@@ -291,7 +291,7 @@ function renderFooter(d) {
     + 'Audience breakdowns are the platforms’ own, over a rolling 90-day window on YouTube and 30 days '
     + 'on Instagram. Collected hourly; the platforms themselves report with a delay of up to 48 hours.</div>'
     + `<div class="fine">${f.stale ? '' : '<span class="live"></span>'}Updated ${f.stamp} Bangkok`
-    + `${f.stale ? ` · ${f.hours} hours ago` : ''}</div>`;
+    + `${f.stale ? ` · ${f.hours} hours ago` : ''} · <a href="../privacy/">Privacy</a></div>`;
 }
 
 load((d) => {
